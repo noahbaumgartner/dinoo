@@ -3,6 +3,8 @@ import { ErrorStates } from "../constants";
 import { UserInputDTO } from "../dtos/user.input.dto";
 import { UserOutputDTO } from "../dtos/user.output.dto";
 import { hash } from "@node-rs/argon2";
+import { lucia } from "../auth";
+import { cookies } from "next/headers";
 
 export const userService = {
   async getAll() {
@@ -22,13 +24,12 @@ export const userService = {
 
     if (userExists) throw new Error(ErrorStates.USER_ALREADY_EXISTS);
 
-	const passwordHash = await hash(password, {
-		// recommended minimum parameters
-		memoryCost: 19456,
-		timeCost: 2,
-		outputLen: 32,
-		parallelism: 1
-	});
+    const passwordHash = await hash(userDTO.password, {
+      memoryCost: 19456,
+      timeCost: 2,
+      outputLen: 32,
+      parallelism: 1,
+    });
 
     try {
       const dbUser = await prisma.user.create({
@@ -36,9 +37,17 @@ export const userService = {
           firstName: userDTO.firstName,
           lastName: userDTO.lastName,
           username: userDTO.username,
-          password_hash: hashedPassword,
-        }
+          password_hash: passwordHash,
+        },
       });
+
+      const session = await lucia.createSession(dbUser.id, {});
+      const sessionCookie = lucia.createSessionCookie(session.id);
+      cookies().set(
+        sessionCookie.name,
+        sessionCookie.value,
+        sessionCookie.attributes,
+      );
 
       return this.mapUserToDTO(dbUser);
     } catch (error) {
