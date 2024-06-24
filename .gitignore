@@ -35,5 +35,5 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-prisma/vilii.db
+prisma/dinoo.db
 .env

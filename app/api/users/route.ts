@@ -3,6 +3,8 @@ import { userService } from "@/lib/services/user.service";
 import { NextRequest } from "next/server";
 import { UserInputDTO } from "@/lib/dtos/user.input.dto";
 import { getHttpStatusFromErrorState, validateDTO } from "@/lib/utils";
+import { lucia } from "@/lib/auth";
+import { cookies } from "next/headers";
 
 export async function GET() {
   const users = await userService.getAll();
@@ -23,6 +25,11 @@ export async function POST(request: NextRequest) {
 
   try {
     const user = await userService.create(userDTO);
+
+    const session = await lucia.createSession(user.id, {});
+    const sessionCookie = lucia.createSessionCookie(session.id);
+    cookies().set(sessionCookie.name, sessionCookie.value, sessionCookie.attributes);
+
     return Response.json(user, { status: HttpStatus.CREATED });
   } catch (error: any) {
     const errorState = error.message;

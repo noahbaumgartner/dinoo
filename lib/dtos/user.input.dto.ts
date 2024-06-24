@@ -1,16 +1,16 @@
-import { IsEmail, IsString, IsStrongPassword } from "class-validator";
+import { IsEmail, IsString, IsStrongPassword, MinLength } from "class-validator";
 import { BaseDTO } from "./base.dto";
 import { ErrorStates } from "../constants";
 
 export class UserInputDTO extends BaseDTO {
-  @IsString({ message: "First name must be a string" })
+  @MinLength(2, { message: ErrorStates.NOT_LONG_ENOUGH })
   firstName: string;
 
-  @IsString({ message: "Last name must be a string" })
+  @MinLength(2, { message: ErrorStates.NOT_LONG_ENOUGH })
   lastName: string;
 
-  @IsEmail({}, { message: ErrorStates.INVALID_EMAIL })
-  email: string;
+  @MinLength(2, { message: ErrorStates.NOT_LONG_ENOUGH })
+  username: string;
 
   @IsStrongPassword(
     {
