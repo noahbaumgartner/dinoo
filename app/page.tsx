@@ -1,6 +1,6 @@
 "use client";
 
-import { Board24Regular, TextBulletList24Regular, TextBulletListSquareEdit24Regular } from "@fluentui/react-icons";
+import { Board24Regular, DrinkBeer24Regular, DrinkToGo24Filled, DrinkToGo24Regular, Food24Regular, FoodCake24Regular, TextBulletList24Regular, TextBulletListSquareEdit24Regular } from "@fluentui/react-icons";
 
 export default function Home() {
   return (
@@ -9,7 +9,7 @@ export default function Home() {
       <div className="h-full w-12 shrink-0">
         <div className="bg-white h-full w-full rounded-lg drop-shadow-md p-1 flex flex-col justify-between">
           <div className="w-full aspect-square border-[1px] hover:bg-gray-50 border-white active:bg-gray-100 hover:border-gray-300 rounded-md flex items-center justify-center cursor-pointer">
-            <Board24Regular className="text-gray-600 w-6 h-6" />
+            <Board24Regular className="text-gray-600 w-5 h-5" />
           </div>
           <div className="w-full aspect-square rounded-md p-1 hover:bg-gray-50 active:bg-gray-100 border-[1px] border-white hover:border-gray-300 cursor-pointer">
             <img src="https://media.licdn.com/dms/image/D4E03AQEzlR2sWweJ3w/profile-displayphoto-shrink_200_200/0/1693304718563?e=2147483647&v=beta&t=ukExtEDl-fXZT2txUDT0F58yE0xGwB1h0vJe-XcVok0" alt="Logo"
@@ -19,7 +19,7 @@ export default function Home() {
       </div>
       {/* OrderList */}
       <div className="shrink-0 w-1/3 min-w-60 max-w-72 text-gray-800">
-        <div className="bg-white h-full w-full rounded-lg p-1">
+        <div className="bg-white h-full w-full rounded-lg drop-shadow-md p-1">
           <div className="px-4 py-2 border-b-[1px] border-gray-200 bg-gray-100 rounded-t-md">
             <h1 className="font-bold text-md">Bestellübersicht</h1>
           </div>
@@ -120,9 +120,33 @@ export default function Home() {
           </div>
         </div>
       </div>
-      {/* OrderList */}
+      {/* Categories */}
       <div className="h-full shrink-0 w-1/5 min-w-40 max-w-56">
-        <div className="bg-white h-full w-full rounded-lg drop-shadow-md p-1">
+        <div className=" h-full w-full rounded-lg">
+          <div className="w-full h-auto px-4 py-4 flex flex-row justify-between cursor-pointer bg-white rounded-md drop-shadow-md hover:bg-gray-50 active:bg-gray-100">
+            <h1 className="text-sm leading-8">Alkoholfreie Getränke</h1>
+            <div className="flex items-center bg-teal-100 py-1 px-1.5 rounded-md">
+              <DrinkToGo24Regular className="text-teal-500 w-5 h-5" />
+            </div>
+          </div>
+          <div className="w-full h-auto px-4 py-4 flex flex-row justify-between cursor-pointer bg-white rounded-md drop-shadow-md hover:bg-gray-50 active:bg-gray-100 mt-2">
+            <h1 className="text-sm leading-8">Getränke</h1>
+            <div className="flex items-center bg-teal-100 py-1 px-1.5 rounded-md">
+              <DrinkBeer24Regular className="text-teal-500 w-5 h-5" />
+            </div>
+          </div>
+          <div className="w-full h-auto px-4 py-4 flex flex-row justify-between cursor-pointer bg-white rounded-md drop-shadow-md hover:bg-gray-50 active:bg-gray-100 mt-2">
+            <h1 className="text-sm leading-8">Essen</h1>
+            <div className="flex items-center bg-teal-100 py-1 px-1.5 rounded-md">
+              <Food24Regular className="text-teal-500 w-5 h-5" />
+            </div>
+          </div>
+          <div className="w-full h-auto px-4 py-4 flex flex-row justify-between cursor-pointer bg-white rounded-md drop-shadow-md hover:bg-gray-50 active:bg-gray-100 mt-2">
+            <h1 className="text-sm leading-8">Desserts</h1>
+            <div className="flex items-center bg-teal-100 py-1 px-1.5 rounded-md">
+              <FoodCake24Regular className="text-teal-500 w-5 h-5" />
+            </div>
+          </div>
         </div>
       </div>
       {/* OrderList */}
