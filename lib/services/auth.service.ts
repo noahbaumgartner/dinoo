@@ -4,7 +4,8 @@ import { ErrorStates } from "../constants";
 import { userService } from "./user.service";
 import { verify } from "@node-rs/argon2";
 import { CredentialsDTO } from "../dtos/credentials.input.dto";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, type Session, type User } from "@prisma/client";
+import { cache } from "react";
 
 export const authService = {
   async login(credentialsDTO: CredentialsDTO) {
@@ -42,7 +43,8 @@ export const authService = {
     return userService.mapUserToDTO(dbUser);
   },
 
-  async validateRequest() {
+  // TODO: add valid parameters to the return type
+  validateRequest: cache(async (): Promise<{ user: any; session: any } | { user: null; session: null }> => {
     const sessionId = cookies().get(lucia.sessionCookieName)?.value ?? null;
     if (!sessionId) throw new Error(ErrorStates.UNAUTHORIZED);
 
@@ -60,7 +62,7 @@ export const authService = {
     } catch {}
 
     return result;
-  },
+  }),
 
   async logout() {
     const { session } = await this.validateRequest();

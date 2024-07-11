@@ -1,6 +1,6 @@
 import { HttpStatus } from "@/lib/constants";
 import { CredentialsDTO } from "@/lib/dtos/credentials.input.dto";
-import { userService } from "@/lib/services/user.service";
+import { authService } from "@/lib/services/auth.service";
 import { getHttpStatusFromErrorState, validateDTO } from "@/lib/utils";
 import { NextRequest } from "next/server";
 
@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const user = await userService.login(credentialsDTO);
+    const user = await authService.login(credentialsDTO);
     return Response.json(user, { status: HttpStatus.CREATED });
   } catch (error: any) {
     const errorState = error.message;
