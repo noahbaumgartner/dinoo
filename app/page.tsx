@@ -1,8 +1,9 @@
 "use client";
 
-import { Board24Regular, DrinkBeer24Regular, DrinkToGo24Filled, DrinkToGo24Regular, Food24Regular, FoodCake24Regular, TextBulletList24Regular, TextBulletListSquareEdit24Regular } from "@fluentui/react-icons";
+import { Board24Regular, DrinkBeer24Regular, DrinkToGo24Regular, Food24Regular, FoodCake24Regular } from "@fluentui/react-icons";
 
 export default function Home() {
+
   return (
     <main className="bg-gray-200 h-screen w-full flex flex-row p-2 space-x-2">
       {/* Sidebar */}
@@ -123,8 +124,8 @@ export default function Home() {
       {/* Categories */}
       <div className="h-full shrink-0 w-1/5 min-w-40 max-w-56">
         <div className=" h-full w-full rounded-lg">
-          <div className="w-full h-auto px-4 py-4 flex flex-row justify-between cursor-pointer bg-white rounded-md drop-shadow-md hover:bg-gray-50 active:bg-gray-100">
-            <h1 className="text-sm leading-8">Alkoholfreie Getränke</h1>
+          <div className="w-full h-auto px-4 py-4 flex flex-row space-x-2 justify-between cursor-pointer bg-white rounded-md drop-shadow-md hover:bg-gray-50 active:bg-gray-100">
+            <h1 className="text-sm leading-8">Alk. Getränke</h1>
             <div className="flex items-center bg-teal-100 py-1 px-1.5 rounded-md">
               <DrinkToGo24Regular className="text-teal-500 w-5 h-5" />
             </div>
@@ -151,7 +152,19 @@ export default function Home() {
       </div>
       {/* OrderList */}
       <div className="h-full shrink-0 grow">
-        <div className="bg-white h-full w-full rounded-lg drop-shadow-md p-1">
+        <div className="bg-white h-full rounded-lg drop-shadow-md p-1">
+          <div className="bg-gray-100 hover:bg-gray-200 active:bg-gray-300 cursor-pointer p-4 text-sm text-center rounded-md">
+            Flasche
+          </div>
+          <div className="bg-gray-100 hover:bg-gray-200 active:bg-gray-300 cursor-pointer p-4 text-sm text-center rounded-md mt-1">
+            Leichte Flasche
+          </div>
+          <div className="bg-gray-100 hover:bg-gray-200 active:bg-gray-300 cursor-pointer p-4 text-sm text-center rounded-md mt-1">
+            Saft
+          </div>
+          <div className="bg-gray-100 hover:bg-gray-200 active:bg-gray-300 cursor-pointer p-4 text-sm text-center rounded-md mt-1">
+            asdf
+          </div>
         </div>
       </div>
     </main>

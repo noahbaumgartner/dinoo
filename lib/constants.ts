@@ -22,3 +22,7 @@ export enum ErrorStates {
 export enum Roles {
   ADMIN = "ADMIN",
 }
+
+export enum MenuGroupIcons {
+  
+}

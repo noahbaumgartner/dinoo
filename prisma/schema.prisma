@@ -23,3 +23,10 @@ model Session {
 
   user User @relation(references: [id], fields: [userId], onDelete: Cascade)
 }
+
+model MenuGroup {
+  id    String @id @default(uuid())
+  name  String
+  icon  String
+  color String
+}
