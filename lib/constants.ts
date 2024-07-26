@@ -24,5 +24,8 @@ export enum Roles {
 }
 
 export enum MenuGroupIcons {
-  
+  DRINK_BEER = "DRINK_BEER",
+  DRINK_TO_GO = "DRINK_TO_GO",
+  FOOD = "FOOD",
+  FOOD_CAKE = "FOOD_CAKE",
 }

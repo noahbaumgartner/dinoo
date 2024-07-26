@@ -16,5 +16,32 @@ const config: Config = {
     },
   },
   plugins: [],
+  safelist: [
+    "bg-blue-100",
+    "text-blue-500",
+    "border-blue-300",
+    "bg-red-100",
+    "text-red-500",
+    "border-red-300",
+    "bg-yellow-100",
+    "text-yellow-500",
+    "border-yellow-300",
+    "bg-green-100",
+    "text-green-500",
+    "border-green-300",
+    
+    // loading,
+    "h-full",
+    "w-full",
+    "rounded-lg",
+    "flex",
+    "flex-col",
+    "space-y-2",
+    "w-full",
+    "h-16",
+    "animate-pulse",
+    "bg-gray-300",
+    "rounded-md",
+  ]
 };
 export default config;

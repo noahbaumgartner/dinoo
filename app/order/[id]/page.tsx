@@ -1,6 +1,8 @@
 "use server";
 
+import { Suspense } from "react";
 import MenuGroups from "../../../lib/components/order/menuGroups.client";
+import MenuGroupsLoading from "@/lib/components/order/menuGroups.loading";
 
 export default async function OrderById() {
 
@@ -10,6 +12,7 @@ export default async function OrderById() {
             <div className="h-full w-12 shrink-0">
                 <div className="bg-white h-full w-full rounded-lg drop-shadow-md p-1 flex flex-col justify-between">
                     <div className="w-full aspect-square border-[1px] hover:bg-gray-50 border-white active:bg-gray-100 hover:border-gray-300 rounded-md flex items-center justify-center cursor-pointer">
+
                     </div>
                     <div className="w-full aspect-square rounded-md p-1 hover:bg-gray-50 active:bg-gray-100 border-[1px] border-white hover:border-gray-300 cursor-pointer">
                         <img src="https://media.licdn.com/dms/image/D4E03AQEzlR2sWweJ3w/profile-displayphoto-shrink_200_200/0/1693304718563?e=2147483647&v=beta&t=ukExtEDl-fXZT2txUDT0F58yE0xGwB1h0vJe-XcVok0" alt="Logo"
@@ -122,7 +125,9 @@ export default async function OrderById() {
             </div>
             {/* Categories */}
             <div className="h-full shrink-0 w-1/5 min-w-40 max-w-56">
-                <MenuGroups />
+                <Suspense fallback={<MenuGroupsLoading />}>
+                    <MenuGroups />
+                </Suspense>
             </div>
             {/* OrderList */}
             <div className="h-full shrink-0 grow">
