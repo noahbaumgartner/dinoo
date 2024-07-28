@@ -7,6 +7,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// main models
 model User {
   id            String    @id @default(uuid())
   sessions      Session[]
@@ -14,6 +15,7 @@ model User {
   firstName     String
   lastName      String
   password_hash String
+  Order         Order[]
 }
 
 model Session {
@@ -25,8 +27,62 @@ model Session {
 }
 
 model MenuGroup {
-  id    String @id @default(uuid())
-  name  String
-  icon  String
-  color String
+  id            String          @id @default(uuid())
+  name          String
+  icon          String
+  color         String
+  MenuGroupItem MenuGroupItem[]
+}
+
+model Product {
+  id            String          @id @default(uuid())
+  name          String
+  price         Float
+  MenuGroupItem MenuGroupItem[]
+  OrderItem     OrderItem[]
+  Modifier      Modifier[]
+}
+
+model Order {
+  id         String      @id @default(uuid())
+  userId     String
+  status     String
+  orderItems OrderItem[]
+  user       User        @relation(fields: [userId], references: [id])
+}
+
+model Modifier {
+  id                String              @id @default(uuid())
+  name              String
+  price             Float
+  productId         String
+  product           Product             @relation(fields: [productId], references: [id])
+  OrderItemModifier OrderItemModifier[]
+}
+
+// conntected models
+model MenuGroupItem {
+  id          String    @id @default(uuid())
+  menuGroupId String
+  productId   String
+  menuGroup   MenuGroup @relation(fields: [menuGroupId], references: [id])
+  product     Product   @relation(fields: [productId], references: [id])
+}
+
+model OrderItem {
+  id                String              @id @default(uuid())
+  orderId           String
+  productId         String
+  quantity          Int
+  order             Order               @relation(fields: [orderId], references: [id])
+  product           Product             @relation(fields: [productId], references: [id])
+  OrderItemModifier OrderItemModifier[]
+}
+
+model OrderItemModifier {
+  id          String    @id @default(uuid())
+  orderItemId String
+  modifierId  String
+  orderItem   OrderItem @relation(fields: [orderItemId], references: [id])
+  modifier    Modifier  @relation(fields: [modifierId], references: [id])
 }
