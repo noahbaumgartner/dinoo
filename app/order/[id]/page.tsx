@@ -64,7 +64,7 @@ function MenuGroups({
     selectMenuGroup: (menuGroupId: string) => void;
 }) {
     return (
-        <div className="h-full w-full rounded-lg flex flex-col space-y-2">
+        <div className="h-full w-full rounded-lg flex flex-col space-y-2 overflow-y-auto">
             {menuGroups.map((menuGroup) => (
                 <div
                     key={menuGroup.id}
@@ -88,7 +88,7 @@ function MenuGroupItems({
     addItemToOrder: (productId: string) => void;
 }) {
     return (
-        <div className="bg-white h-full w-full rounded-lg drop-shadow-md p-1 flex flex-col space-y-1">
+        <div className="bg-white h-full w-full rounded-lg drop-shadow-md p-1 flex flex-col space-y-1 overflow-y-auto">
             {menuGroup?.items.map((product) => (
                 <div
                     key={product.id}
