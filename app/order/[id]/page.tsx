@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import MenuGroupIcon from "@/lib/components/menuGroupIcon.client";
 import type { MenuGroupOutputDTO } from "@/lib/dtos/menuGroup.output.dto";
 import { OrderItemDTO } from "@/lib/dtos/orderItem.output.dto";
-import { SubtractSquare24Regular } from "@fluentui/react-icons";
+import { Send24Regular, SubtractSquare24Regular } from "@fluentui/react-icons";
 
 function OrderItems({
     orderItems,
@@ -14,15 +14,15 @@ function OrderItems({
     removeItemFromOrder: (productId: string) => void;
 }) {
     return (
-        <div className="bg-white h-full w-full rounded-lg drop-shadow-md p-1">
-            <div className="px-4 py-2 border-b-[1px] border-gray-200 bg-gray-100 rounded-t-md">
+        <div className="bg-white h-full w-full rounded-lg drop-shadow-md p-1 flex flex-col">
+            <div className="shrink-0 grow-0 px-4 py-2 border-b-[1px] border-gray-200 bg-gray-100 rounded-t-md">
                 <h1 className="font-bold text-md">Bestellübersicht</h1>
             </div>
-            <div className="overflow-auto max-h-[calc(100vh-4rem)]">
-                {orderItems.map((orderItem) => (
+            <div className="grow overflow-auto">
+                {orderItems.map((orderItem, index) => (
                     <div
                         key={orderItem.product.id}
-                        className="border-b-[1px] text-sm px-4 py-4 flex flex-col space-y-4">
+                        className={`text-sm px-4 py-4 flex flex-col space-y-4 ${index !== orderItems.length - 1 && "border-b-[1px]"}`}>
                         <div className="flex flex-row">
                             <span className="font-bold w-12">{orderItem.quantity}x</span>
                             <span className="font-bold">{orderItem.product.name}</span>
@@ -118,6 +118,7 @@ export default function OrderById() {
     const selectMenuGroup = (menuGroupId: string) => {
         const menuGroup = menuGroups.find(menuGroup => menuGroup.id === menuGroupId)
         menuGroup && setSelectedMenuGroup(menuGroup);
+        console.log(menuGroup);
     }
 
     const addItemToOrder = (productId: string) => {
@@ -161,12 +162,18 @@ export default function OrderById() {
                     removeItemFromOrder={removeItemFromOrder}
                 />
             </div>
-            <div className="shrink-0 w-52">
-                <MenuGroups
-                    menuGroups={menuGroups}
-                    activeMenuGroup={selectedMenuGroup}
-                    selectMenuGroup={selectMenuGroup}
-                />
+            <div className="shrink-0 w-52 flex flex-col space-y-2">
+                <div className="grow overflow-y-scroll">
+                    <MenuGroups
+                        menuGroups={menuGroups}
+                        activeMenuGroup={selectedMenuGroup}
+                        selectMenuGroup={selectMenuGroup}
+                    />
+                </div>
+                <div className="shrink-0 bg-red-500 p-4 rounded-lg drop-shadow-md flex justify-center items-center cursor-pointer hover:bg-red-600 active:bg-red-700 text-white">
+                    <Send24Regular className="w-5 h-5" />
+                    <span className="ml-2 text-lg font-bold">Abschicken</span>
+                </div>
             </div>
             {/* OrderList */}
             <div className="shrink-0 grow w-auto">
