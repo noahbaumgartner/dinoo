@@ -16,6 +16,7 @@ export enum ErrorStates {
   USER_NOT_FOUND = "USER_NOT_FOUND",
   INVALID_EMAIL = "INVALID_EMAIL",
   DB_CREATE_FAILED = "DB_CREATE_FAILED",
+  DB_READ_FAILED = "DB_READ_FAILED",
   AUTH_FAILED = "AUTH_FAILED",
 }
 
@@ -28,4 +29,8 @@ export enum MenuGroupIcons {
   DRINK_TO_GO = "DRINK_TO_GO",
   FOOD = "FOOD",
   FOOD_CAKE = "FOOD_CAKE",
+}
+
+export enum ToastMessages {
+  ORDER_CREATED = "Bestellung abgeschickt",
 }

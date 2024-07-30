@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Roboto } from "next/font/google";
 import "./globals.css";
+import { Toaster } from "react-hot-toast";
 
 const roboto = Roboto({
   subsets: ["latin"],
@@ -36,6 +37,7 @@ export default function RootLayout({
         <div className="w-full h-full">
           {children}
         </div>
+        <Toaster position="bottom-right" />
       </body>
     </html>
   );
