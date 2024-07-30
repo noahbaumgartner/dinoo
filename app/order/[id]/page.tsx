@@ -3,14 +3,15 @@
 import { useEffect, useState } from "react";
 import MenuGroupIcon from "@/lib/components/menuGroupIcon.client";
 import type { MenuGroupOutputDTO } from "@/lib/dtos/menuGroup.output.dto";
-import { OrderItemDTO } from "@/lib/dtos/orderItem.output.dto";
+import { OrderItemOutputDTO } from "@/lib/dtos/orderItem.output.dto";
 import { Send24Regular, SubtractSquare24Regular } from "@fluentui/react-icons";
+import useMobileMode from "@/lib/hooks/useMobileMode";
 
 function OrderItems({
     orderItems,
     removeItemFromOrder
 }: {
-    orderItems: OrderItemDTO[];
+    orderItems: OrderItemOutputDTO[];
     removeItemFromOrder: (productId: string) => void;
 }) {
     return (
@@ -104,7 +105,8 @@ function MenuGroupItems({
 export default function OrderById() {
     const [selectedMenuGroup, setSelectedMenuGroup] = useState<MenuGroupOutputDTO | null>(null);
     const [menuGroups, setMenuGroups] = useState<MenuGroupOutputDTO[]>([]);
-    const [orderItems, setOrderItems] = useState<OrderItemDTO[]>([]);
+    const [orderItems, setOrderItems] = useState<OrderItemOutputDTO[]>([]);
+    const mobileMode = useMobileMode();
 
     useEffect(() => {
         fetch("/api/menuGroups").then((response) => {
@@ -154,34 +156,64 @@ export default function OrderById() {
         }
     }
 
+    const sendOrder = () => {
+        fetch("/api/orders", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                tableId: "db2c24a7-134c-418e-9ed1-887bc226a575",
+                userId: "ef32b8ee-2e3d-4a02-8341-325a65a77508",
+                items: orderItems.map(orderItem => ({
+                    productId: orderItem.product.id,
+                    quantity: orderItem.quantity,
+                    modifiers: orderItem.modifiers.map(modifier => modifier.id)
+                }))
+            })
+        }).then(response => {
+            return response.json();
+        }).then(orderId => {
+            console.log(orderId);
+        });
+    }
+
     return (
         <main className="bg-gray-200 h-full w-full flex flex-row space-x-2">
-            <div className="shrink-0 w-72">
-                <OrderItems
-                    orderItems={orderItems}
-                    removeItemFromOrder={removeItemFromOrder}
-                />
-            </div>
-            <div className="shrink-0 w-52 flex flex-col space-y-2">
-                <div className="grow overflow-y-scroll">
-                    <MenuGroups
-                        menuGroups={menuGroups}
-                        activeMenuGroup={selectedMenuGroup}
-                        selectMenuGroup={selectMenuGroup}
-                    />
-                </div>
-                <div className="shrink-0 bg-red-500 p-4 rounded-lg drop-shadow-md flex justify-center items-center cursor-pointer hover:bg-red-600 active:bg-red-700 text-white">
-                    <Send24Regular className="w-5 h-5" />
-                    <span className="ml-2 text-lg font-bold">Abschicken</span>
-                </div>
-            </div>
-            {/* OrderList */}
-            <div className="shrink-0 grow w-auto">
-                <MenuGroupItems
-                    menuGroup={selectedMenuGroup}
-                    addItemToOrder={addItemToOrder}
-                />
-            </div>
-        </main>
+            {mobileMode ? (
+                <div></div>
+            ) : (
+                <>
+                    <div className="shrink-0 w-72">
+                        <OrderItems
+                            orderItems={orderItems}
+                            removeItemFromOrder={removeItemFromOrder}
+                        />
+                    </div>
+                    <div className="shrink-0 w-52 flex flex-col space-y-2">
+                        <div className="grow overflow-y-scroll">
+                            <MenuGroups
+                                menuGroups={menuGroups}
+                                activeMenuGroup={selectedMenuGroup}
+                                selectMenuGroup={selectMenuGroup}
+                            />
+                        </div>
+                        <button
+                            className="shrink-0 bg-red-500 p-4 rounded-lg drop-shadow-md flex justify-center items-center cursor-pointer hover:bg-red-600 active:bg-red-700 disabled:bg-red-300 text-white outline-none"
+                            disabled={!orderItems.length}
+                            onClick={sendOrder}>
+                            <Send24Regular className="w-5 h-5" />
+                            <span className="ml-2 text-lg font-bold">Abschicken</span>
+                        </button>
+                    </div>
+                    <div className="shrink-0 grow w-auto">
+                        <MenuGroupItems
+                            menuGroup={selectedMenuGroup}
+                            addItemToOrder={addItemToOrder}
+                        />
+                    </div>
+                </>
+            )}
+        </main >
     )
 }

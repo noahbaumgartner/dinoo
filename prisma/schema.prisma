@@ -44,11 +44,11 @@ model Product {
 }
 
 model Order {
-  id         String      @id @default(uuid())
-  userId     String
-  status     String
-  orderItems OrderItem[]
-  user       User        @relation(fields: [userId], references: [id])
+  id        String      @id @default(uuid())
+  userId    String
+  tableId   String
+  OrderItem OrderItem[]
+  user      User        @relation(fields: [userId], references: [id])
 }
 
 model Modifier {
