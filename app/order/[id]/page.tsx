@@ -2,7 +2,6 @@
 
 import type { OrderOutputDTO } from "@/lib/dtos/order.output.dto";
 import type { OrderItemOutputDTO } from "@/lib/dtos/orderItem.output.dto";
-import { SubtractSquare24Regular } from "@fluentui/react-icons";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 

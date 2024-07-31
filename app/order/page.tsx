@@ -138,7 +138,6 @@ export default function OrderCreate() {
     const selectMenuGroup = (menuGroupId: string) => {
         const menuGroup = menuGroups.find(menuGroup => menuGroup.id === menuGroupId)
         menuGroup && setSelectedMenuGroup(menuGroup);
-        console.log(menuGroup);
     }
 
     const addItemToOrder = (productId: string) => {

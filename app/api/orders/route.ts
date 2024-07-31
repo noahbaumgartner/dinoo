@@ -10,7 +10,6 @@ export async function POST(request: NextRequest) {
     
     const errorStates = await validateDTO(orderDTO);
     if (errorStates.length > 0) {
-        console.log(errorStates);
         return Response.json(
             { states: errorStates },
             { status: HttpStatus.BAD_REQUEST },
