@@ -34,3 +34,13 @@ export enum MenuGroupIcons {
 export enum ToastMessages {
   ORDER_CREATED = "Bestellung abgeschickt",
 }
+
+export enum PaymentTypes {
+  CASH = "CASH",
+  TWINT = "TWINT",
+}
+
+export enum PaymentTypeTexts {
+  CASH = "Bar",
+  TWINT = "Twint",
+}

@@ -1,5 +1,6 @@
 "use client";
 
+import { PaymentTypeTexts, PaymentTypes } from "@/lib/constants";
 import { OrderItemOutputDTO } from "@/lib/dtos/orderItem.output.dto";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -8,16 +9,22 @@ class OrderItemWithCountDTO extends OrderItemOutputDTO {
     count: number;
 }
 
+class OrderItemPaidDTO extends OrderItemOutputDTO {
+    count: number;
+    paymentType: string;
+}
+
 function OrderItems({
     orderItems,
+    subtotalPrice,
+    totalPrice,
     selectItem
 }: {
     orderItems: OrderItemWithCountDTO[];
+    subtotalPrice: number;
+    totalPrice: number;
     selectItem: (orderItemId: string) => void;
 }) {
-    const subtotalPrice = orderItems.reduce((total, orderItem) => total + orderItem.product.price * orderItem.count, 0);
-    const totalPrice = orderItems.reduce((total, orderItem) => total + orderItem.product.price * orderItem.quantity, 0);
-
     return (
         <div className="bg-white h-full w-full rounded-lg drop-shadow-md p-1 flex flex-col">
             <div className="shrink-0 grow-0 px-4 py-2 border-b-[1px] border-gray-200 bg-gray-100 rounded-t-md">
@@ -63,44 +70,64 @@ function OrderItems({
     )
 }
 
-function Payment({ }) {
+function Payment({
+    subtotalPrice,
+    paySubOrder,
+}: {
+    subtotalPrice: number;
+    paySubOrder: (paymentType: string) => void;
+}) {
+    const [moneyValue, setMoneyValue] = useState(0);
+    const paymentDisabled = moneyValue < subtotalPrice;
+
+    const MoneyValue = ({ value }: { value: number; }) => (
+        <div
+            className="flex-1 bg-gray-100 hover:bg-gray-200 active:bg-gray-300 cursor-pointer py-3 text-sm text-center rounded-md"
+            onClick={() => setMoneyValue(value)}>
+            {value}
+        </div>
+    )
+
+    const PaymentType = ({
+        type,
+    }: {
+        type: string;
+    }) => (
+        <button
+            className="flex-1 bg-gray-100 hover:bg-gray-200 active:bg-gray-300 disabled:bg-gray-100 disabled:text-gray-400 cursor-pointer py-3 text-sm text-center rounded-md outline-none"
+            disabled={paymentDisabled}
+            onClick={() => paySubOrder(type)}>
+            {PaymentTypeTexts[type as keyof typeof PaymentTypeTexts]}
+        </button>
+    )
+
     return (
         <div className="bg-white h-full w-full rounded-lg drop-shadow-md p-1 flex flex-col">
             <div className="grow h-full w-full flex flex-col space-y-1 overflow-y-auto pb-1">
-                <input type="number" className="border-[1px] text-center border-gray-200 rounded-md px-4 py-3 text-sm" placeholder="Betrag" />
-                <div className="bg-gray-100 hover:bg-gray-200 active:bg-gray-300 cursor-pointer py-3 text-sm text-center rounded-md">
+                <input
+                    type="number"
+                    className="border-[1px] text-center border-gray-200 rounded-md px-4 py-3 text-sm" placeholder="Betrag"
+                    value={moneyValue}
+                    onChange={(e) => setMoneyValue(Number(e.target.value))} />
+                <div
+                    className="bg-gray-100 hover:bg-gray-200 active:bg-gray-300 cursor-pointer py-3 text-sm text-center rounded-md"
+                    onClick={() => setMoneyValue(subtotalPrice)}>
                     Alles
                 </div>
                 <div className="flex flex-row space-x-1 w-full">
-                    <div className="flex-1 bg-gray-100 hover:bg-gray-200 active:bg-gray-300 cursor-pointer py-3 text-sm text-center rounded-md">
-                        5
-                    </div>
-                    <div className="flex-1 bg-gray-100 hover:bg-gray-200 active:bg-gray-300 cursor-pointer py-3 text-sm text-center rounded-md">
-                        10
-                    </div>
-                    <div className="flex-1 bg-gray-100 hover:bg-gray-200 active:bg-gray-300 cursor-pointer py-3 text-sm text-center rounded-md">
-                        20
-                    </div>
+                    <MoneyValue value={5} />
+                    <MoneyValue value={10} />
+                    <MoneyValue value={20} />
                 </div>
                 <div className="flex flex-row space-x-1 w-full">
-                    <div className="flex-1 bg-gray-100 hover:bg-gray-200 active:bg-gray-300 cursor-pointer py-3 text-sm text-center rounded-md">
-                        50
-                    </div>
-                    <div className="flex-1 bg-gray-100 hover:bg-gray-200 active:bg-gray-300 cursor-pointer py-3 text-sm text-center rounded-md">
-                        100
-                    </div>
-                    <div className="flex-1 bg-gray-100 hover:bg-gray-200 active:bg-gray-300 cursor-pointer py-3 text-sm text-center rounded-md">
-                        200
-                    </div>
+                    <MoneyValue value={50} />
+                    <MoneyValue value={100} />
+                    <MoneyValue value={200} />
                 </div>
                 <div className="border-b-[1px] border-gray-200 my-1"></div>
                 <div className="flex flex-row space-x-1 w-full">
-                    <div className="flex-1 bg-gray-100 hover:bg-gray-200 active:bg-gray-300 cursor-pointer py-3 text-sm text-center rounded-md">
-                        Bar
-                    </div>
-                    <div className="flex-1 bg-gray-100 hover:bg-gray-200 active:bg-gray-300 cursor-pointer py-3 text-sm text-center rounded-md">
-                        Twint
-                    </div>
+                    <PaymentType type={PaymentTypes.CASH} />
+                    <PaymentType type={PaymentTypes.TWINT} />
                 </div>
             </div>
             <div className="shrink-0 grow-0 px-4 py-2 border-t-[1px] border-gray-200 bg-gray-100 rounded-b-md flex flex-row font-bold">
@@ -111,8 +138,47 @@ function Payment({ }) {
     )
 }
 
+function PaidOrderItems({
+    paidOrderItems,
+}: {
+    paidOrderItems: OrderItemPaidDTO[];
+}) {
+    return (
+        <div className="bg-white h-full w-full rounded-lg drop-shadow-md p-1 flex flex-col">
+            <div className="shrink-0 grow-0 px-4 py-2 border-b-[1px] border-gray-200 bg-gray-100 rounded-t-md">
+                <h1 className="font-bold text-md">Zahlungen</h1>
+            </div>
+            <div className="grow overflow-auto">
+                {paidOrderItems.map((orderItem, index) => (
+                    <div
+                        key={orderItem.product.id}
+                        className={`text-sm px-4 py-4 flex flex-col space-y-4 ${index !== paidOrderItems.length - 1 && "border-b-[1px]"}`}>
+                        <div className="flex flex-row">
+                            <span className="font-bold w-12">{orderItem.quantity}x</span>
+                            <span className="font-bold">{orderItem.product.name}</span>
+                            <span className="ml-auto">CHF {orderItem.product.price * orderItem.quantity}</span>
+                        </div>
+                        {orderItem?.modifiers?.length > 0 && (
+                            <div className="flex flex-col space-y-2 bg-gray-100 rounded-md px-3 py-2 border-[1px] border-gray-300">
+                                {orderItem.modifiers.map(modifier => (
+                                    <div key={modifier.id} className="flex flex-row">
+                                        <span className="">{modifier.name} (1x)</span>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                ))}
+            </div>
+        </div>
+    )
+}
+
 export default function OrderById() {
     const [orderItems, setOrderItems] = useState<OrderItemWithCountDTO[]>([]);
+    const [paidOrderItems, setPaidOrderItems] = useState<OrderItemPaidDTO[]>([]);
+    const [subtotalPrice, setSubtotalPrice] = useState(0);
+    const [totalPrice, setTotalPrice] = useState(0);
     const { id } = useParams();
 
     useEffect(() => {
@@ -129,6 +195,14 @@ export default function OrderById() {
         });
     }, [id]);
 
+    useEffect(() => {
+        const subtotal = orderItems.reduce((total, orderItem) => total + orderItem.product.price * orderItem.count, 0);
+        const total = orderItems.reduce((total, orderItem) => total + orderItem.product.price * orderItem.quantity, 0);
+
+        setSubtotalPrice(subtotal);
+        setTotalPrice(total);
+    }, [orderItems]);
+
     const selectItem = (orderItemId: string) => {
         const updatedOrderItems = orderItems.map(orderItem => {
             if (orderItem.id === orderItemId) {
@@ -144,16 +218,44 @@ export default function OrderById() {
         setOrderItems(updatedOrderItems);
     }
 
+    const paySubOrder = (paymentType: string) => {
+        const newPaidOrderItems = orderItems.filter(orderItem => orderItem.count > 0).map(orderItem => {
+            return new OrderItemPaidDTO({
+                ...orderItem,
+                count: orderItem.count,
+                paymentType
+            });
+        });
+        setPaidOrderItems([...newPaidOrderItems, ...paidOrderItems]);
+
+        const updatedOrderItems: OrderItemWithCountDTO[] = [];
+        orderItems.forEach(orderItem => {
+            orderItem.quantity = orderItem.quantity - orderItem.count;
+            orderItem.count = 0;
+
+            if (orderItem.quantity > 0) updatedOrderItems.push(orderItem);
+        });
+        setOrderItems(updatedOrderItems);
+    }
+
     return (
         <main className="bg-gray-200 h-full w-full flex flex-row space-x-2">
             <div className="shrink-0 w-72">
                 <OrderItems
                     orderItems={orderItems}
+                    subtotalPrice={subtotalPrice}
+                    totalPrice={totalPrice}
                     selectItem={selectItem}
                 />
             </div>
             <div className="shrink-0 w-52">
-                <Payment />
+                <Payment
+                    subtotalPrice={subtotalPrice}
+                    paySubOrder={paySubOrder}
+                />
+            </div>
+            <div className="shrink-0 grow">
+                <PaidOrderItems paidOrderItems={paidOrderItems} />
             </div>
         </main>
     )
