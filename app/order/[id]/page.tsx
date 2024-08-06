@@ -2,16 +2,13 @@
 
 import { PaymentTypeTexts, PaymentTypes } from "@/lib/constants";
 import { OrderItemOutputDTO } from "@/lib/dtos/orderItem.output.dto";
+import { PaymentOutputDTO } from "@/lib/dtos/payment.output.dto";
+import { PaymentItemOutputDTO } from "@/lib/dtos/paymentItem.output.dto";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 class OrderItemWithCountDTO extends OrderItemOutputDTO {
     count: number;
-}
-
-class OrderItemPaidDTO extends OrderItemOutputDTO {
-    count: number;
-    paymentType: string;
 }
 
 function OrderItems({
@@ -138,10 +135,10 @@ function Payment({
     )
 }
 
-function PaidOrderItems({
-    paidOrderItems,
+function Payments({
+    payments,
 }: {
-    paidOrderItems: OrderItemPaidDTO[];
+    payments: PaymentOutputDTO[];
 }) {
     return (
         <div className="bg-white h-full w-full rounded-lg drop-shadow-md p-1 flex flex-col">
@@ -149,24 +146,30 @@ function PaidOrderItems({
                 <h1 className="font-bold text-md">Zahlungen</h1>
             </div>
             <div className="grow overflow-auto">
-                {paidOrderItems.map((orderItem, index) => (
+                {payments.map((payment, index) => (
                     <div
-                        key={orderItem.product.id}
-                        className={`text-sm px-4 py-4 flex flex-col space-y-4 ${index !== paidOrderItems.length - 1 && "border-b-[1px]"}`}>
-                        <div className="flex flex-row">
-                            <span className="font-bold w-12">{orderItem.quantity}x</span>
-                            <span className="font-bold">{orderItem.product.name}</span>
-                            <span className="ml-auto">CHF {orderItem.product.price * orderItem.quantity}</span>
+                        key={index}
+                        className={`text-sm px-4 py-4 flex flex-col space-y-4 ${index !== payments.length - 1 && "border-b-[1px]"}`}>
+                        <div className="flex flex-row font-bold">
+                            <span>{PaymentTypeTexts[payment.type as keyof typeof PaymentTypeTexts]}</span>
+                            <span className="ml-auto">CHF {payment.items.reduce((total, item) => total + item.quantity * item.orderItem.product.price, 0)}</span>
                         </div>
-                        {orderItem?.modifiers?.length > 0 && (
-                            <div className="flex flex-col space-y-2 bg-gray-100 rounded-md px-3 py-2 border-[1px] border-gray-300">
-                                {orderItem.modifiers.map(modifier => (
-                                    <div key={modifier.id} className="flex flex-row">
-                                        <span className="">{modifier.name} (1x)</span>
+                        {payment?.items?.length > 0 && (
+                            <div className="flex flex-col space-y-2">
+                                {payment.items.map(item => (
+                                    <div key={item.id} className="flex flex-row">
+                                        <span className="w-12">{item.quantity}x</span>
+                                        <span className="grow">{item.orderItem.product.name}</span>
+                                        <span>CHF {item.orderItem.product.price * item.quantity}</span>
                                     </div>
                                 ))}
                             </div>
                         )}
+                        <div
+                            className="bg-gray-100 hover:bg-gray-200 active:bg-gray-300 cursor-pointer py-2 rounded-md flex flex-row"
+                            onClick={() => console.log()}>
+                            <span className="grow text-center">Löschen</span>
+                        </div>
                     </div>
                 ))}
             </div>
@@ -176,7 +179,7 @@ function PaidOrderItems({
 
 export default function OrderById() {
     const [orderItems, setOrderItems] = useState<OrderItemWithCountDTO[]>([]);
-    const [paidOrderItems, setPaidOrderItems] = useState<OrderItemPaidDTO[]>([]);
+    const [payments, setPayments] = useState<PaymentOutputDTO[]>([]);
     const [subtotalPrice, setSubtotalPrice] = useState(0);
     const [totalPrice, setTotalPrice] = useState(0);
     const { id } = useParams();
@@ -219,14 +222,19 @@ export default function OrderById() {
     }
 
     const paySubOrder = (paymentType: string) => {
-        const newPaidOrderItems = orderItems.filter(orderItem => orderItem.count > 0).map(orderItem => {
-            return new OrderItemPaidDTO({
-                ...orderItem,
-                count: orderItem.count,
-                paymentType
+        const paymentItems = orderItems.filter(orderItem => orderItem.count > 0).map(orderItem => {
+            return new PaymentItemOutputDTO({
+                quantity: orderItem.count,
+                orderItem
             });
         });
-        setPaidOrderItems([...newPaidOrderItems, ...paidOrderItems]);
+
+        const payment = new PaymentOutputDTO({
+            type: paymentType,
+            items: paymentItems
+        });
+
+        setPayments([payment, ...payments]);
 
         const updatedOrderItems: OrderItemWithCountDTO[] = [];
         orderItems.forEach(orderItem => {
@@ -240,7 +248,7 @@ export default function OrderById() {
 
     return (
         <main className="bg-gray-200 h-full w-full flex flex-row space-x-2">
-            <div className="shrink-0 w-72">
+            <div className="shrink-0 w-64">
                 <OrderItems
                     orderItems={orderItems}
                     subtotalPrice={subtotalPrice}
@@ -248,14 +256,14 @@ export default function OrderById() {
                     selectItem={selectItem}
                 />
             </div>
-            <div className="shrink-0 w-52">
+            <div className="shrink-0 w-48">
                 <Payment
                     subtotalPrice={subtotalPrice}
                     paySubOrder={paySubOrder}
                 />
             </div>
             <div className="shrink-0 grow">
-                <PaidOrderItems paidOrderItems={paidOrderItems} />
+                <Payments payments={payments} />
             </div>
         </main>
     )
