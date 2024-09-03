@@ -45,10 +45,12 @@ model Product {
 
 model Order {
   id        String      @id @default(uuid())
+  completed Boolean     @default(false)
   userId    String
   tableId   String
   OrderItem OrderItem[]
   user      User        @relation(fields: [userId], references: [id])
+  Payment   Payment[]
 }
 
 model Modifier {
@@ -58,6 +60,14 @@ model Modifier {
   productId         String
   product           Product             @relation(fields: [productId], references: [id])
   OrderItemModifier OrderItemModifier[]
+}
+
+model Payment {
+  id          String        @id @default(uuid())
+  type        String
+  Order       Order?        @relation(fields: [orderId], references: [id])
+  orderId     String?
+  PaymentItem PaymentItem[]
 }
 
 // conntected models
@@ -77,6 +87,7 @@ model OrderItem {
   order             Order               @relation(fields: [orderId], references: [id])
   product           Product             @relation(fields: [productId], references: [id])
   OrderItemModifier OrderItemModifier[]
+  PaymentItem       PaymentItem[]
 }
 
 model OrderItemModifier {
@@ -85,4 +96,13 @@ model OrderItemModifier {
   modifierId  String
   orderItem   OrderItem @relation(fields: [orderItemId], references: [id])
   modifier    Modifier  @relation(fields: [modifierId], references: [id])
+}
+
+model PaymentItem {
+  id          String    @id @default(uuid())
+  quantity    Int
+  orderItemId String
+  paymentId   String
+  orderItem   OrderItem @relation(fields: [orderItemId], references: [id])
+  payment     Payment   @relation(fields: [paymentId], references: [id])
 }

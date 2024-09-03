@@ -1,12 +1,16 @@
 "use client";
 
-import { PaymentTypeTexts, PaymentTypes } from "@/lib/constants";
+import ConfirmationButton from "@/lib/components/buttons/confirmationButton";
+import { PaymentTypeTexts, PaymentTypes, ToastMessages } from "@/lib/constants";
 import { OrderItemOutputDTO } from "@/lib/dtos/orderItem.output.dto";
+import { PaymentInputDTO } from "@/lib/dtos/payment.input.dto";
 import { PaymentOutputDTO } from "@/lib/dtos/payment.output.dto";
+import { PaymentItemInputDTO } from "@/lib/dtos/paymentItem.input.dto";
 import { PaymentItemOutputDTO } from "@/lib/dtos/paymentItem.output.dto";
 import { CheckmarkCircle24Regular, SelectAllOn24Regular } from "@fluentui/react-icons";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 
 class OrderItemWithCountDTO extends OrderItemOutputDTO {
     count: number;
@@ -201,35 +205,10 @@ export default function OrderById() {
     const [payments, setPayments] = useState<PaymentOutputDTO[]>([]);
     const [subtotalPrice, setSubtotalPrice] = useState(0);
     const [totalPrice, setTotalPrice] = useState(0);
-    const [finishDisabled, setFinishDisabled] = useState(true);
+    const [completeDisabled, setCompleteDisabled] = useState(true);
+    const [completed, setCompleted] = useState(false);
     const { id } = useParams();
-
-    useEffect(() => {
-        fetch(`/api/orders/${id}`).then(response => {
-            return response.json()
-        }).then(order => {
-            const orderItemsWithCount = order.items.map((orderItem: OrderItemOutputDTO) => {
-                return new OrderItemWithCountDTO({
-                    ...orderItem,
-                    count: 0
-                });
-            });
-            setOrderItems(orderItemsWithCount);
-            setLoading(false);
-        });
-    }, [id]);
-
-    useEffect(() => {
-        const subtotal = orderItems.reduce((total, orderItem) => total + orderItem.product.price * orderItem.count, 0);
-        const total = orderItems.reduce((total, orderItem) => total + orderItem.product.price * orderItem.quantity, 0);
-
-        setSubtotalPrice(subtotal);
-        setTotalPrice(total);
-    }, [orderItems]);
-
-    useEffect(() => {
-        setFinishDisabled(orderItems.length !== 0 || loading);
-    }, [orderItems, loading]);
+    const router = useRouter();
 
     const selectItem = (orderItemId: string) => {
         const updatedOrderItems = orderItems.map(orderItem => {
@@ -256,30 +235,57 @@ export default function OrderById() {
         setOrderItems(updatedOrderItems);
     }
 
+    const loadOrder = () => {
+        fetch(`/api/orders/${id}`).then(response => {
+            return response.json()
+        }).then(order => {
+            const orderItemsWithCount = order.items.map((orderItem: OrderItemOutputDTO) => {
+                return new OrderItemWithCountDTO({
+                    ...orderItem,
+                    count: 0
+                });
+            });
+            setOrderItems(orderItemsWithCount);
+            setCompleted(order.completed);
+            setLoading(false);
+        });
+    }
+
     const paySubOrder = (paymentType: string) => {
-        const paymentItems = orderItems.filter(orderItem => orderItem.count > 0).map(orderItem => {
-            return new PaymentItemOutputDTO({
+        const paymentItemsInput = orderItems.filter(orderItem => orderItem.count > 0).map(orderItem => {
+            return new PaymentItemInputDTO({
                 quantity: orderItem.count,
-                orderItem
+                orderItemId: orderItem.id
             });
         });
 
-        const payment = new PaymentOutputDTO({
-            id: Math.random().toString(36).substring(7),
+        const paymentInput = new PaymentInputDTO({
             type: paymentType,
-            items: paymentItems
+            items: paymentItemsInput
         });
 
-        setPayments([payment, ...payments]);
+        const paymentPromise = fetch(`/api/orders/${id}/payments`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(paymentInput)
+        }).then(() => {
+            const updatedOrderItems: OrderItemWithCountDTO[] = [];
+            orderItems.forEach(orderItem => {
+                orderItem.quantity = orderItem.quantity - orderItem.count;
+                orderItem.count = 0;
 
-        const updatedOrderItems: OrderItemWithCountDTO[] = [];
-        orderItems.forEach(orderItem => {
-            orderItem.quantity = orderItem.quantity - orderItem.count;
-            orderItem.count = 0;
-
-            if (orderItem.quantity > 0) updatedOrderItems.push(orderItem);
+                if (orderItem.quantity > 0) updatedOrderItems.push(orderItem);
+            });
+            setOrderItems(updatedOrderItems);
         });
-        setOrderItems(updatedOrderItems);
+
+        toast.promise(paymentPromise, {
+            loading: ToastMessages.PAYING,
+            success: ToastMessages.SUBPAYMENT_DONE,
+            error: ToastMessages.SUBPAYMENT_NOT_DONE
+        })
     }
 
     const deletePayment = (paymentId: string) => {
@@ -305,40 +311,78 @@ export default function OrderById() {
     }
 
     const finishPayment = () => {
-
+        const completePromise = fetch(`/api/orders/${id}/complete`, { method: "POST" }).then(() => {
+            setCompleted(true);
+        })
+        toast.promise(completePromise, {
+            loading: ToastMessages.COMPLETING,
+            success: ToastMessages.ORDER_COMPLETED,
+            error: ToastMessages.ORDER_NOT_COMPLETED
+        })
     }
 
-    return (
-        <main className="bg-gray-200 h-full w-full flex flex-row space-x-2">
-            <div className="shrink-0 w-64">
-                <OrderItems
-                    orderItems={orderItems}
-                    subtotalPrice={subtotalPrice}
-                    totalPrice={totalPrice}
-                    selectItem={selectItem}
-                    selectAll={selectAll}
-                />
-            </div>
-            <div className="shrink-0 w-48">
-                <Payment
-                    subtotalPrice={subtotalPrice}
-                    paySubOrder={paySubOrder}
-                />
-            </div>
-            <div className="shrink-0 grow flex flex-col space-y-2">
-                <Payments
-                    payments={payments}
-                    deletePayment={deletePayment}
-                />
+    useEffect(() => {
+        loadOrder();
+    }, [id]);
 
-                <button
-                    className="shrink-0 bg-red-500 p-4 rounded-lg drop-shadow-md flex justify-center items-center cursor-pointer hover:bg-red-600 active:bg-red-700 disabled:bg-red-300 text-white outline-none"
-                    disabled={finishDisabled}
-                    onClick={finishPayment}>
-                    <CheckmarkCircle24Regular className="size-4" />
-                    <span className="ml-2 text-lg font-bold">Abschliessen</span>
-                </button>
-            </div>
-        </main>
+    useEffect(() => {
+        const subtotal = orderItems.reduce((total, orderItem) => total + orderItem.product.price * orderItem.count, 0);
+        const total = orderItems.reduce((total, orderItem) => total + orderItem.product.price * orderItem.quantity, 0);
+
+        setSubtotalPrice(subtotal);
+        setTotalPrice(total);
+    }, [orderItems]);
+
+    useEffect(() => {
+        setCompleteDisabled(orderItems.length !== 0 || loading);
+    }, [orderItems, loading]);
+
+    return (
+        <>
+            {completed && (
+                <div className="z-10 fixed inset-0 flex flex-col space-y-6 items-center justify-center bg-black bg-opacity-50">
+                    <div className="text-white font-bold text-center text-lg">
+                        Bestellung abgeschlossen
+                    </div>
+                    <div className="text-white max-w-96 text-center">
+                        Diese Bestellung wurde abgeschlossen und kann nicht mehr bearbeitet werden. Bei Fragen wenden Sie sich bitte an den Verantwortlichen.
+                    </div>
+                    <button
+                        className="bg-white hover:bg-gray-100 active:bg-gray-200 py-2 px-4 rounded-md font-bold"
+                        onClick={() => router.push("/")}>
+                        Zur Übersicht
+                    </button>
+                </div>
+            )}
+            <main className="bg-gray-200 h-full w-full flex flex-row space-x-2">
+                <div className="shrink-0 w-64">
+                    <OrderItems
+                        orderItems={orderItems}
+                        subtotalPrice={subtotalPrice}
+                        totalPrice={totalPrice}
+                        selectItem={selectItem}
+                        selectAll={selectAll}
+                    />
+                </div>
+                <div className="shrink-0 w-48">
+                    <Payment
+                        subtotalPrice={subtotalPrice}
+                        paySubOrder={paySubOrder}
+                    />
+                </div>
+                <div className="shrink-0 grow flex flex-col space-y-2">
+                    <Payments
+                        payments={payments}
+                        deletePayment={deletePayment}
+                    />
+                    <ConfirmationButton
+                        disabled={completeDisabled}
+                        onClick={finishPayment}
+                        FluentIcon={CheckmarkCircle24Regular}>
+                        Abschliessen
+                    </ConfirmationButton>
+                </div>
+            </main>
+        </>
     )
 }

@@ -9,6 +9,7 @@ import useMobileMode from "@/lib/hooks/useMobileMode";
 import toast from "react-hot-toast";
 import { ToastMessages } from "@/lib/constants";
 import { useRouter } from "next/navigation";
+import ConfirmationButton from "@/lib/components/buttons/confirmationButton";
 
 function OrderItems({
     orderItems,
@@ -175,7 +176,7 @@ export default function OrderCreate() {
 
     const sendOrder = () => {
         setOrderSent(true);
-        fetch("/api/orders", {
+        const sendPromise = fetch("/api/orders", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -192,8 +193,13 @@ export default function OrderCreate() {
         }).then(response => {
             return response.json();
         }).then(orderId => {
-            toast.success(ToastMessages.ORDER_CREATED);
             router.push(`/order/${orderId}`);
+        });
+
+        toast.promise(sendPromise, {
+            loading: ToastMessages.DISPATCHING,
+            success: ToastMessages.ORDER_DISPATCHED,
+            error: ToastMessages.ORDER_NOT_DISPATCHED
         });
     }
 
@@ -217,13 +223,12 @@ export default function OrderCreate() {
                                 selectMenuGroup={selectMenuGroup}
                             />
                         </div>
-                        <button
-                            className="shrink-0 bg-red-500 p-4 rounded-lg drop-shadow-md flex justify-center items-center cursor-pointer hover:bg-red-600 active:bg-red-700 disabled:bg-red-300 text-white outline-none"
+                        <ConfirmationButton
                             disabled={sendDisabled}
-                            onClick={sendOrder}>
-                            <Send24Regular className="w-5 h-5" />
-                            <span className="ml-2 text-lg font-bold">Abschicken</span>
-                        </button>
+                            onClick={sendOrder}
+                            FluentIcon={Send24Regular}>
+                            Abschicken
+                        </ConfirmationButton>
                     </div>
                     <div className="shrink-0 grow w-auto">
                         <MenuGroupItems

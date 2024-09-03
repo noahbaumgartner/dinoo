@@ -16,6 +16,8 @@ export enum ErrorStates {
   USER_NOT_FOUND = "USER_NOT_FOUND",
   INVALID_EMAIL = "INVALID_EMAIL",
   DB_CREATE_FAILED = "DB_CREATE_FAILED",
+  DB_UPDATE_FAILED = "DB_UPDATE_FAILED",
+  DB_DELETE_FAILED = "DB_DELETE_FAILED",
   DB_READ_FAILED = "DB_READ_FAILED",
   AUTH_FAILED = "AUTH_FAILED",
 }
@@ -32,7 +34,15 @@ export enum MenuGroupIcons {
 }
 
 export enum ToastMessages {
-  ORDER_CREATED = "Bestellung abgeschickt",
+  DISPATCHING = "Abschicken...",
+  COMPLETING = "Abschliessen...",
+  PAYING = "Bezahlen...",
+  ORDER_DISPATCHED = "Bestellung abgeschickt",
+  ORDER_NOT_DISPATCHED = "Bestellung konnte nicht abgeschickt werden",
+  ORDER_COMPLETED = "Bestellung abgeschlossen",
+  ORDER_NOT_COMPLETED = "Bestellung konnte nicht abgeschlossen werden",
+  SUBPAYMENT_DONE = "Teilzahlung durchgeführt",
+  SUBPAYMENT_NOT_DONE = "Teilzahlung konnte nicht durchgeführt werden",
 }
 
 export enum PaymentTypes {

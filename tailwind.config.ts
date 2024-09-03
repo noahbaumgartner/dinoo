@@ -3,7 +3,7 @@ import type { Config } from "tailwindcss";
 const config: Config = {
   content: [
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
-    "./components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./lib/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
@@ -29,19 +29,6 @@ const config: Config = {
     "bg-green-100",
     "text-green-500",
     "border-green-300",
-    
-    // loading,
-    "h-full",
-    "w-full",
-    "rounded-lg",
-    "flex",
-    "flex-col",
-    "space-y-2",
-    "w-full",
-    "h-16",
-    "animate-pulse",
-    "bg-gray-300",
-    "rounded-md",
   ]
 };
 export default config;

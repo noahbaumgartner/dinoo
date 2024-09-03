@@ -3,10 +3,9 @@ import { orderService } from "@/lib/services/order.service";
 import { getHttpStatusFromErrorState } from "@/lib/utils";
 import type { NextRequest } from "next/server";
 
-export async function GET(request: NextRequest, { params }: { params: { id: string }}) {
+export async function GET(request: NextRequest, { params }: { params: { orderId: string }}) {
     try {
-        const order = await orderService.getById(params.id);
-    
+        const order = await orderService.getById(params.orderId);
         return Response.json(order, { status: HttpStatus.OK });
     } catch (error: any) {
         const errorState = error.message;

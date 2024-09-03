@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsUUID } from "class-validator";
+import { IsUUID } from "class-validator";
 import { BaseDTO } from "./base.dto";
 import type { OrderItemInputDTO } from "./orderItem.input.dto";
 

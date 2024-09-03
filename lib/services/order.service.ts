@@ -5,6 +5,8 @@ import { OrderOutputDTO } from "../dtos/order.output.dto";
 import { userService } from "./user.service";
 import { OrderItemOutputDTO } from "../dtos/orderItem.output.dto";
 import { productService } from "./product.service";
+import { PaymentOutputDTO } from "../dtos/payment.output.dto";
+import { PaymentItemOutputDTO } from "../dtos/paymentItem.output.dto";
 
 export const orderService = {
     async getById(id: string) {
@@ -21,12 +23,22 @@ export const orderService = {
                         include: {
                             product: true
                         }
+                    },
+                    Payment: {
+                        include: {
+                            PaymentItem: {
+                                include: {
+                                    orderItem: true
+                                }
+                            }
+                        }
                     }
                 }
             });
 
             return this.mapOrderToDTO(order);
         } catch (error) {
+            console.error(error);
             throw new Error(ErrorStates.DB_READ_FAILED);
         }
     },
@@ -56,12 +68,33 @@ export const orderService = {
         }
     },
 
+    async setCompleted(orderId: string) {
+        const prisma = new PrismaClient();
+
+        try {
+            const order = await prisma.order.update({
+                where: {
+                    id: orderId
+                },
+                data: {
+                    completed: true
+                }
+            });
+
+            return order.id;
+        } catch (error) {
+            throw new Error(ErrorStates.DB_UPDATE_FAILED);
+        }
+    },
+
     mapOrderToDTO(order: any) {
         return new OrderOutputDTO({
             id: order.id,
+            completed: order.completed,
             tableId: order.tableId, 
             user: userService.mapUserToDTO(order.user),
-            items: order.OrderItem.map((item: any) => this.mapOrderItemToDTO(item))
+            items: order.OrderItem.map((item: any) => this.mapOrderItemToDTO(item)),
+            payments: order.Payment.map((payment: any) => this.mapPaymentToDTO(payment))
         });
     },
 
@@ -71,6 +104,22 @@ export const orderService = {
             product: productService.mapProductToDTO(orderItem.product),
             quantity: orderItem.quantity,
             modifiers: orderItem.modifiers
+        });
+    },
+
+    mapPaymentToDTO(payment: any) {
+        return new PaymentOutputDTO({
+            id: payment.id,
+            type: payment.type,
+            items: payment.PaymentItem.map((item: any) => this.mapPaymentItemToDTO(item))
+        });
+    },
+
+    mapPaymentItemToDTO(paymentItem: any) {
+        return new PaymentItemOutputDTO({
+            id: paymentItem.id,
+            quantity: paymentItem.quantity,
+            orderItem: this.mapOrderItemToDTO(paymentItem.orderItem)
         });
     }
 }
