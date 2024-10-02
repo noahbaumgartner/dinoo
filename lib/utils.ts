@@ -1,6 +1,8 @@
 import { validate } from "class-validator";
 import { BaseDTO } from "./dtos/base.dto";
 import { ErrorStates, HttpStatus } from "./constants";
+import { clsx, type ClassValue } from "clsx"
+import { twMerge } from "tailwind-merge"
 
 export async function validateDTO(dto: BaseDTO) {
   const validationErrors = await validate(dto);
@@ -18,4 +20,8 @@ export function getHttpStatusFromErrorState(errorState: ErrorStates) {
     default:
       return HttpStatus.INTERNAL_SERVER_ERROR;
   }
+}
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs))
 }
