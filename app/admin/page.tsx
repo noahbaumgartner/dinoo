@@ -1,12 +1,13 @@
-import { Button } from "@/lib/components/button";
+"use client";
 
-export default async function Home({ }: {}) {
+import { Button } from "@/components/ui/button";
+import { Mail, Loader2 } from "lucide-react";
+import { toast } from "sonner";
+
+export default function Home({ }: {}) {
+
     return (
         <>
-            <Button variant="default" size="icon">Test</Button>
-            <Button variant="destructive" size="default">Hallo</Button>
-            <Button variant="ghost" size="default" />
-            <Button variant="link" size="default" />
         </>
     )
 }

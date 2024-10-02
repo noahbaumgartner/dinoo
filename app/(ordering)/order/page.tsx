@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import MenuGroupIcon from "@/lib/components/menuGroupIcon.client";
+import MenuGroupIcon from "@/components/menuGroupIcon.client";
 import type { MenuGroupOutputDTO } from "@/lib/dtos/menuGroup.output.dto";
 import { OrderItemOutputDTO } from "@/lib/dtos/orderItem.output.dto";
 import { Send24Regular, SubtractSquare24Regular } from "@fluentui/react-icons";
@@ -9,7 +9,7 @@ import useMobileMode from "@/lib/hooks/useMobileMode";
 import toast from "react-hot-toast";
 import { ToastMessages } from "@/lib/constants";
 import { useRouter } from "next/navigation";
-import ConfirmationButton from "@/lib/components/buttons/confirmationButton";
+import ConfirmationButton from "@/components/buttons/confirmationButton";
 
 function OrderItems({
     orderItems,
