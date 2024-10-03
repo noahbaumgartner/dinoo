@@ -1,30 +1,40 @@
 "use client";
 
-import { ClipboardList, Home, Menu, PanelRightClose, PanelRightOpen } from "lucide-react";
+import { Boxes, ClipboardList, Home, PanelRightClose, PanelRightOpen } from "lucide-react";
 import { Button } from "../ui/button";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import Image from "next/image";
+import { usePathname, useRouter } from "next/navigation";
 
-function SidebarItem({ icon: Icon, children, collapsed, variant = "ghost", onClick }: {
+function SidebarItem({ icon: Icon, children, collapsed, route, variant = "ghost", onClick }: {
     icon: React.ComponentType<{
         className?: string;
     }>;
     children: React.ReactNode;
     collapsed: boolean;
-    variant?: "ghost" | "secondary";
+    route?: string;
+    variant?: "ghost" | "secondary" | "default";
     onClick?: () => void;
 }) {
+    const pathname = usePathname();
+    const router = useRouter();
+
+    if (pathname === `/admin${route}`) {
+        variant = "default";
+    }
+
+    const changeRoute = () => router.push(`/admin${route}`);
+
     if (collapsed) {
         return (
-            <Button variant={variant} size="icon_sm" onClick={onClick}>
+            <Button variant={variant} size="icon_sm" onClick={onClick || changeRoute}>
                 <Icon className="size-4" />
             </Button>
         )
     }
 
     return (
-        <Button variant={variant} size="sm" className="justify-start w-full" onClick={onClick}>
+        <Button variant={variant} size="sm" className="justify-start w-full" onClick={onClick || changeRoute}>
             <Icon className="size-4 mr-2" /> {children}
         </Button>
     )
@@ -34,18 +44,21 @@ export default function Sidebar() {
     const [collapsed, setCollapsed] = useState(false);
 
     return (
-        <aside className={cn(collapsed ? "w-14" : "w-72", "relative shadow-sm h-full flex flex-col border-r-[1px] border-accent")}>
-            <div>
-                {collapsed ? (
-                    <h1 className="text-lg w-full text-center p-4">🦖</h1>
-                ) : (
-                    <h1 className="text-lg font-bold px-6 py-4">🦖 Admin</h1>
-                )}
+        <aside className={cn(collapsed ? "w-14" : "w-64", "relative h-full flex flex-col border-r-[1px] border-[#E4E4E7] grow-0 shrink-0")}>
+            <div className="p-2 border-b-[1px] border-[#E4E4E7]">
+                <div className="rounded-md shadow-sm border-[1px] border-[#E4E4E7] cursor-pointer">
+                    {collapsed ? (
+                        <h1 className="text-md w-full text-center p-1.5">🦖</h1>
+                    ) : (
+                        <h1 className="text-md font-bold text-center py-1.5">🦖 Admin</h1>
+                    )}
+                </div>
             </div>
-            <div className={cn("px-2.5 pb-2.5 relative h-full flex flex-col space-y-0.5 justify-between")}>
-                <div className="flex flex-col space-y-0.5">
-                    <SidebarItem icon={Home} collapsed={collapsed}>Home</SidebarItem>
-                    <SidebarItem icon={ClipboardList} collapsed={collapsed}>Menu</SidebarItem>
+            <div className={cn("p-2.5 relative h-full flex flex-col justify-between")}>
+                <div className="flex flex-col space-y-1">
+                    <SidebarItem icon={Home} collapsed={collapsed} route="">Home</SidebarItem>
+                    <SidebarItem icon={ClipboardList} collapsed={collapsed} route="/menus">Menu</SidebarItem>
+                    <SidebarItem icon={Boxes} collapsed={collapsed} route="/menuGroups">MenuGroups</SidebarItem>
                 </div>
                 <div className="flex flex-col space-y-2.5">
                     <SidebarItem

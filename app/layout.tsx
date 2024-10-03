@@ -22,7 +22,7 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="de" className="bg-gray-200 text-gray-700">
-            <body className={`${roboto.className} h-screen w-full flex flex-row space-x-2`}>
+            <body className={`${roboto.className} h-screen w-full flex flex-row`}>
                 {children}
                 <Toaster />
             </body>
