@@ -1,6 +1,6 @@
 "use client";
 
-import { Boxes, ClipboardList, Home, PanelRightClose, PanelRightOpen } from "lucide-react";
+import { Boxes, ClipboardList, GalleryHorizontal, GalleryHorizontalEnd, GalleryVertical, GalleryVerticalEnd, GripHorizontal, GripVertical, Home, Layout, LayoutList, PanelRightClose, PanelRightOpen } from "lucide-react";
 import { Button } from "../ui/button";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -58,7 +58,7 @@ export default function Sidebar() {
                 <div className="flex flex-col space-y-1">
                     <SidebarItem icon={Home} collapsed={collapsed} route="">Home</SidebarItem>
                     <SidebarItem icon={ClipboardList} collapsed={collapsed} route="/menus">Menu</SidebarItem>
-                    <SidebarItem icon={Boxes} collapsed={collapsed} route="/menuGroups">MenuGroups</SidebarItem>
+                    <SidebarItem icon={LayoutList} collapsed={collapsed} route="/products">Products</SidebarItem>
                 </div>
                 <div className="flex flex-col space-y-2.5">
                     <SidebarItem
