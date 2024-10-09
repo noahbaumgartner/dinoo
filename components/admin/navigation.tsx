@@ -10,6 +10,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
 import { Breadcrumbs } from "./breadcrumps";
 import { Separator } from "../ui/separator";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "../ui/sheet";
 
 function SidebarItem({ icon: Icon, children, route, variant = "ghost", onClick }: {
     icon: React.ComponentType<{
@@ -89,9 +90,23 @@ export default function Navigation({ children }: { children: React.ReactNode }) 
             <div className="w-full h-full grow bg-accent flex flex-col">
                 <div className="w-full flex flex-row justify-between bg-white sm:bg-transparent px-3 py-2 sm:py-0 sm:px-6 sm:pt-6 border-b sm:border-0">
                     <div className="sm:hidden">
-                        <Button variant="outline" size="icon">
-                            <PanelLeft className="size-4" />
-                        </Button>
+                        <Sheet>
+                            <SheetTrigger asChild>
+                                <Button variant="outline" size="icon">
+                                    <PanelLeft className="size-4" />
+                                </Button>
+                            </SheetTrigger>
+                            <SheetContent side="left">
+                                <SheetHeader>
+                                    <SheetTitle>Edit profile</SheetTitle>
+                                    <SheetDescription>
+                                        Make changes to your profile here. Click save when you're done.
+                                    </SheetDescription>
+                                </SheetHeader>
+                                <div className="grid gap-4 py-4">
+                                </div>
+                            </SheetContent>
+                        </Sheet>
                     </div>
                     <div className="flex items-center">
                         <Breadcrumbs />
