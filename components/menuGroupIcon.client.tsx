@@ -1,8 +1,14 @@
 "use client";
 
 import { DrinkBeer24Regular, DrinkToGo24Regular, Food24Regular, FoodCake24Regular } from "@fluentui/react-icons";
-import { MenuGroupIcons } from "../constants";
 
+
+const MenuGroupIcons = {
+    DRINK_BEER: 'DRINK_BEER',
+    DRINK_TO_GO: 'DRINK_TO_GO',
+    FOOD: 'FOOD',
+    FOOD_CAKE: 'FOOD_CAKE',
+}
 export default function MenuGroupIcon({ className, icon }: {
     className?: string,
     icon: string,

@@ -1,6 +1,6 @@
 "use client";
 
-import ConfirmationButton from "@/lib/components/buttons/confirmationButton";
+import { Button } from "@/components/ui/button";
 import { PaymentTypeTexts, PaymentTypes, ToastMessages } from "@/lib/constants";
 import { OrderItemOutputDTO } from "@/lib/dtos/orderItem.output.dto";
 import { PaymentInputDTO } from "@/lib/dtos/payment.input.dto";
@@ -375,12 +375,11 @@ export default function OrderById() {
                         payments={payments}
                         deletePayment={deletePayment}
                     />
-                    <ConfirmationButton
+                    <Button
                         disabled={completeDisabled}
-                        onClick={finishPayment}
-                        FluentIcon={CheckmarkCircle24Regular}>
+                        onClick={finishPayment}>
                         Abschliessen
-                    </ConfirmationButton>
+                    </Button>
                 </div>
             </main>
         </>

@@ -1,6 +1,6 @@
-import Button from "@/lib/components/button.server";
-import Input from "@/lib/components/input.server";
-import Title2 from "@/lib/components/title.server";
+import Button from "@/components/button.server";
+import Input from "@/components/input.server";
+import Title2 from "@/components/title.server";
 
 export default function Login() {
     return (
