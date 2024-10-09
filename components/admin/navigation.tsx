@@ -98,10 +98,7 @@ export default function Navigation({ children }: { children: React.ReactNode }) 
                             </SheetTrigger>
                             <SheetContent side="left">
                                 <SheetHeader>
-                                    <SheetTitle>Edit profile</SheetTitle>
-                                    <SheetDescription>
-                                        Make changes to your profile here. Click save when you're done.
-                                    </SheetDescription>
+                                    <SheetTitle>Menu</SheetTitle>
                                 </SheetHeader>
                                 <div className="grid gap-4 py-4">
                                 </div>
