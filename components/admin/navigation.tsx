@@ -87,7 +87,7 @@ export default function Navigation({ children }: { children: React.ReactNode }) 
                     </div>
                 </div>
             </aside>
-            <div className="w-full h-full grow bg-accent flex flex-col">
+            <div className="w-full h-screen grow bg-accent flex flex-col">
                 <div className="w-full flex flex-row justify-between bg-white sm:bg-transparent px-3 py-2 sm:py-0 sm:px-6 sm:pt-6 border-b sm:border-0">
                     <div className="sm:hidden">
                         <Sheet>
@@ -123,7 +123,7 @@ export default function Navigation({ children }: { children: React.ReactNode }) 
                         </DropdownMenu>
                     </div>
                 </div>
-                <div className="p-3 sm:p-6">
+                <div className="p-3 sm:p-6 grow">
                     {children}
                 </div>
             </div>

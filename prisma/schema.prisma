@@ -26,12 +26,22 @@ model Session {
   user User @relation(references: [id], fields: [userId], onDelete: Cascade)
 }
 
+model Menu {
+  id          String      @id @default(uuid())
+  name        String
+  description String
+  MenuGroup   MenuGroup[]
+}
+
 model MenuGroup {
   id            String          @id @default(uuid())
   name          String
   icon          String
   color         String
   MenuGroupItem MenuGroupItem[]
+
+  menuId String
+  menu   Menu   @relation(fields: [menuId], references: [id])
 }
 
 model Product {

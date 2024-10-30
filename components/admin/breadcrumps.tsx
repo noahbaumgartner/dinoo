@@ -6,13 +6,14 @@ import React from "react";
 const pathMapping: { [key: string]: string } = {
     "": "Home",
     "admin": "Admin",
-    "menus": "Menus",
+    "menus": "Menüs",
     "products": "Produkte",
     "orders": "Bestellungen",
     "clients": "Bestellgeräte",
     "outputDevices": "Ausgabegeräte",
     "layouts": "Saalpläne",
     "printTemplates": "Druckvorlagen",
+    "new": "neu"
 };
 
 export function Breadcrumbs() {
