@@ -1,26 +1,34 @@
-"use client";
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { DataTable } from "@/components/ui/data-table";
 import { useParams } from "next/navigation";
 import { Edit, Pencil } from "lucide-react";
+import { menuService } from "@/lib/services/menu.service";
 
 const tabs = {
     GENERAL: "general",
     MENU_GROUPS: "menu-groups"
 }
 
-export default function SingleMenuPage() {
-    const params = useParams();
+export default async function SingleMenuPage({
+    params,
+}: {
+    params: Promise<{ menuId: string }>
+}) {
+    const { menuId } = await params;
+    const menu = await menuService.getById(menuId);
+
+    if (!menu) {
+        return <div>Menu not found</div>
+    }
 
     return (
         <div className="flex flex-col space-y-4">
             <Card className="grow-0">
                 <CardHeader className="flex flex-row justify-between">
                     <div>
-                        <CardTitle className="text-lg">Schauturnen 2024</CardTitle>
-                        <CardDescription>Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam</CardDescription>
+                        <CardTitle className="text-lg">{menu.name}</CardTitle>
+                        <CardDescription>{menu.description}</CardDescription>
                     </div>
                     <div className="ml-4">
                         <Button variant="ghost" size="icon" className="flex flex-row space-x-2 align-middle">

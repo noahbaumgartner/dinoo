@@ -8,6 +8,15 @@ export const menuService = {
         return await prisma.menu.findMany();
     },
 
+    async getById (id: string) {
+        const prisma = new PrismaClient();
+        return await prisma.menu.findUnique({
+            where: {
+                id,
+            }
+        });
+    },
+
     async create(name: string, description: string) {
         const prisma = new PrismaClient();
         return await prisma.menu.create({
