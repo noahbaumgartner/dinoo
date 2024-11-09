@@ -3,12 +3,9 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
-
-import { Button } from "@/components/ui/button"
 import {
     Form,
     FormControl,
-    FormDescription,
     FormField,
     FormItem,
     FormLabel,
@@ -28,7 +25,7 @@ const formSchema = z.object({
 
 export function MenuForm({ id, item, formAction }: {
     id: string
-    item: {
+    item?: {
         id: string
         name: string
         description: string
@@ -38,15 +35,15 @@ export function MenuForm({ id, item, formAction }: {
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            name: item.name,
-            description: item.description,
+            name: item?.name || "",
+            description: item?.description || "",
         },
     })
 
     return (
         <Form {...form}>
             <form id={id} action={formAction} className="space-y-4">
-                <Input name="id" type="hidden" value={item.id} />
+                <Input name="id" type="hidden" value={item?.id} />
                 <FormField
                     control={form.control}
                     name="name"

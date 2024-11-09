@@ -44,7 +44,7 @@ export default async function SingleMenuPage({
             </Card>
             <Card className="grow">
                 <CardHeader>
-                    <CardTitle>Menü-Gruppen</CardTitle>
+                    <CardTitle>Menü-Bereiche</CardTitle>
                 </CardHeader>
                 <CardContent className="flex flex-col space-y-0">
                     <DataTable columns={[]} data={[]} />

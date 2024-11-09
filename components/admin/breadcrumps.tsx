@@ -7,6 +7,7 @@ const pathMapping: { [key: string]: string } = {
     "": "Home",
     "admin": "Admin",
     "menus": "Menüs",
+    "menuAreas": "Menü-Bereiche",
     "products": "Produkte",
     "orders": "Bestellungen",
     "clients": "Bestellgeräte",

@@ -1,6 +1,6 @@
 "use client";
 
-import { Armchair, Box, Boxes, ChartArea, ChartBar, ChevronRight, ClipboardList, GalleryHorizontal, GalleryHorizontalEnd, GalleryVertical, GalleryVerticalEnd, GripHorizontal, GripVertical, Home, Layout, LayoutList, Menu, PanelLeft, PanelRightClose, PanelRightOpen, Printer, ReceiptText, Salad, Settings, ShoppingBag, ShoppingBasket, ShoppingCart, SlashIcon, Tablet, Tablets, User } from "lucide-react";
+import { Armchair, Box, Boxes, ChartArea, ChartBar, ChevronRight, ClipboardList, GalleryHorizontal, GalleryHorizontalEnd, GalleryVertical, GalleryVerticalEnd, GripHorizontal, GripVertical, Home, Layout, LayoutList, Menu, PanelLeft, PanelRightClose, PanelRightOpen, Printer, ReceiptText, RectangleHorizontal, Salad, Settings, ShoppingBag, ShoppingBasket, ShoppingCart, SlashIcon, Square, StretchHorizontal, Tablet, Tablets, User } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { usePathname, useRouter } from "next/navigation";
@@ -71,7 +71,8 @@ export default function Navigation({ children }: { children: React.ReactNode }) 
                         <div className="px-2.5 flex flex-col space-y-1">
                             <SidebarItem icon={Home} route="">Home</SidebarItem>
                             <SidebarSeparator />
-                            <SidebarItem icon={Salad} route="/menus">Menus</SidebarItem>
+                            <SidebarItem icon={StretchHorizontal} route="/menus">Menüs</SidebarItem>
+                            <SidebarItem icon={RectangleHorizontal} route="/menuAreas">Menü-Bereiche</SidebarItem>
                             <SidebarItem icon={Box} route="/products">Produkte</SidebarItem>
                             <SidebarItem icon={Armchair} route="/layouts">Saalpläne</SidebarItem>
                             <SidebarSeparator />
