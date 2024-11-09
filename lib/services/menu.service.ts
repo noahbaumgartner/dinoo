@@ -1,6 +1,4 @@
 import { PrismaClient } from "@prisma/client";
-import { MenuGroupOutputDTO } from "../dtos/menuGroup.output.dto";
-import { ProductOutputDTO } from "../dtos/product.output.dto";
 
 export const menuService = {
     async getAll() {
@@ -23,6 +21,28 @@ export const menuService = {
             data: {
                 name,
                 description
+            }
+        });
+    },
+
+    async update(id: string, name: string, description: string) {
+        const prisma = new PrismaClient();
+        return await prisma.menu.update({
+            where: {
+                id,
+            },
+            data: {
+                name,
+                description
+            }
+        });
+    },
+
+    async delete(id: string) {
+        const prisma = new PrismaClient();
+        return await prisma.menu.delete({
+            where: {
+                id,
             }
         });
     }

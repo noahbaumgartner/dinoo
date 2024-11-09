@@ -26,20 +26,27 @@ const formSchema = z.object({
     })
 })
 
-export function MenuForm({ id, formAction }: {
+export function MenuForm({ id, item, formAction }: {
     id: string
+    item: {
+        id: string
+        name: string
+        description: string
+    }
     formAction: (formData: FormData) => Promise<void>
 }) {
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            name: "",
+            name: item.name,
+            description: item.description,
         },
     })
 
     return (
         <Form {...form}>
             <form id={id} action={formAction} className="space-y-4">
+                <Input name="id" type="hidden" value={item.id} />
                 <FormField
                     control={form.control}
                     name="name"

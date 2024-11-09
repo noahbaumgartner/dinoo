@@ -1,9 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { DataTable } from "@/components/ui/data-table";
-import { useParams } from "next/navigation";
-import { Edit, Pencil } from "lucide-react";
+import { Pencil } from "lucide-react";
 import { menuService } from "@/lib/services/menu.service";
+import { UpdateMenuDialog } from "./updateMenuDialog";
 
 const tabs = {
     GENERAL: "general",
@@ -19,21 +19,26 @@ export default async function SingleMenuPage({
     const menu = await menuService.getById(menuId);
 
     if (!menu) {
-        return <div>Menu not found</div>
+        return (
+            <Card>
+                <CardHeader>
+                    <CardTitle>🔍 Menü nicht gefunden ...</CardTitle>
+                    <CardDescription>Das angegebene Menü konnte nicht gefunden werden.</CardDescription>
+                </CardHeader>
+            </Card>
+        )
     }
 
     return (
         <div className="flex flex-col space-y-4">
             <Card className="grow-0">
                 <CardHeader className="flex flex-row justify-between">
-                    <div>
-                        <CardTitle className="text-lg">{menu.name}</CardTitle>
+                    <div className="flex flex-col space-y-1.5">
+                        <CardTitle>{menu.name}</CardTitle>
                         <CardDescription>{menu.description}</CardDescription>
                     </div>
                     <div className="ml-4">
-                        <Button variant="ghost" size="icon" className="flex flex-row space-x-2 align-middle">
-                            <Pencil className="size-4" />
-                        </Button>
+                        <UpdateMenuDialog item={menu} />
                     </div>
                 </CardHeader>
             </Card>
