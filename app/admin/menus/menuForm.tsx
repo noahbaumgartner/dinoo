@@ -38,7 +38,7 @@ export function MenuForm({ id, item, formAction }: {
             name: item?.name || "",
             description: item?.description || "",
         },
-    })
+    });
 
     return (
         <Form {...form}>

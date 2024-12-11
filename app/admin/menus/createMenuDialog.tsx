@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dialog"
 import { MenuForm } from "./menuForm"
 import { Plus } from "lucide-react"
-import { createMenu } from "@/actions/menuActions"
+import { createMenu } from "@/actions/menu"
 
 export function CreateMenuDialog() {
     return (

@@ -26,6 +26,7 @@ export const menuService = {
     },
 
     async update(id: string, name: string, description: string) {
+        console.log(id, name, description)
         const prisma = new PrismaClient();
         return await prisma.menu.update({
             where: {
@@ -43,6 +44,15 @@ export const menuService = {
         return await prisma.menu.delete({
             where: {
                 id,
+            }
+        });
+    },
+
+    async getMenuAreas(menuId: string) {
+        const prisma = new PrismaClient();
+        return await prisma.menuArea.findMany({
+            where: {
+                menuId
             }
         });
     }

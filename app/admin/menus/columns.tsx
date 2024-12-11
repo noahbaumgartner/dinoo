@@ -1,6 +1,6 @@
 "use client"
 
-import { deleteMenu, openMenu } from "@/actions/menuActions"
+import { deleteMenu, openMenu } from "@/actions/menu"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { DataTableColumnHeader } from "@/components/ui/data-table-column-header"

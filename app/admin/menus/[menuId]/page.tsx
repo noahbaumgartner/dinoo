@@ -17,6 +17,7 @@ export default async function SingleMenuPage({
 }) {
     const { menuId } = await params;
     const menu = await menuService.getById(menuId);
+    const menuAreas = await menuService.getMenuAreas(menuId);
 
     if (!menu) {
         return (
