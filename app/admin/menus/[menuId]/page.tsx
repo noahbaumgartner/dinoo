@@ -4,13 +4,14 @@ import { DataTable } from "@/components/ui/data-table";
 import { Pencil } from "lucide-react";
 import { menuService } from "@/lib/services/menu.service";
 import { UpdateMenuDialog } from "./updateMenuDialog";
+import { Separator } from "@/components/ui/separator";
 
 const tabs = {
     GENERAL: "general",
     MENU_GROUPS: "menu-groups"
 }
 
-export default async function SingleMenuPage({
+export default async function MenuPage({
     params,
 }: {
     params: Promise<{ menuId: string }>
@@ -35,7 +36,7 @@ export default async function SingleMenuPage({
             <Card className="grow-0">
                 <CardHeader className="flex flex-row justify-between">
                     <div className="flex flex-col space-y-1.5">
-                        <CardTitle>{menu.name}</CardTitle>
+                        <CardTitle className="text-lg">{menu.name}</CardTitle>
                         <CardDescription>{menu.description}</CardDescription>
                     </div>
                     <div className="ml-4">
@@ -45,7 +46,13 @@ export default async function SingleMenuPage({
             </Card>
             <Card className="grow">
                 <CardHeader>
-                    <CardTitle>Menü-Bereiche</CardTitle>
+                    <div className="flex flex-row gap-6">
+                        <CardTitle>Bereiche</CardTitle>
+                        <CardTitle className="font-normal">|</CardTitle>
+                        <CardTitle className="font-normal">Layouts</CardTitle>
+                        <CardTitle className="font-normal">|</CardTitle>
+                        <CardTitle className="font-normal">blabliblub</CardTitle>
+                    </div>
                 </CardHeader>
                 <CardContent className="flex flex-col space-y-0">
                     <DataTable columns={[]} data={[]} />

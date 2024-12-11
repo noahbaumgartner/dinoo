@@ -2,6 +2,7 @@ import { ChevronRight } from "lucide-react";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "../ui/breadcrumb";
 import { usePathname } from "next/navigation";
 import React from "react";
+import useMobileMode from "@/lib/hooks/useMobileMode";
 
 const pathMapping: { [key: string]: string } = {
     "": "Home",
@@ -18,6 +19,8 @@ const pathMapping: { [key: string]: string } = {
 };
 
 export function Breadcrumbs() {
+    const isMobileMode = useMobileMode();
+
     const pathname = usePathname();
     const pathSegments = pathname.split("/").filter((segment) => segment);
 
@@ -28,6 +31,10 @@ export function Breadcrumbs() {
                     const isFirst = index === 0;
                     const isLast = index === pathSegments.length - 1;
                     const href = "/" + pathSegments.slice(0, index + 1).join("/");
+
+                    if (/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(segment) && isMobileMode) {
+                        segment = "..."
+                    }
 
                     return (
                         <React.Fragment key={index}>

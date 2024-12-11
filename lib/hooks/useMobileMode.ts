@@ -5,7 +5,7 @@ const useMobileMode = () => {
 
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth <= 800) !mobileMode && setMobileMode(true);
+      if (window.innerWidth < 640) !mobileMode && setMobileMode(true);
       else mobileMode && setMobileMode(false);
     };
 
