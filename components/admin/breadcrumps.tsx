@@ -2,7 +2,7 @@ import { ChevronRight } from "lucide-react";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "../ui/breadcrumb";
 import { usePathname } from "next/navigation";
 import React from "react";
-import useMobileMode from "@/lib/hooks/useMobileMode";
+import useMobileMode from "@/hooks/useMobileMode";
 
 const pathMapping: { [key: string]: string } = {
     "": "Home",

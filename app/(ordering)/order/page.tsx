@@ -5,7 +5,7 @@ import MenuGroupIcon from "@/components/menuGroupIcon.client";
 import type { MenuGroupOutputDTO } from "@/lib/dtos/menuGroup.output.dto";
 import { OrderItemOutputDTO } from "@/lib/dtos/orderItem.output.dto";
 import { Send24Regular, SubtractSquare24Regular } from "@fluentui/react-icons";
-import useMobileMode from "@/lib/hooks/useMobileMode";
+import useMobileMode from "@/hooks/useMobileMode";
 import toast from "react-hot-toast";
 import { ToastMessages } from "@/lib/constants";
 import { useRouter } from "next/navigation";
