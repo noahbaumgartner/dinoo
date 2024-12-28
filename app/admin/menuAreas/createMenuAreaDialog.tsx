@@ -11,12 +11,13 @@ import {
 import { Plus } from "lucide-react"
 import { createMenu } from "@/actions/menu"
 import { MenuAreaForm } from "./menuAreaForm"
+import ColorPicker from "@/components/admin/color-picker"
 
 export function CreateMenuAreaDialog() {
     return (
         <Dialog>
             <DialogTrigger asChild>
-                <Button variant="outline">
+                <Button variant="outline" type="button">
                     <Plus className="mr-2 size-4" /> Hinzufügen
                 </Button>
             </DialogTrigger>
@@ -27,9 +28,9 @@ export function CreateMenuAreaDialog() {
                         Erstellen Sie einen neuen Menü-Bereich
                     </DialogDescription>
                 </DialogHeader>
-                <MenuAreaForm id="menuForm" formAction={createMenu} />
+                <MenuAreaForm id="menuAreaForm" formAction={createMenu} />
                 <DialogFooter>
-                    <Button type="submit" form="menuForm">Erstellen</Button>
+                    <Button type="submit" form="menuAreaForm">Erstellen</Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

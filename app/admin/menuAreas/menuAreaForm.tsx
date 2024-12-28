@@ -13,13 +13,14 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import ColorPicker from "@/components/admin/color-picker"
 
 const formSchema = z.object({
     name: z.string().min(2, {
         message: "Name muss mindestens 2 Zeichen lang sein",
     }),
-    description: z.string().max(256, {
-        message: "Beschreibung darf maximal 256 Zeichen lang sein",
+    color: z.string().regex(/^#[0-9A-Fa-f]{6}$/, {
+        message: "Ungültige Farbe"
     })
 })
 
@@ -28,7 +29,7 @@ export function MenuAreaForm({ id, item, formAction }: {
     item?: {
         id: string
         name: string
-        description: string
+        color: string
     }
     formAction: (formData: FormData) => Promise<void>
 }) {
@@ -36,7 +37,7 @@ export function MenuAreaForm({ id, item, formAction }: {
         resolver: zodResolver(formSchema),
         defaultValues: {
             name: item?.name || "",
-            description: item?.description || "",
+            color: item?.color || ""
         },
     });
 
@@ -59,10 +60,10 @@ export function MenuAreaForm({ id, item, formAction }: {
                 />
                 <FormField
                     control={form.control}
-                    name="description"
+                    name="color"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Beschreibung</FormLabel>
+                            <FormLabel>Color</FormLabel>
                             <FormControl>
                                 <Textarea placeholder="Geben Sie die Beschreibung des Menüs an ..." {...field} />
                             </FormControl>
@@ -71,6 +72,7 @@ export function MenuAreaForm({ id, item, formAction }: {
                     )}
                 />
             </form>
+            <ColorPicker />
         </Form>
     )
 }
