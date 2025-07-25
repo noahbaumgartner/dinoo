@@ -1,4 +1,5 @@
-import { ChartArea, ChevronDown, ChevronsUpDown, ChevronUp, Hamburger, HandPlatter, Ratio, User, Users } from "lucide-react"
+"use client"
+import { ChartArea, ChevronDown, ChevronsUpDown, ChevronUp, Hamburger, HandPlatter, PanelRightClose, PanelRightOpen, Ratio, Settings, User, Users } from "lucide-react"
 
 import {
     Sidebar,
@@ -11,6 +12,8 @@ import {
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
+    SidebarTrigger,
+    useSidebar,
 } from "@/components/ui/sidebar"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Separator } from "@/components/ui/separator"
@@ -23,7 +26,7 @@ const groups = [
         items: [
             {
                 title: "Artikel",
-                url: "#",
+                url: "/admin/articles",
                 icon: Hamburger,
             },
             {
@@ -56,6 +59,8 @@ const groups = [
 ]
 
 export function AdminSidebar() {
+    const { toggleSidebar } = useSidebar();
+
     return (
         <Sidebar>
             <SidebarHeader>
@@ -105,20 +110,28 @@ export function AdminSidebar() {
             <SidebarFooter>
                 <SidebarMenu>
                     <SidebarMenuItem>
+                        <SidebarMenuButton onClick={toggleSidebar}>
+                            <PanelRightOpen className="size-4" />
+                            <span>Zuklappen</span>
+                        </SidebarMenuButton>
+                    </SidebarMenuItem>
+                    <SidebarMenuItem>
+                        <SidebarMenuButton>
+                            <Settings className="size-4" />
+                            <span>Einstellungen</span>
+                        </SidebarMenuButton>
+                    </SidebarMenuItem>
+                    <SidebarMenuItem>
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <SidebarMenuButton>
-                                    <Avatar>
-                                        <AvatarImage src="https://github.com/shadcn.png" />
-                                        <AvatarFallback>CN</AvatarFallback>
-                                    </Avatar>
+                                    <User className="size-4" />
                                     Noah Baumgartner
                                     <ChevronUp className="ml-auto" />
                                 </SidebarMenuButton>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent
                                 side="top"
-                                className="w-full"
                             >
                                 <DropdownMenuItem>
                                     <span>Account</span>
