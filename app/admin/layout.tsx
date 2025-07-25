@@ -8,8 +8,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <AdminSidebar />
             <main className="w-full">
                 <div>
-                    <div className="p-2.5 flex flex-row space-x-2.5">
-                        <SidebarTrigger />
+                    <div className="py-2.5 px-4 flex flex-row space-x-2.5">
                         <h1 className="font-semibold leading-7">Artikel</h1>
                     </div>
                     <Separator />

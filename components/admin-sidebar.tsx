@@ -1,5 +1,5 @@
 "use client"
-import { ChartArea, ChevronDown, ChevronsUpDown, ChevronUp, Hamburger, HandPlatter, PanelRightClose, PanelRightOpen, Ratio, Settings, User, Users } from "lucide-react"
+import { ChartArea, ChevronDown, ChevronsUpDown, ChevronUp, Hamburger, HandPlatter, PanelLeft, PanelRightClose, PanelRightOpen, Ratio, Settings, User, Users } from "lucide-react"
 
 import {
     Sidebar,
@@ -62,7 +62,7 @@ export function AdminSidebar() {
     const { toggleSidebar } = useSidebar();
 
     return (
-        <Sidebar>
+        <Sidebar collapsible="icon">
             <SidebarHeader>
                 <SidebarMenu>
                     <SidebarMenuItem>
@@ -111,7 +111,7 @@ export function AdminSidebar() {
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton onClick={toggleSidebar}>
-                            <PanelRightOpen className="size-4" />
+                            <PanelLeft className="size-4" />
                             <span>Zuklappen</span>
                         </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -126,7 +126,7 @@ export function AdminSidebar() {
                             <DropdownMenuTrigger asChild>
                                 <SidebarMenuButton>
                                     <User className="size-4" />
-                                    Noah Baumgartner
+                                    bano
                                     <ChevronUp className="ml-auto" />
                                 </SidebarMenuButton>
                             </DropdownMenuTrigger>
