@@ -1,5 +1,5 @@
 "use client"
-import { ChartArea, ChevronsUpDown, ChevronUp, Hamburger, HandPlatter, PanelLeft, Ratio, Settings, User, Users } from "lucide-react"
+import { ChartArea, ChevronsUpDown, ChevronUp, Hamburger, HandPlatter, Home, PanelLeft, Ratio, Settings, User, Users } from "lucide-react"
 
 import {
     Sidebar,
@@ -83,6 +83,16 @@ export function AdminSidebar() {
             <Separator />
             <SidebarContent>
                 <SidebarGroup>
+                    <SidebarMenu>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton asChild>
+                                <Link href="/admin">
+                                    <Home className="size-4" />
+                                    <span>Start</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                    </SidebarMenu>
                     {groups.map((group) => (
                         <div key={group.title}>
                             <SidebarGroupLabel>{group.title}</SidebarGroupLabel>
