@@ -1,5 +1,5 @@
 "use client"
-import { ChartArea, ChevronDown, ChevronsUpDown, ChevronUp, Hamburger, HandPlatter, PanelLeft, PanelRightClose, PanelRightOpen, Ratio, Settings, User, Users } from "lucide-react"
+import { ChartArea, ChevronsUpDown, ChevronUp, Hamburger, HandPlatter, PanelLeft, Ratio, Settings, User, Users } from "lucide-react"
 
 import {
     Sidebar,
@@ -12,14 +12,12 @@ import {
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
-    SidebarTrigger,
     useSidebar,
 } from "@/components/ui/sidebar"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Separator } from "@/components/ui/separator"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import Link from "next/link"
 
-// Menu items.
 const groups = [
     {
         title: "Konfiguration",
@@ -31,12 +29,12 @@ const groups = [
             },
             {
                 title: "Tische",
-                url: "#",
+                url: "/admin/tables",
                 icon: Ratio,
             },
             {
                 title: "Personal",
-                url: "#",
+                url: "/admin/staff",
                 icon: Users,
             }
         ]
@@ -46,12 +44,12 @@ const groups = [
         items: [
             {
                 title: "Bestellungen",
-                url: "#",
+                url: "/admin/orders",
                 icon: HandPlatter,
             },
             {
                 title: "Auswertung",
-                url: "#",
+                url: "/admin/evaluation",
                 icon: ChartArea,
             }
         ]
@@ -86,17 +84,17 @@ export function AdminSidebar() {
             <SidebarContent>
                 <SidebarGroup>
                     {groups.map((group) => (
-                        <div key={group.title} className="mb-2">
+                        <div key={group.title}>
                             <SidebarGroupLabel>{group.title}</SidebarGroupLabel>
                             <SidebarGroupContent>
                                 <SidebarMenu>
                                     {group.items.map((item) => (
                                         <SidebarMenuItem key={item.title}>
                                             <SidebarMenuButton asChild>
-                                                <a href={item.url}>
+                                                <Link href={item.url}>
                                                     <item.icon />
                                                     <span>{item.title}</span>
-                                                </a>
+                                                </Link>
                                             </SidebarMenuButton>
                                         </SidebarMenuItem>
                                     ))}

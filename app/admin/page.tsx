@@ -1,5 +1,3 @@
-import { Separator } from "@/components/ui/separator";
-
 export default function AdminPage() {
     return (
         <div className="">

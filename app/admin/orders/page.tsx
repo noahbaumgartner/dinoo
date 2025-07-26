@@ -1,9 +1,9 @@
 import { AdminHeader } from "@/components/admin-header";
 
-export default function AdminStaffPage() {
+export default function AdminOrdersPage() {
     return (
         <>
-            <AdminHeader title="Artikel" />
+            <AdminHeader title="Bestellungen" />
         </>
     );
 }
