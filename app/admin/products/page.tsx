@@ -2,8 +2,11 @@ import { AdminHeader } from "@/components/admin-header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { columns } from "./columns";
 import { DataTable } from "@/components/data-table";
+import { productService } from "@/lib/services/product.service";
 
-export default function AdminProductsPage() {
+export default async function AdminProductsPage() {
+    const products = await productService.getAll();
+
     return (
         <>
             <AdminHeader title="Produkte" />
@@ -17,7 +20,7 @@ export default function AdminProductsPage() {
                         <TabsTrigger value="outputs">Outputs</TabsTrigger>
                     </TabsList>
                     <TabsContent value="products">
-                        <DataTable columns={columns} data={[]} />
+                        <DataTable columns={columns} data={products} />
                     </TabsContent>
                 </Tabs>
             </div>
