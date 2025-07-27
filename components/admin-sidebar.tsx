@@ -21,8 +21,8 @@ const groups = [
         title: "Konfiguration",
         items: [
             {
-                title: "Artikel",
-                url: "/admin/articles",
+                title: "Produkte",
+                url: "/admin/products",
                 icon: Hamburger,
             },
             {
