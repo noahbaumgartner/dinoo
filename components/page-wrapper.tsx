@@ -42,8 +42,10 @@ export function PageWrapper({ children, title }: { children: React.ReactNode; ti
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>
-            <h1 className="text-2xl font-semibold px-6 mr-2">{title}</h1>
-            <div className="p-4">{children}</div>
-        </div>
+            <div className="p-4 max-w-4xl w-full mx-auto flex flex-col space-y-4">
+                <h1 className="text-2xl font-semibold px-2">{title}</h1>
+                {children}
+            </div>
+        </div >
     );
 }
