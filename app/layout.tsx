@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Dinoo",
+  title: "dinoo",
   description: "Bestellsystem für Gastronomie",
 };
 

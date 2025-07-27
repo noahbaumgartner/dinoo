@@ -1,13 +1,31 @@
 import { Separator } from "@/components/ui/separator";
+import { SidebarTrigger } from "@/components/ui/sidebar";
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 
-export function AdminHeader({ children, title }: { children?: React.ReactNode, title: string }) {
+export function AdminHeader({ title }: { title?: string }) {
     return (
         <>
-            <div className="py-2.5 px-4 flex flex-row space-x-2.5 justify-between">
-                <h1 className="font-semibold leading-7">{title}</h1>
-                {children}
+            <div className="flex flex-row p-2.5 space-x-2 h-12">
+                <SidebarTrigger className="m-0" />
+                <div className="py-1.5 pr-2">
+                    <Separator orientation="vertical" />
+                </div>
+                <Breadcrumb className="py-1">
+                    <BreadcrumbList>
+                        <BreadcrumbItem>
+                            <BreadcrumbLink href="/admin">Admin</BreadcrumbLink>
+                        </BreadcrumbItem>
+                        {title ? (
+                            <>
+                                <BreadcrumbSeparator />
+                                <BreadcrumbItem>
+                                    <BreadcrumbPage>{title}</BreadcrumbPage>
+                                </BreadcrumbItem>
+                            </>
+                        ) : null}
+                    </BreadcrumbList>
+                </Breadcrumb>
             </div>
-            <Separator />
         </>
     );
 }

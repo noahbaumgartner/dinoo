@@ -1,4 +1,3 @@
-"use client"
 import { ChartArea, ChevronsUpDown, ChevronUp, Hamburger, HandPlatter, Home, PanelLeft, Ratio, Settings, User, Users } from "lucide-react"
 
 import {
@@ -12,7 +11,6 @@ import {
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
-    useSidebar,
 } from "@/components/ui/sidebar"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Separator } from "@/components/ui/separator"
@@ -57,8 +55,6 @@ const groups = [
 ]
 
 export function AdminSidebar() {
-    const { toggleSidebar } = useSidebar();
-
     return (
         <Sidebar collapsible="icon">
             <SidebarHeader>
@@ -117,12 +113,6 @@ export function AdminSidebar() {
             <Separator />
             <SidebarFooter>
                 <SidebarMenu>
-                    <SidebarMenuItem>
-                        <SidebarMenuButton onClick={toggleSidebar}>
-                            <PanelLeft className="size-4" />
-                            <span>Zuklappen</span>
-                        </SidebarMenuButton>
-                    </SidebarMenuItem>
                     <SidebarMenuItem>
                         <SidebarMenuButton>
                             <Settings className="size-4" />
