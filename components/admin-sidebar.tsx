@@ -1,4 +1,4 @@
-import { ChartArea, ChevronsUpDown, ChevronUp, Hamburger, HandPlatter, Home, PanelLeft, Ratio, Settings, User, Users } from "lucide-react"
+import { ChartArea, Hamburger, HandPlatter, Home, Ratio, Settings, Users } from "lucide-react"
 
 import {
     Sidebar,
@@ -12,9 +12,9 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Separator } from "@/components/ui/separator"
 import Link from "next/link"
+import AdminSidebarHeader from "./admin-sidebar-header"
 
 const groups = [
     {
@@ -60,19 +60,7 @@ export function AdminSidebar() {
             <SidebarHeader>
                 <SidebarMenu>
                     <SidebarMenuItem>
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <SidebarMenuButton>
-                                    Schauturnen 2026
-                                    <ChevronsUpDown className="ml-auto" />
-                                </SidebarMenuButton>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent className="w-[--radix-popper-anchor-width]">
-                                <DropdownMenuItem>
-                                    <span>Schauturnen 2026</span>
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+                        <AdminSidebarHeader />
                     </SidebarMenuItem>
                 </SidebarMenu>
             </SidebarHeader>
@@ -118,30 +106,6 @@ export function AdminSidebar() {
                             <Settings className="size-4" />
                             <span>Einstellungen</span>
                         </SidebarMenuButton>
-                    </SidebarMenuItem>
-                    <SidebarMenuItem>
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <SidebarMenuButton>
-                                    <User className="size-4" />
-                                    bano
-                                    <ChevronUp className="ml-auto" />
-                                </SidebarMenuButton>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent
-                                side="top"
-                            >
-                                <DropdownMenuItem>
-                                    <span>Account</span>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem>
-                                    <span>Billing</span>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem>
-                                    <span>Sign out</span>
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
                     </SidebarMenuItem>
                 </SidebarMenu>
             </SidebarFooter>
