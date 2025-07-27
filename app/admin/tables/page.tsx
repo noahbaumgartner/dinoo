@@ -1,9 +1,9 @@
-import { AdminHeader } from "@/components/admin-header";
+import { PageWrapper } from "@/components/page-wrapper";
 
 export default function AdminTablesPage() {
     return (
-        <>
-            <AdminHeader title="Tische" />
-        </>
+        <PageWrapper title="Tische">
+            <div></div>
+        </PageWrapper>
     );
 }

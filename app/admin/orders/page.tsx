@@ -1,9 +1,9 @@
-import { AdminHeader } from "@/components/admin-header";
+import { PageWrapper } from "@/components/page-wrapper";
 
 export default function AdminOrdersPage() {
     return (
-        <>
-            <AdminHeader title="Bestellungen" />
-        </>
+        <PageWrapper title="Bestellungen">
+            <div></div>
+        </PageWrapper>
     );
 }
