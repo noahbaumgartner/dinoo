@@ -4,8 +4,9 @@ import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbP
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { User } from "lucide-react";
+import Breadcrumbs from "./breadcrumbs";
 
-export function PageWrapper({ children, title }: { children: React.ReactNode; title?: string }) {
+export function PageWrapper({ children, title, action }: { children: React.ReactNode; title?: string; action?: React.ReactNode }) {
     return (
         <div className="flex flex-col">
             <div className="flex flex-row justify-between p-2.5">
@@ -14,21 +15,7 @@ export function PageWrapper({ children, title }: { children: React.ReactNode; ti
                     <div className="py-2.5 pr-2">
                         <Separator orientation="vertical" />
                     </div>
-                    <Breadcrumb className="py-2">
-                        <BreadcrumbList>
-                            <BreadcrumbItem>
-                                <BreadcrumbLink href="/admin">Admin</BreadcrumbLink>
-                            </BreadcrumbItem>
-                            {title ? (
-                                <>
-                                    <BreadcrumbSeparator />
-                                    <BreadcrumbItem>
-                                        <BreadcrumbPage>{title}</BreadcrumbPage>
-                                    </BreadcrumbItem>
-                                </>
-                            ) : null}
-                        </BreadcrumbList>
-                    </Breadcrumb>
+                    <Breadcrumbs />
                 </div>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -42,8 +29,11 @@ export function PageWrapper({ children, title }: { children: React.ReactNode; ti
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>
-            <div className="p-4 max-w-4xl w-full mx-auto flex flex-col space-y-4">
-                <h1 className="text-2xl font-semibold px-2">{title}</h1>
+            <div className="p-2.5 max-w-2xl w-full mx-auto flex flex-col space-y-4">
+                <div className="flex flex-row justify-between px-2">
+                    <h1 className="text-2xl font-semibold leading-9">{title}</h1>
+                    {action}
+                </div>
                 {children}
             </div>
         </div >
