@@ -7,8 +7,9 @@ import { Fragment } from "react";
 const pathMapping: { [key: string]: string } = {
     "": "Home",
     "admin": "Admin",
+    "new": "neu",
     "products": "Produkte",
-    "new": "neu"
+    "tables": "Tische",
 };
 
 export default function Breadcrumbs() {
