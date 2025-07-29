@@ -5,15 +5,17 @@ import { ColumnDef } from "@tanstack/react-table"
 
 export const columns: ColumnDef<Product>[] = [
     {
-        accessorKey: "name",
-        header: "Name",
+        id: "name",
+        cell: ({ row }) => (
+            <span className="font-semibold">{row.name}</span>
+        ),
     },
     {
-        accessorKey: "description",
-        header: "Beschreibung",
-    },
-    {
-        accessorKey: "price",
-        header: "Preis",
-    },
+        id: "description",
+        cell: ({ row }) => (
+            <span className="text-muted-foreground">
+                {row.price.toFixed(2)} CHF
+            </span>
+        ),
+    }
 ]

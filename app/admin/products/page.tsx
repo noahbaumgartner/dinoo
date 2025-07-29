@@ -1,10 +1,10 @@
-import { columns } from "./columns";
-import { DataTable } from "@/components/data-table";
 import { productService } from "@/lib/services/product.service";
 import { PageWrapper } from "@/components/page-wrapper";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import Link from "next/link";
+import List from "@/components/list";
+import { columns } from "./columns";
 
 export default async function AdminProductsPage() {
     const products = await productService.getAll();
@@ -21,7 +21,7 @@ export default async function AdminProductsPage() {
                 </Link>
             }
         >
-            <DataTable columns={columns} data={products} />
+            <List columns={columns} data={products} />
         </PageWrapper>
     );
 }
