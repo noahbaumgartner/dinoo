@@ -9,8 +9,19 @@ datasource db {
 }
 
 model Product {
-  id          String @id @default(uuid())
-  name        String
-  description String
-  price       Float
+  id            String   @id @default(uuid())
+  name          String
+  description   String
+  price         Float
+  categoryIndex Int
+  category      Category @relation(fields: [categoryId], references: [id])
+  categoryId    String
+}
+
+model Category {
+  id       String    @id @default(uuid())
+  name     String
+  icon     String
+  color    String
+  products Product[]
 }

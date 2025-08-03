@@ -1,17 +1,23 @@
 "use client";
 
-import type { ColumnDef } from "@tanstack/react-table";
 import { GripHorizontal } from "lucide-react";
 import { useState } from "react";
 
-interface ListProps<TData, TValue> {
-    columns: ColumnDef<TData, TValue>[]
+export type ListColumnDef<TData> = {
+    id: string
+    accessorKey?: string
+    cell?: ({ row }: { row: TData }) => React.ReactNode
+}
+
+interface ListProps<TData> {
+    columns: ListColumnDef<TData>[]
     data: TData[]
 }
 
-export default function List<TData, TValue>({ columns, data }: ListProps<TData, TValue>) {
+export default function List<TData>({ columns, data }: ListProps<TData>) {
     const [items, setItems] = useState(data);
     const [draggingItem, setDraggingItem] = useState<{ id: number } | null>(null)
+
     const handleDragStart = (e: React.DragEvent, item: { id: number }) => {
         setDraggingItem(item)
 
@@ -77,7 +83,9 @@ export default function List<TData, TValue>({ columns, data }: ListProps<TData, 
                             <div className="grow flex flex-row justify-between">
                                 {columns.map((column, index) => (
                                     <span key={index} className="flex items-center">
-                                        {column.cell ? column.cell({ row: item }) : item[column.accessorKey as keyof typeof item]}
+                                        {column.cell && typeof column.cell === "function"
+                                            ? column.cell({ row: item })
+                                            : String(item[column.accessorKey as keyof typeof item])}
                                     </span>
                                 ))}
                             </div>

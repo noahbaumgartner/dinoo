@@ -1,13 +1,13 @@
 "use client"
 
+import type { ListColumnDef } from "@/components/list"
 import type { Product } from "@/lib/prisma"
-import { ColumnDef } from "@tanstack/react-table"
 
-export const columns: ColumnDef<Product>[] = [
+export const columns: ListColumnDef<Product>[] = [
     {
         id: "name",
         cell: ({ row }) => (
-            <span className="font-semibold">{row.name}</span>
+            <span className="font-semibold">{row?.name}</span>
         ),
     },
     {

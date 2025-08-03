@@ -8,8 +8,14 @@ export const productService = {
     },
 
     async create(product: Product) {
+        const { categoryId, ...productData } = product;
         return await prisma.product.create({
-            data: product,
+            data: {
+                ...productData,
+                category: {
+                    connect: { id: categoryId },
+                }
+            },
         });
     }
 }
