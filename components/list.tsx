@@ -55,7 +55,7 @@ export default function List<TData>({ columns, data }: ListProps<TData>) {
         }
     }
     return (
-        <div className={`w-full border text-sm rounded-md bg-secondary/10 ${items.length === 0 ? "hidden" : ""}`}>
+        <div className={`w-full border text-sm rounded-md bg-sidebar ${items.length === 0 ? "hidden" : ""}`}>
             <ul>
                 {items.map((item, index) => (
                     <li
