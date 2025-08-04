@@ -25,7 +25,7 @@ const navigation = {
                 },
                 {
                     title: "Kategorien",
-                    url: "/admin",
+                    url: "/admin/categories",
                 },
                 {
                     title: "Bestellzeiten",

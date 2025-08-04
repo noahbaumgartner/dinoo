@@ -1,4 +1,4 @@
-export const enum CATEGORY_ICON_NAME {
+export enum CATEGORY_ICON_NAME {
     hamburger = "hamburger",
     glassWater = "glassWater",
     coffee = "coffee",
@@ -7,7 +7,7 @@ export const enum CATEGORY_ICON_NAME {
     beer = "beer"
 };
 
-export const enum CATEGORY_COLOR {
+export enum CATEGORY_COLOR {
     red = "red",
     green = "green",
     yellow = "yellow",
