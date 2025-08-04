@@ -10,7 +10,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Hamburger } from "lucide-react";
+import CategoryIcon from "../category-icon";
 
 const formSchema = z.object({
     name: z.string().min(3, {
@@ -21,9 +21,7 @@ const formSchema = z.object({
     description: z.string().max(100, {
         message: "Die Beschreibung darf maximal 100 Zeichen lang sein.",
     }),
-    categoryId: z.string().min(1, {
-        message: "Bitte wähle eine Kategorie aus.",
-    }),
+    categoryId: z.string(),
     price: z.number()
 })
 
@@ -34,6 +32,7 @@ export default function CreateProductForm({ categories }: { categories: Category
             name: "",
             description: "",
             price: 0,
+            categoryId: "",
         },
     })
 
@@ -73,23 +72,22 @@ export default function CreateProductForm({ categories }: { categories: Category
                         render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Kategorie</FormLabel>
-                                <FormControl>
-                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <FormControl>
                                         <SelectTrigger className="w-full">
                                             <SelectValue placeholder="Kategorie wählen" />
                                         </SelectTrigger>
-                                        <SelectContent>
-                                            {categories.map((category) => (
-                                                <SelectItem key={category.id} value={category.id} className="flex flex-row space-x-2">
-                                                    <div className="flex size-7 items-center justify-center rounded-md bg-green-100">
-                                                        <Hamburger className="size-4 stroke-green-900" />
-                                                    </div>
-                                                    <span>{category.name}</span>
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </FormControl>
+                                    </FormControl>
+                                    <SelectContent>
+                                        {categories.map((category) => (
+                                            <SelectItem key={category.id} value={category.id} className="flex flex-row space-x-2">
+                                                <CategoryIcon color={category.color} icon={category.icon} />
+                                                <span>{category.name}</span>
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <input type="hidden" name="categoryId" value={field.value} />
                                 <FormMessage />
                             </FormItem>
                         )}

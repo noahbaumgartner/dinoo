@@ -6,6 +6,7 @@ import type { Product } from "@/lib/prisma"
 import { v4 as uuidv4 } from 'uuid'
  
 export async function createProduct(formData: FormData) {
+    console.log(formData)
     const product: Product = {
         id: uuidv4(),
         name: formData.get("name") as string,
