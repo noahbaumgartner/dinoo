@@ -7,6 +7,12 @@ export const categoryService = {
         return await prisma.category.findMany();
     },
 
+    async getById(id: string) {
+        return await prisma.category.findUnique({
+            where: { id },
+        });
+    },
+
     async create(category: Category) {
         return await prisma.category.create({
             data: category,

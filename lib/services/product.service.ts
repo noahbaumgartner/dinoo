@@ -7,6 +7,12 @@ export const productService = {
         return await prisma.product.findMany();
     },
 
+    async getById(id: string) {
+        return await prisma.product.findUnique({
+            where: { id },
+        });
+    },
+
     async create(product: Product) {
         const { categoryId, ...productData } = product;
         return await prisma.product.create({

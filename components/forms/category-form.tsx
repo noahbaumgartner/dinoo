@@ -1,6 +1,5 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -11,6 +10,7 @@ import CategoryIcon from "../category-icon";
 import { CATEGORY_COLOR, CATEGORY_ICON_NAME } from "@/lib/constants";
 import { createCategory } from "@/lib/actions/category";
 import FormActions from "../form-actions";
+import type { Category } from "@/lib/prisma";
 
 const formSchema = z.object({
     name: z.string().min(3, {
@@ -22,13 +22,13 @@ const formSchema = z.object({
     icon: z.string(),
 })
 
-export default function CreateCategoryForm({ }) {
+export default function CategoryForm({ category }: { category?: Category }) {
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            name: "",
-            color: "",
-            icon: "",
+            name: category?.name || "",
+            color: category?.color || "",
+            icon: category?.icon || "",
         },
     })
 
@@ -100,7 +100,7 @@ export default function CreateCategoryForm({ }) {
                         )}
                     />
                 </div>
-                <FormActions cancelUrl="/admin/categories" />
+                <FormActions mode="create" cancelUrl="/admin/categories" />
             </form>
         </Form>
     );

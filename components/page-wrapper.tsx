@@ -7,8 +7,8 @@ import Breadcrumbs from "./breadcrumbs";
 
 export function PageWrapper({ children, title, action }: { children: React.ReactNode; title?: string; action?: React.ReactNode }) {
     return (
-        <div className="flex flex-col">
-            <div className="flex flex-row justify-between p-2.5">
+        <div className="flex flex-col h-full">
+            <div className="flex flex-row justify-between p-2.5 fixed top-0 z-10 bg-white/60 backdrop-blur-xs w-full md:w-[calc(100vw-16rem)] md:left-64">
                 <div className="flex flex-row space-x-2">
                     <SidebarTrigger className="my-1" />
                     <div className="py-2.5 pr-2">
@@ -28,13 +28,15 @@ export function PageWrapper({ children, title, action }: { children: React.React
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>
-            <div className="p-2.5 max-w-2xl w-full mx-auto flex flex-col space-y-4">
-                <div className="flex flex-row justify-between px-2">
-                    <h1 className="text-2xl font-semibold leading-9">{title}</h1>
-                    {action}
+            <div className="grow overflow-auto mt-20">
+                <div className="p-2.5 max-w-2xl w-full mx-auto flex flex-col space-y-4">
+                    <div className="flex flex-row justify-between px-2">
+                        <h1 className="text-2xl font-semibold leading-9">{title}</h1>
+                        {action}
+                    </div>
+                    {children}
                 </div>
-                {children}
-            </div>
+            </div >
         </div >
     );
 }

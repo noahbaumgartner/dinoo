@@ -1,10 +1,10 @@
-import CreateCategoryForm from "@/components/forms/create-category-form";
+import CategoryForm from "@/components/forms/category-form";
 import { PageWrapper } from "@/components/page-wrapper";
 
 export default async function AdminNewProductPage() {
     return (
         <PageWrapper title="Kategorie erstellen">
-            <CreateCategoryForm />
+            <CategoryForm />
         </PageWrapper>
     );
 }

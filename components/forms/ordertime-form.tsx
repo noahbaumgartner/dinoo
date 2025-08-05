@@ -1,14 +1,13 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod";
 import { createOrderTime } from "@/lib/actions/ordertime";
-import Link from "next/link";
 import FormActions from "../form-actions";
+import type { OrderTime } from "@/lib/prisma";
 
 const formSchema = z.object({
     time: z.string().min(3, {
@@ -18,11 +17,11 @@ const formSchema = z.object({
     })
 })
 
-export default function CreateOrderTimeForm() {
+export default function OrderTimeForm({ orderTime }: { orderTime?: OrderTime }) {
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            time: ""
+            time: orderTime?.time || "",
         },
     })
 
@@ -42,7 +41,7 @@ export default function CreateOrderTimeForm() {
                         </FormItem>
                     )}
                 />
-                <FormActions cancelUrl="/admin/ordertimes" />
+                <FormActions mode="create" cancelUrl="/admin/ordertimes" />
             </form>
         </Form>
     );

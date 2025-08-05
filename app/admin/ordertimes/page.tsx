@@ -11,7 +11,7 @@ export default async function AdminOrderTimesPage() {
 
     return (
         <PageWrapper
-            title="Bestellzeit"
+            title="Bestellzeiten"
             action={
                 <Link href="/admin/ordertimes/new">
                     <Button variant="outline">

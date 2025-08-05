@@ -4,7 +4,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { createProduct } from "@/lib/actions/product";
-import type { Category } from "@/lib/prisma";
+import type { Category, Product } from "@/lib/prisma";
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod";
@@ -25,14 +25,14 @@ const formSchema = z.object({
     price: z.number()
 })
 
-export default function CreateProductForm({ categories }: { categories: Category[] }) {
+export default function ProductForm({ product, categories }: { product?: Product; categories: Category[] }) {
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            name: "",
-            description: "",
-            price: 0,
-            categoryId: "",
+            name: product?.name || "",
+            description: product?.description || "",
+            price: product?.price || 0,
+            categoryId: product?.categoryId || "",
         },
     })
 
@@ -106,7 +106,7 @@ export default function CreateProductForm({ categories }: { categories: Category
                         )}
                     />
                 </div>
-                <FormActions cancelUrl="/admin/products" />
+                <FormActions mode="create" cancelUrl="/admin/products" />
             </form>
         </Form>
     );

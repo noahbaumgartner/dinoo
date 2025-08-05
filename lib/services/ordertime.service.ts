@@ -7,6 +7,12 @@ export const orderTimeService = {
         return await prisma.orderTime.findMany();
     },
 
+    async getById(id: string) {
+        return await prisma.orderTime.findUnique({
+            where: { id },
+        });
+    },
+
     async create(orderTime: OrderTime) {
         return await prisma.orderTime.create({
             data: orderTime
