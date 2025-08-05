@@ -29,7 +29,7 @@ const navigation = {
                 },
                 {
                     title: "Bestellzeiten",
-                    url: "/admin",
+                    url: "/admin/ordertimes",
                 }
             ],
         },

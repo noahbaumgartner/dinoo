@@ -25,3 +25,8 @@ model Category {
   color    String
   products Product[]
 }
+
+model OrderTime {
+  id   String @id @default(uuid())
+  time String
+}

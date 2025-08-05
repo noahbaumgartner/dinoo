@@ -9,6 +9,7 @@ const pathMapping: { [key: string]: string } = {
     "admin": "Admin",
     "categories": "Kategorien",
     "new": "neu",
+    "ordertimes": "Bestellzeiten",
     "products": "Produkte",
     "tables": "Tische",
 };

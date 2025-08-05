@@ -1,6 +1,5 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -11,6 +10,7 @@ import { useForm } from "react-hook-form"
 import { z } from "zod";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import CategoryIcon from "../category-icon";
+import FormActions from "../form-actions";
 
 const formSchema = z.object({
     name: z.string().min(3, {
@@ -106,7 +106,7 @@ export default function CreateProductForm({ categories }: { categories: Category
                         )}
                     />
                 </div>
-                <Button type="submit">Submit</Button>
+                <FormActions cancelUrl="/admin/products" />
             </form>
         </Form>
     );

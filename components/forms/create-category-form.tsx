@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import CategoryIcon from "../category-icon";
 import { CATEGORY_COLOR, CATEGORY_ICON_NAME } from "@/lib/constants";
 import { createCategory } from "@/lib/actions/category";
+import FormActions from "../form-actions";
 
 const formSchema = z.object({
     name: z.string().min(3, {
@@ -99,7 +100,7 @@ export default function CreateCategoryForm({ }) {
                         )}
                     />
                 </div>
-                <Button type="submit">Submit</Button>
+                <FormActions cancelUrl="/admin/categories" />
             </form>
         </Form>
     );
