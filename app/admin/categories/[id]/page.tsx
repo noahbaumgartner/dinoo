@@ -16,7 +16,7 @@ export default async function AdminEditCategoryPage({
 
     return (
         <PageWrapper title="Kategorie bearbeiten">
-            <CategoryForm category={category} />
+            <CategoryForm mode="edit" category={category} />
         </PageWrapper>
     );
 }

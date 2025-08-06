@@ -3,7 +3,7 @@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { createProduct } from "@/lib/actions/product";
+import { createProduct, updateProduct } from "@/lib/actions/product";
 import type { Category, Product } from "@/lib/prisma";
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
@@ -25,7 +25,7 @@ const formSchema = z.object({
     price: z.number()
 })
 
-export default function ProductForm({ product, categories }: { product?: Product; categories: Category[] }) {
+export default function ProductForm({ mode, product, categories }: { mode: "create" | "edit"; product?: Product; categories: Category[] }) {
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -38,7 +38,8 @@ export default function ProductForm({ product, categories }: { product?: Product
 
     return (
         <Form {...form}>
-            <form action={createProduct} className="space-y-6 px-2">
+            <form action={mode === "create" ? createProduct : updateProduct} className="space-y-6 px-2">
+                <input type="hidden" name="id" value={product?.id || ""} />
                 <FormField
                     control={form.control}
                     name="name"
@@ -106,7 +107,7 @@ export default function ProductForm({ product, categories }: { product?: Product
                         )}
                     />
                 </div>
-                <FormActions mode="create" cancelUrl="/admin/products" />
+                <FormActions mode={mode} cancelUrl="/admin/products" />
             </form>
         </Form>
     );

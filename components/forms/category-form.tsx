@@ -8,7 +8,7 @@ import { z } from "zod";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import CategoryIcon from "../category-icon";
 import { CATEGORY_COLOR, CATEGORY_ICON_NAME } from "@/lib/constants";
-import { createCategory } from "@/lib/actions/category";
+import { createCategory, updateCategory } from "@/lib/actions/category";
 import FormActions from "../form-actions";
 import type { Category } from "@/lib/prisma";
 
@@ -22,7 +22,7 @@ const formSchema = z.object({
     icon: z.string(),
 })
 
-export default function CategoryForm({ category }: { category?: Category }) {
+export default function CategoryForm({ mode, category }: { mode: "create" | "edit"; category?: Category }) {
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -34,7 +34,8 @@ export default function CategoryForm({ category }: { category?: Category }) {
 
     return (
         <Form {...form}>
-            <form action={createCategory} className="space-y-6 px-2">
+            <form action={mode === "create" ? createCategory : updateCategory} className="space-y-6 px-2">
+                <input type="hidden" name="id" value={category?.id || ""} />
                 <FormField
                     control={form.control}
                     name="name"
@@ -100,7 +101,7 @@ export default function CategoryForm({ category }: { category?: Category }) {
                         )}
                     />
                 </div>
-                <FormActions mode="create" cancelUrl="/admin/categories" />
+                <FormActions mode={mode} cancelUrl="/admin/categories" />
             </form>
         </Form>
     );

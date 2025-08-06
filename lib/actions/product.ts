@@ -19,3 +19,17 @@ export async function createProduct(formData: FormData) {
 
     redirect("/admin/products")
 }
+
+export async function updateProduct(formData: FormData) {
+    const product: Product = {
+        id: formData.get("id") as string,
+        name: formData.get("name") as string,
+        description: formData.get("description") as string,
+        price: parseFloat(formData.get("price") as string),
+        categoryId: formData.get("categoryId") as string,
+        categoryIndex: 0
+    }
+    productService.update(product)
+
+    redirect("/admin/products")
+}

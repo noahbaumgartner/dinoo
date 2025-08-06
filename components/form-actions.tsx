@@ -6,7 +6,7 @@ export default function FormActions({ mode, cancelUrl }: { mode: "create" | "edi
         <div className="flex flex-row-reverse">
             <div className="flex space-x-2">
                 {mode === "edit" && (
-                    <Button type="submit" variant="destructive">
+                    <Button type="submit" variant="ghost">
                         Löschen
                     </Button>
                 )}

@@ -17,5 +17,18 @@ export const orderTimeService = {
         return await prisma.orderTime.create({
             data: orderTime
         });
+    },
+
+    async update(orderTime: OrderTime) {
+        return await prisma.orderTime.update({
+            where: { id: orderTime.id },
+            data: orderTime,
+        });
+    },
+
+    async delete(id: string) {
+        return await prisma.orderTime.delete({
+            where: { id },
+        });
     }
 }

@@ -17,5 +17,18 @@ export const categoryService = {
         return await prisma.category.create({
             data: category,
         });
+    },
+
+    async update(category: Category) {
+        return await prisma.category.update({
+            where: { id: category.id },
+            data: category,
+        });
+    },
+
+    async delete(id: string) {
+        return await prisma.category.delete({
+            where: { id },
+        });
     }
 }

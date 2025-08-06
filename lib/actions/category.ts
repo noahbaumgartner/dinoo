@@ -16,3 +16,15 @@ export async function createCategory(formData: FormData) {
 
     redirect("/admin/categories")
 }
+
+export async function updateCategory(formData: FormData) {
+    const category = {
+        id: formData.get("id") as string,
+        name: formData.get("name") as string,
+        color: formData.get("color") as string,
+        icon: formData.get("icon") as string,
+    }
+    categoryService.update(category)
+
+    redirect("/admin/categories")
+}

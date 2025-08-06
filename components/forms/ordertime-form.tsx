@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod";
-import { createOrderTime } from "@/lib/actions/ordertime";
+import { createOrderTime, updateOrderTime } from "@/lib/actions/ordertime";
 import FormActions from "../form-actions";
 import type { OrderTime } from "@/lib/prisma";
 
@@ -17,7 +17,7 @@ const formSchema = z.object({
     })
 })
 
-export default function OrderTimeForm({ orderTime }: { orderTime?: OrderTime }) {
+export default function OrderTimeForm({ mode, orderTime }: { mode: "create" | "edit"; orderTime?: OrderTime }) {
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -27,7 +27,8 @@ export default function OrderTimeForm({ orderTime }: { orderTime?: OrderTime }) 
 
     return (
         <Form {...form}>
-            <form action={createOrderTime} className="space-y-6 px-2">
+            <form action={mode === "create" ? createOrderTime : updateOrderTime} className="space-y-6 px-2">
+                <input type="hidden" name="id" value={orderTime?.id || ""} />
                 <FormField
                     control={form.control}
                     name="time"
@@ -41,7 +42,7 @@ export default function OrderTimeForm({ orderTime }: { orderTime?: OrderTime }) 
                         </FormItem>
                     )}
                 />
-                <FormActions mode="create" cancelUrl="/admin/ordertimes" />
+                <FormActions mode={mode} cancelUrl="/admin/ordertimes" />
             </form>
         </Form>
     );

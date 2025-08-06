@@ -14,3 +14,13 @@ export async function createOrderTime(formData: FormData) {
 
     redirect("/admin/ordertimes")
 }
+
+export async function updateOrderTime(formData: FormData) {
+    const orderTime: OrderTime = {
+        id: formData.get("id") as string,
+        time: formData.get("time") as string,
+    }
+    orderTimeService.update(orderTime)
+
+    redirect("/admin/ordertimes")
+}
