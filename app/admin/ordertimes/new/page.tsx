@@ -4,7 +4,7 @@ import { PageWrapper } from "@/components/page-wrapper";
 export default async function AdminNewOrderTimePage() {
     return (
         <PageWrapper title="Bestellzeit erstellen">
-            <OrderTimeForm />
+            <OrderTimeForm mode="create" />
         </PageWrapper>
     );
 }

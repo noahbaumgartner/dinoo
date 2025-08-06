@@ -4,7 +4,7 @@ import { PageWrapper } from "@/components/page-wrapper";
 export default async function AdminNewProductPage() {
     return (
         <PageWrapper title="Kategorie erstellen">
-            <CategoryForm />
+            <CategoryForm mode="create" />
         </PageWrapper>
     );
 }

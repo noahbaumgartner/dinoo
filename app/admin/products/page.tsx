@@ -31,10 +31,10 @@ export default async function AdminProductsPage() {
         >
             {productsWithCategory.map(category => (
                 <div key={category.id} className="my-4 flex flex-col space-y-4">
-                    <div className="flex flex-row space-x-2 px-2">
+                    <Link href={`/admin/categories/${category.id}`} className="flex items-center space-x-2 px-2">
                         <CategoryIcon color={category.color} icon={category.icon} />
                         <h2 className="text-lg font-semibold">{category.name}</h2>
-                    </div>
+                    </Link>
                     <List columns={columns} data={category.products} />
                 </div>
             ))}

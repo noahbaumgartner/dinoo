@@ -7,7 +7,7 @@ export default async function AdminNewProductPage() {
 
     return (
         <PageWrapper title="Produkt erstellen">
-            <ProductForm categories={categories} />
+            <ProductForm mode="create" categories={categories} />
         </PageWrapper>
     );
 }
