@@ -21,7 +21,6 @@ export default async function AdminProductsPage() {
                 </Link>
             }
         >
-
             <List columns={columns} data={categories} />
         </PageWrapper>
     );
