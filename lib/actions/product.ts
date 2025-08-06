@@ -33,3 +33,8 @@ export async function updateProduct(formData: FormData) {
 
     redirect("/admin/products")
 }
+
+export async function deleteProduct(id: string) {
+    await productService.delete(id)
+    redirect("/admin/products")
+}

@@ -8,9 +8,10 @@ import { z } from "zod";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import CategoryIcon from "../category-icon";
 import { CATEGORY_COLOR, CATEGORY_ICON_NAME } from "@/lib/constants";
-import { createCategory, updateCategory } from "@/lib/actions/category";
+import { createCategory, deleteCategory, updateCategory } from "@/lib/actions/category";
 import FormActions from "../form-actions";
 import type { Category } from "@/lib/prisma";
+import { categoryService } from "@/lib/services/category.service";
 
 const formSchema = z.object({
     name: z.string().min(3, {
@@ -101,7 +102,9 @@ export default function CategoryForm({ mode, category }: { mode: "create" | "edi
                         )}
                     />
                 </div>
-                <FormActions mode={mode} cancelUrl="/admin/categories" />
+                <FormActions mode={mode} cancelUrl="/admin/categories" deleteAction={async () => {
+                    deleteCategory(category?.id || "");
+                }} />
             </form>
         </Form>
     );

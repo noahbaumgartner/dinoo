@@ -1,12 +1,12 @@
 import Link from "next/link";
 import { Button } from "./ui/button";
 
-export default function FormActions({ mode, cancelUrl }: { mode: "create" | "edit"; cancelUrl: string }) {
+export default function FormActions({ mode, deleteAction, cancelUrl }: { mode: "create" | "edit"; deleteAction?: () => void; cancelUrl: string }) {
     return (
         <div className="flex flex-row-reverse">
             <div className="flex space-x-2">
                 {mode === "edit" && (
-                    <Button type="submit" variant="ghost">
+                    <Button variant="ghost" onClick={deleteAction}>
                         Löschen
                     </Button>
                 )}

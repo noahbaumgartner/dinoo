@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod";
-import { createOrderTime, updateOrderTime } from "@/lib/actions/ordertime";
+import { createOrderTime, deleteOrderTime, updateOrderTime } from "@/lib/actions/ordertime";
 import FormActions from "../form-actions";
 import type { OrderTime } from "@/lib/prisma";
 
@@ -42,7 +42,9 @@ export default function OrderTimeForm({ mode, orderTime }: { mode: "create" | "e
                         </FormItem>
                     )}
                 />
-                <FormActions mode={mode} cancelUrl="/admin/ordertimes" />
+                <FormActions mode={mode} cancelUrl="/admin/ordertimes" deleteAction={async () => {
+                    deleteOrderTime(orderTime?.id || "");
+                }} />
             </form>
         </Form>
     );

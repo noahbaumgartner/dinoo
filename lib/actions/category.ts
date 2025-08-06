@@ -28,3 +28,8 @@ export async function updateCategory(formData: FormData) {
 
     redirect("/admin/categories")
 }
+
+export async function deleteCategory(id: string) {
+    await categoryService.delete(id)
+    redirect("/admin/categories")
+}

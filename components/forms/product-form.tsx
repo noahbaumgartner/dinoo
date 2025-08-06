@@ -3,7 +3,7 @@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { createProduct, updateProduct } from "@/lib/actions/product";
+import { createProduct, deleteProduct, updateProduct } from "@/lib/actions/product";
 import type { Category, Product } from "@/lib/prisma";
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
@@ -107,7 +107,9 @@ export default function ProductForm({ mode, product, categories }: { mode: "crea
                         )}
                     />
                 </div>
-                <FormActions mode={mode} cancelUrl="/admin/products" />
+                <FormActions mode={mode} cancelUrl="/admin/products" deleteAction={async () => {
+                    deleteProduct(product?.id || "");
+                }} />
             </form>
         </Form>
     );

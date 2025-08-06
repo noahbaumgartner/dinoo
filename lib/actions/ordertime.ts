@@ -24,3 +24,8 @@ export async function updateOrderTime(formData: FormData) {
 
     redirect("/admin/ordertimes")
 }
+
+export async function deleteOrderTime(id: string) {
+    await orderTimeService.delete(id)
+    redirect("/admin/ordertimes")
+}
