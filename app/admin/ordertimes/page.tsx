@@ -2,9 +2,9 @@ import { PageWrapper } from "@/components/page-wrapper";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import Link from "next/link";
-import List from "@/components/list";
 import { columns } from "./columns";
 import { orderTimeService } from "@/lib/services/ordertime.service";
+import OrderTimesList from "@/components/ordertimes-list";
 
 export default async function AdminOrderTimesPage() {
     const orderTimes = await orderTimeService.getAll();
@@ -21,8 +21,7 @@ export default async function AdminOrderTimesPage() {
                 </Link>
             }
         >
-
-            <List columns={columns} data={orderTimes} />
+            <OrderTimesList columns={columns} orderTimes={orderTimes} />
         </PageWrapper>
     );
 }

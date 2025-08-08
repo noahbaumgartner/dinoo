@@ -29,6 +29,7 @@ export default function OrderTimeForm({ mode, orderTime }: { mode: "create" | "e
         <Form {...form}>
             <form action={mode === "create" ? createOrderTime : updateOrderTime} className="space-y-6 px-2">
                 <input type="hidden" name="id" value={orderTime?.id || ""} />
+                <input type="hidden" name="index" value={orderTime?.index || 0} />
                 <FormField
                     control={form.control}
                     name="time"

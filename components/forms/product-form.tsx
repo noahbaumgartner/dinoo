@@ -40,6 +40,7 @@ export default function ProductForm({ mode, product, categories }: { mode: "crea
         <Form {...form}>
             <form action={mode === "create" ? createProduct : updateProduct} className="space-y-6 px-2">
                 <input type="hidden" name="id" value={product?.id || ""} />
+                <input type="hidden" name="index" value={product?.index || 0} />
                 <FormField
                     control={form.control}
                     name="name"

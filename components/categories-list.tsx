@@ -7,11 +7,11 @@ import { updateCategory } from "@/lib/actions/category";
 
 export default function CategoriesList({ columns, categories }: { columns: ListColumnDef<Category>[]; categories: Category[] }) {
     const handleChangeOrder = async (categories: Category[]) => {
-        console.log("handleChangeOrder", categories);
         for (let index = 0; index < categories.length; index++) {
             const category = categories[index];
-            category.index = index + 1;
             const formData = new FormData();
+
+            category.index = index + 1;
 
             formData.append("id", category.id);
             formData.append("name", category.name);

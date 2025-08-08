@@ -11,7 +11,6 @@ import { CATEGORY_COLOR, CATEGORY_ICON_NAME } from "@/lib/constants";
 import { createCategory, deleteCategory, updateCategory } from "@/lib/actions/category";
 import FormActions from "../form-actions";
 import type { Category } from "@/lib/prisma";
-import { categoryService } from "@/lib/services/category.service";
 
 const formSchema = z.object({
     name: z.string().min(3, {
@@ -37,6 +36,7 @@ export default function CategoryForm({ mode, category }: { mode: "create" | "edi
         <Form {...form}>
             <form action={mode === "create" ? createCategory : updateCategory} className="space-y-6 px-2">
                 <input type="hidden" name="id" value={category?.id || ""} />
+                <input type="hidden" name="index" value={category?.index || 0} />
                 <FormField
                     control={form.control}
                     name="name"

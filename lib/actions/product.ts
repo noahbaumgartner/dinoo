@@ -13,7 +13,7 @@ export async function createProduct(formData: FormData) {
         description: formData.get("description") as string,
         price: parseFloat(formData.get("price") as string),
         categoryId: formData.get("categoryId") as string,
-        categoryIndex: 0
+        index: 0
     }
     productService.create(product)
 
@@ -27,7 +27,7 @@ export async function updateProduct(formData: FormData) {
         description: formData.get("description") as string,
         price: parseFloat(formData.get("price") as string),
         categoryId: formData.get("categoryId") as string,
-        categoryIndex: 0
+        index: parseInt(formData.get("index") as string, 10)
     }
     productService.update(product)
 

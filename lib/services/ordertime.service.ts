@@ -4,7 +4,14 @@ const prisma = new PrismaClient();
 
 export const orderTimeService = {
     async getAll() {
-        return await prisma.orderTime.findMany();
+        const orderTimes = await prisma.orderTime.findMany();
+        orderTimes.sort((a, b) => {
+            if (a.index !== b.index) {
+                return a.index - b.index;
+            }
+            return a.time.localeCompare(b.time);
+        });
+        return orderTimes;
     },
 
     async getById(id: string) {
