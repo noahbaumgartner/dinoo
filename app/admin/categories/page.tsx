@@ -2,11 +2,11 @@ import { PageWrapper } from "@/components/page-wrapper";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import Link from "next/link";
-import List from "@/components/list";
 import { columns } from "./columns";
 import { categoryService } from "@/lib/services/category.service";
+import CategoriesList from "@/components/category-list";
 
-export default async function AdminProductsPage() {
+export default async function AdminCategoriesPage() {
     const categories = await categoryService.getAll();
 
     return (
@@ -21,7 +21,7 @@ export default async function AdminProductsPage() {
                 </Link>
             }
         >
-            <List columns={columns} data={categories} />
+            <CategoriesList columns={columns} categories={categories} />
         </PageWrapper>
     );
 }

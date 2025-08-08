@@ -4,7 +4,14 @@ const prisma = new PrismaClient();
 
 export const categoryService = {
     async getAll() {
-        return await prisma.category.findMany();
+        const categories = await prisma.category.findMany();
+        categories.sort((a, b) => {
+            if (a.index !== b.index) {
+                return a.index - b.index;
+            }
+            return a.name.localeCompare(b.name);
+        });
+        return categories;
     },
 
     async getById(id: string) {

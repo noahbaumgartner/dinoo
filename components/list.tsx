@@ -1,24 +1,27 @@
 "use client";
 
 import { GripHorizontal } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 
-export type ListColumnDef<TData> = {
+export type ListColumnDef<TData extends { id: string }> = {
     id: string
     accessorKey?: string
     cell?: ({ row }: { row: TData }) => React.ReactNode
 }
 
-interface ListProps<TData> {
-    columns: ListColumnDef<TData>[]
-    data: TData[]
+interface ListProps<TData extends { id: string }> {
+    columns: ListColumnDef<TData>[];
+    data: TData[];
+    onOrderChangeAction: (data: TData[]) => void;
 }
 
-export default function List<TData>({ columns, data }: ListProps<TData>) {
-    const [items, setItems] = useState(data);
-    const [draggingItem, setDraggingItem] = useState<{ id: number } | null>(null)
+export default function List<TData extends { id: string }>({ columns, data, onOrderChangeAction }: ListProps<TData>) {
+    const [items, setItems] = useState<TData[]>(data);
+    const [draggingItem, setDraggingItem] = useState<{ id: string } | null>(null);
+    const [orderChanged, setOrderChanged] = useState(false);
+    const isFirstRender = useRef(true);
 
-    const handleDragStart = (e: React.DragEvent, item: { id: number }) => {
+    const handleDragStart = (e: React.DragEvent, item: { id: string }) => {
         setDraggingItem(item)
 
         if (e.dataTransfer) {
@@ -35,25 +38,40 @@ export default function List<TData>({ columns, data }: ListProps<TData>) {
             e.dataTransfer.setDragImage(dragGhost, 0, 0);
         }
     }
+
     const handleDragOver = (e: React.DragEvent) => {
         e.preventDefault()
     }
-    const handleDrop = (e: React.DragEvent, targetItem: { id: number }) => {
-        e.preventDefault()
+
+    const handleDrop = (e: React.DragEvent, targetItem: { id: string }) => {
+        e.preventDefault();
         if (draggingItem) {
             setItems((prevItems) => {
-                const updatedItems = [...prevItems]
-                const draggingIndex = updatedItems.findIndex((item) => item.id === draggingItem.id)
-                const targetIndex = updatedItems.findIndex((item) => item.id === targetItem.id)
-                    ;[updatedItems[draggingIndex], updatedItems[targetIndex]] = [
-                        updatedItems[targetIndex],
-                        updatedItems[draggingIndex],
-                    ]
-                return updatedItems
-            })
-            setDraggingItem(null)
+                const updatedItems = [...prevItems];
+                const draggingIndex = updatedItems.findIndex((item) => item.id === draggingItem.id);
+                const targetIndex = updatedItems.findIndex((item) => item.id === targetItem.id);
+                [updatedItems[draggingIndex], updatedItems[targetIndex]] = [
+                    updatedItems[targetIndex],
+                    updatedItems[draggingIndex],
+                ];
+                return updatedItems;
+            });
+            setOrderChanged(true);
+            setDraggingItem(null);
         }
-    }
+    };
+
+    useEffect(() => {
+        if (isFirstRender.current) {
+            isFirstRender.current = false;
+            return;
+        }
+        if (orderChanged) {
+            onOrderChangeAction(items);
+            setOrderChanged(false);
+        }
+    }, [items, orderChanged, onOrderChangeAction]);
+
     return (
         <div className={`w-full border text-sm rounded-md bg-sidebar ${items.length === 0 ? "hidden" : ""}`}>
             <ul>
@@ -101,5 +119,5 @@ export default function List<TData>({ columns, data }: ListProps<TData>) {
                 ))}
             </ul>
         </div>
-    )
+    );
 }

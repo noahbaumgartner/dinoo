@@ -9,13 +9,13 @@ datasource db {
 }
 
 model Product {
-  id            String   @id @default(uuid())
-  name          String
-  description   String
-  price         Float
-  categoryIndex Int
-  category      Category @relation(fields: [categoryId], references: [id])
-  categoryId    String
+  id          String   @id @default(uuid())
+  name        String
+  description String
+  price       Float
+  index       Int
+  category    Category @relation(fields: [categoryId], references: [id])
+  categoryId  String
 }
 
 model Category {
@@ -23,10 +23,12 @@ model Category {
   name     String
   icon     String
   color    String
+  index    Int
   products Product[]
 }
 
 model OrderTime {
-  id   String @id @default(uuid())
-  time String
+  id    String @id @default(uuid())
+  time  String
+  index Int
 }
