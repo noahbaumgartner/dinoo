@@ -4,7 +4,7 @@ import { Plus } from "lucide-react";
 import Link from "next/link";
 import { columns } from "./columns";
 import { categoryService } from "@/lib/services/category.service";
-import CategoriesList from "@/components/categories-list";
+import CategoriesList from "@/components/lists/categories-list";
 
 export default async function AdminCategoriesPage() {
     const categories = await categoryService.getAll();

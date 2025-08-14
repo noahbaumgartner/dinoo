@@ -4,7 +4,7 @@ import { Plus } from "lucide-react";
 import Link from "next/link";
 import { columns } from "./columns";
 import { orderTimeService } from "@/lib/services/ordertime.service";
-import OrderTimesList from "@/components/ordertimes-list";
+import OrderTimesList from "@/components/lists/ordertimes-list";
 
 export default async function AdminOrderTimesPage() {
     const orderTimes = await orderTimeService.getAll();

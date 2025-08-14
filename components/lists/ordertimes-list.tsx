@@ -1,8 +1,8 @@
 "use client";
 
 import type { OrderTime } from "@/lib/prisma/wasm";
-import type { ListColumnDef } from "./list";
-import List from "./list";
+import type { ListColumnDef } from "../list";
+import List from "../list";
 import { updateOrderTime } from "@/lib/actions/ordertime";
 
 export default function OrderTimesList({ columns, orderTimes }: { columns: ListColumnDef<OrderTime>[]; orderTimes: OrderTime[] }) {

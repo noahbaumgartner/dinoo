@@ -20,7 +20,7 @@ export async function createProduct(formData: FormData) {
     redirect("/admin/products")
 }
 
-export async function updateProduct(formData: FormData) {
+export async function updateProduct(formData: FormData, redirectToList = true) {
     const product: Product = {
         id: formData.get("id") as string,
         name: formData.get("name") as string,
@@ -31,7 +31,7 @@ export async function updateProduct(formData: FormData) {
     }
     productService.update(product)
 
-    redirect("/admin/products")
+    if (redirectToList) redirect("/admin/products")
 }
 
 export async function deleteProduct(id: string) {

@@ -34,6 +34,12 @@ const navigation = {
             ],
         },
         {
+            title: "Tische",
+            icon: Ratio,
+            url: "/admin/tables",
+            isGroup: false,
+        },
+        {
             title: "Druck",
             icon: Printer,
             isGroup: true,
@@ -48,12 +54,6 @@ const navigation = {
                     url: "/admin",
                 }
             ],
-        },
-        {
-            title: "Tische",
-            icon: Ratio,
-            url: "/admin/tables",
-            isGroup: false,
         }
     ],
     monitoring: [

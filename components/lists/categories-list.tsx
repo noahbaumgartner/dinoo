@@ -1,8 +1,8 @@
 "use client";
 
 import type { Category } from "@/lib/prisma/wasm";
-import type { ListColumnDef } from "./list";
-import List from "./list";
+import type { ListColumnDef } from "../list";
+import List from "../list";
 import { updateCategory } from "@/lib/actions/category";
 
 export default function CategoriesList({ columns, categories }: { columns: ListColumnDef<Category>[]; categories: Category[] }) {
