@@ -32,3 +32,10 @@ model OrderTime {
   time  String
   index Int
 }
+
+model Area {
+  id    String @id @default(uuid())
+  name  String
+  area  String
+  index Int
+}

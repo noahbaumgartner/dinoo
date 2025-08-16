@@ -7,6 +7,7 @@ import { Fragment } from "react";
 const pathMapping: { [key: string]: string } = {
     "": "Home",
     "admin": "Admin",
+    "areas": "Bereiche",
     "categories": "Kategorien",
     "new": "neu",
     "ordertimes": "Bestellzeiten",

@@ -1,4 +1,4 @@
-import { ChartArea, Hamburger, List, Printer, Ratio } from "lucide-react"
+import { ChartArea, Hamburger, LayoutGrid, List, Printer } from "lucide-react"
 
 import {
     Sidebar,
@@ -34,9 +34,9 @@ const navigation = {
             ],
         },
         {
-            title: "Tische",
-            icon: Ratio,
-            url: "/admin/tables",
+            title: "Bereiche",
+            icon: LayoutGrid,
+            url: "/admin/areas",
             isGroup: false,
         },
         {
