@@ -3,3 +3,14 @@ node_modules/
 .env
 .env.*
 !.env.example
+
+# Build output
+/.svelte-kit
+/build
+
+# Event databases (one SQLite file per event)
+/data
+
+# Vite
+vite.config.js.timestamp-*
+vite.config.ts.timestamp-*

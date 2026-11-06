@@ -1,0 +1,288 @@
+import { afterEach, beforeEach, describe, expect, it } from 'vite-plus/test';
+import { createTestRuntime, seedBasics } from '../test-utils';
+
+let t: ReturnType<typeof createTestRuntime>;
+let seed: Awaited<ReturnType<typeof seedBasics>>;
+
+beforeEach(async () => {
+	t = createTestRuntime();
+	seed = await seedBasics(t.runtime);
+});
+
+afterEach(() => t.cleanup());
+
+function place(clientRequestId = crypto.randomUUID()) {
+	return t.services().orders.place(
+		{
+			clientRequestId,
+			tableId: seed.tables[1].id,
+			customerName: ' Meier ',
+			note: 'ohne Senf',
+			items: [
+				{ articleId: seed.fries.id, quantity: 2 },
+				{ articleId: seed.sausage.id, quantity: 1 },
+				{ articleId: seed.beer.id, quantity: 3 }
+			]
+		},
+		seed.service
+	);
+}
+
+describe('placing an order', () => {
+	it('stores snapshots, totals and a running order number', () => {
+		const first = place();
+		const second = place();
+		expect(first.orderNumber).toBe(1);
+		expect(second.orderNumber).toBe(2);
+		expect(first.customerName).toBe('Meier');
+		expect(first.tableLabel).toBe('2');
+		expect(first.totalCents).toBe(2 * 600 + 750 + 3 * 550);
+
+		const detail = t.services().orders.detail(first.id);
+		expect(detail.items.map((item) => [item.articleName, item.printerId])).toEqual([
+			['Pommes', seed.kitchen.id],
+			['Bratwurst', seed.grill.id],
+			['Bier', null]
+		]);
+	});
+
+	it('is idempotent for the same client request id', () => {
+		const id = crypto.randomUUID();
+		expect(place(id).id).toBe(place(id).id);
+		expect(t.services().orders.search({})).toHaveLength(1);
+	});
+
+	it('requires a customer name, a table and at least one item', () => {
+		const s = t.services();
+		const base = {
+			clientRequestId: 'x',
+			tableId: seed.tables[0].id,
+			customerName: 'A',
+			items: [{ articleId: seed.fries.id, quantity: 1 }]
+		};
+		expect(() => s.orders.place({ ...base, customerName: '  ' }, seed.service)).toThrow(/Namen/);
+		expect(() => s.orders.place({ ...base, tableId: 999 }, seed.service)).toThrow(/Tisch/);
+		expect(() => s.orders.place({ ...base, items: [] }, seed.service)).toThrow(/keine Artikel/);
+	});
+
+	it('rejects inactive articles', () => {
+		t.services().menu.setArticleActive(seed.fries.id, false);
+		expect(() => place()).toThrow(/nicht mehr verfügbar/);
+	});
+
+	it('keeps old prices when the menu changes', () => {
+		const order = place();
+		t.services().menu.saveArticle(seed.fries.id, { ...seed.fries, priceCents: 900 });
+		expect(t.services().orders.detail(order.id).order.totalCents).toBe(order.totalCents);
+	});
+});
+
+describe('print queue', () => {
+	it('queues one ticket per effective printer with only its items', async () => {
+		const order = place();
+		const jobs = t.services().printQueue.listByOrder(order.id);
+		expect(jobs.map((job) => job.printerName).sort()).toEqual(['Grill', 'Küche']);
+		const kitchen = jobs.find((job) => job.printerName === 'Küche')!;
+		expect(kitchen.preview).toContain('2 x Pommes');
+		expect(kitchen.preview).not.toContain('Bratwurst');
+		expect(kitchen.preview).not.toContain('Bier');
+		expect(kitchen.preview).toContain('Tisch 2'.toUpperCase());
+		expect(kitchen.preview).toContain('Name: Meier');
+		expect(kitchen.preview).toContain('Aufgenommen von: Anna');
+
+		await t.runtime.worker.tick();
+		expect(t.device.printed).toHaveLength(2);
+		expect(t.services().printQueue.countPending()).toBe(0);
+	});
+
+	it('keeps jobs while a printer is offline and prints them in order once it is back', async () => {
+		t.device.offlineHosts.add(seed.kitchen.host);
+		const first = place();
+		const second = place();
+		await t.runtime.worker.tick();
+
+		const pending = t.services().printQueue.list({ status: 'pending' });
+		expect(pending.map((job) => job.orderNumber)).toEqual([first.orderNumber, second.orderNumber]);
+		expect(pending[0].attempts).toBe(1);
+		expect(pending[0].lastError).toMatch(/ECONNREFUSED/);
+		expect(
+			t
+				.services()
+				.printQueue.printerStatuses()
+				.find((p) => p.id === seed.kitchen.id)
+		).toMatchObject({ reachable: false, pendingJobs: 2 });
+
+		// Within the backoff nothing is retried.
+		await t.runtime.worker.tick();
+		expect(t.services().printQueue.list({ status: 'pending' })[0].attempts).toBe(1);
+
+		t.device.offlineHosts.clear();
+		t.advance(1500);
+		await t.runtime.worker.tick();
+		expect(t.services().printQueue.countPending()).toBe(0);
+		const kitchenTickets = t.device.printed.filter((p) => p.target.host === seed.kitchen.host);
+		expect(kitchenTickets.map((p) => p.text.match(/BESTELLUNG (\d+)/)?.[1])).toEqual(['1', '2']);
+	});
+
+	it('reroutes, cancels and reprints jobs', async () => {
+		t.device.offlineHosts.add(seed.kitchen.host);
+		const order = place();
+		await t.runtime.worker.tick();
+		const s = t.services().printQueue;
+
+		expect(s.rerouteAll(seed.kitchen.id, seed.grill.id)).toBe(1);
+		await t.runtime.worker.tick();
+		expect(s.countPending()).toBe(0);
+
+		const printed = s.listByOrder(order.id)[0];
+		t.device.offlineHosts.add(seed.grill.host);
+		s.reprint(printed.id);
+		await t.runtime.worker.tick();
+		expect(s.countPending()).toBe(1);
+		const copy = s.list({ status: 'queued' })[0];
+		s.cancel(copy.id);
+		expect(s.countPending()).toBe(0);
+		expect(() => s.cancel(copy.id)).toThrow(/wartende/);
+	});
+
+	it('resets jobs left in printing after a restart', async () => {
+		t.device.offlineHosts.add(seed.kitchen.host);
+		t.device.offlineHosts.add(seed.grill.host);
+		place();
+		await t.runtime.worker.tick();
+		const repo = t.runtime.repositories.printJobs;
+		const job = repo.list({ status: 'queued' })[0];
+		repo.claim(job.id, job.printerId, new Date());
+		expect(repo.get(job.id)?.status).toBe('printing');
+		repo.resetPrinting();
+		expect(repo.get(job.id)?.status).toBe('queued');
+	});
+
+	it('does not deactivate printers with waiting jobs', () => {
+		t.device.offlineHosts.add(seed.kitchen.host);
+		place();
+		expect(() =>
+			t.services().printers.save(seed.kitchen.id, { ...seed.kitchen, active: false })
+		).toThrow(/wartende/);
+	});
+});
+
+describe('payments', () => {
+	it('supports splitting until the open amount is zero', () => {
+		const order = place(); // 36.00
+		const s = t.services();
+		s.payments.add(order.id, 2000, 'cash', seed.service);
+		expect(s.orders.detail(order.id).openCents).toBe(1600);
+		expect(s.orders.search({ paymentStatus: 'partial' })).toHaveLength(1);
+		expect(() => s.payments.add(order.id, 1700, 'twint', seed.service)).toThrow(/höher/);
+		expect(() => s.payments.add(order.id, 1003, 'twint', seed.service)).toThrow(/5 Rappen/);
+		s.payments.add(order.id, 1600, 'twint', seed.service);
+		expect(s.orders.detail(order.id).openCents).toBe(0);
+		expect(s.orders.search({ paymentStatus: 'paid' })).toHaveLength(1);
+		expect(() => s.payments.add(order.id, 100, 'cash', seed.service)).toThrow(/bereits bezahlt/);
+	});
+
+	it('lets service staff undo only their own latest payment within five minutes', () => {
+		const order = place();
+		const s = t.services();
+		const first = s.payments.add(order.id, 1000, 'cash', seed.service);
+		const second = s.payments.add(order.id, 1000, 'cash', seed.service);
+		expect(() => s.payments.remove(first.id, seed.service)).toThrow(/letzte Zahlung/);
+		t.advance(6 * 60 * 1000);
+		expect(() => s.payments.remove(second.id, seed.service)).toThrow(/5 Minuten/);
+		s.payments.remove(second.id, seed.admin);
+		expect(s.orders.detail(order.id).paidCents).toBe(1000);
+	});
+});
+
+describe('search and dashboard', () => {
+	it('filters by table, staff and order number', () => {
+		const order = place();
+		const s = t.services();
+		expect(s.orders.search({ tableId: seed.tables[1].id })).toHaveLength(1);
+		expect(s.orders.search({ tableId: seed.tables[0].id })).toHaveLength(0);
+		expect(s.orders.search({ createdByUserId: seed.admin.id })).toHaveLength(0);
+		expect(s.orders.search({ orderNumber: order.orderNumber })).toHaveLength(1);
+		expect(s.orders.search({ text: 'mei' })).toHaveLength(1);
+		expect(s.orders.search({ text: '1' })).toHaveLength(1);
+	});
+
+	it('aggregates revenue over time and articles sold', () => {
+		place();
+		t.advance(40 * 60 * 1000);
+		place();
+		const dashboard = t.services().stats.dashboard('15m');
+		expect(dashboard.totals).toEqual({ orders: 2, revenueCents: 7200, items: 12 });
+		expect(dashboard.timeline.length).toBeGreaterThanOrEqual(3);
+		expect(dashboard.timeline.filter((bucket) => bucket.orders > 0)).toHaveLength(2);
+		expect(dashboard.articles[0]).toMatchObject({ name: 'Bier', quantity: 6 });
+		const food = t.services().stats.dashboard('1h', seed.food.id);
+		expect(food.articles.map((article) => article.name)).toEqual(['Pommes', 'Bratwurst']);
+	});
+});
+
+describe('users', () => {
+	it('protects the last active admin', () => {
+		const s = t.services();
+		expect(() =>
+			s.users.update(seed.admin.id, { name: 'Admin', role: 'service', active: true }, seed.admin)
+		).toThrow(/letzte aktive Admin/);
+		s.users.update(seed.service.id, { name: 'Anna', role: 'admin', active: true }, seed.admin);
+		s.users.update(seed.admin.id, { name: 'Admin', role: 'service', active: true }, seed.service);
+	});
+
+	it('rejects duplicate usernames', async () => {
+		await expect(
+			t.services().users.create({ username: 'Anna', name: 'X', role: 'service', password: 'abcd' })
+		).rejects.toThrow(/vergeben/);
+	});
+});
+
+describe('event databases', () => {
+	it('creates a new database with master data and switches to it', async () => {
+		place();
+		await t.runtime.worker.tick();
+		const s = t.services();
+		s.settings.setEventName('Sommerfest');
+		const name = s.databases.create({
+			name: 'Herbstfest 2026',
+			eventName: 'Herbstfest',
+			copyMasterData: true,
+			activate: true
+		});
+		expect(name).toBe('herbstfest-2026');
+		expect(t.runtime.activeName()).toBe('herbstfest-2026');
+
+		const next = t.services();
+		expect(next.settings.get().eventName).toBe('Herbstfest');
+		expect(next.orders.search({})).toHaveLength(0);
+		expect(next.menu.overview().flatMap((c) => c.articles)).toHaveLength(3);
+		expect(
+			next.users
+				.list()
+				.map((u) => u.username ?? '')
+				.sort((a, b) => a.localeCompare(b))
+		).toEqual(['admin', 'anna']);
+
+		const list = next.databases.list();
+		expect(list.find((db) => db.active)?.name).toBe('herbstfest-2026');
+		expect(list.find((db) => db.name === 'anlass')?.eventName).toBe('Sommerfest');
+
+		const backup = await next.databases.download('anlass');
+		expect(new TextDecoder().decode(backup.slice(0, 15))).toBe('SQLite format 3');
+		expect(next.databases.upload('kopie.sqlite', backup)).toBe('kopie');
+		expect(() => next.databases.upload('x', new Uint8Array([1, 2, 3]))).toThrow(/keine SQLite/);
+		expect(() => next.databases.delete('herbstfest-2026')).toThrow(/aktive/);
+	});
+
+	it('refuses to switch while print jobs are waiting', () => {
+		t.device.offlineHosts.add(seed.kitchen.host);
+		place();
+		const s = t.services();
+		s.databases.create({ name: 'neu', eventName: '', copyMasterData: false, activate: false });
+		expect(() => s.databases.activate('neu', false)).toThrow(/Druckwarteschlange/);
+		s.databases.activate('neu', true);
+		expect(t.runtime.activeName()).toBe('neu');
+		expect(t.services().users.needsSetup()).toBe(true);
+	});
+});

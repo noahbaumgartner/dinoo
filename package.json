@@ -1,0 +1,53 @@
+{
+	"name": "dinoo",
+	"private": true,
+	"version": "0.0.1",
+	"type": "module",
+	"description": "Offline food ordering system for club events",
+	"engines": {
+		"node": ">=24"
+	},
+	"scripts": {
+		"dev": "vp dev --host",
+		"dev:fake": "PRINTER_DRIVER=fake vp dev --host",
+		"build": "vp build",
+		"preview": "vp preview --host",
+		"start": "PROTOCOL_HEADER=x-forwarded-proto HOST_HEADER=host node server.js",
+		"prepare": "vp config && svelte-kit sync || echo ''",
+		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+		"test": "vp test run",
+		"format": "vp fmt .",
+		"lint": "vp fmt --check . && vp lint .",
+		"db:generate": "drizzle-kit generate",
+		"seed": "vpx scripts/seed.ts"
+	},
+	"devDependencies": {
+		"@sveltejs/adapter-node": "^5.5.8",
+		"@sveltejs/kit": "^2.70.4",
+		"@sveltejs/vite-plugin-svelte": "^6.2.4",
+		"@types/better-sqlite3": "^9.6.0",
+		"@types/node": "^24",
+		"@types/qrcode": "^1.5.5",
+		"drizzle-kit": "^0.31.11",
+		"eslint-plugin-svelte": "^3.24.0",
+		"svelte": "^5.57.3",
+		"svelte-check": "^4.7.8",
+		"typescript": "^5.9.3",
+		"vite": "npm:@voidzero-dev/vite-plus-core@1.4.0",
+		"vite-plus": "1.4.0"
+	},
+	"dependencies": {
+		"@lucide/svelte": "^1.70.0",
+		"@noahbaumgartner/svelte-ui": "^0.0.10",
+		"better-auth": "^1.7.18",
+		"better-sqlite3": "^13.0.3",
+		"drizzle-orm": "^0.45.4",
+		"jsqr": "^1.4.0",
+		"node-thermal-printer": "^4.6.1",
+		"qrcode": "^1.5.4"
+	},
+	"overrides": {
+		"vite": "npm:@voidzero-dev/vite-plus-core@1.4.0"
+	}
+}

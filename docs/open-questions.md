@@ -3,10 +3,13 @@
 Ungeklärte Punkte, die vor oder während der Umsetzung entschieden werden müssen. Erledigte Fragen mit Antwort (und ggf. Verweis auf ADR/Feature) abhaken.
 
 ## Offen
+
 - keine. Neue Fragen hier eintragen; sie entstehen typischerweise während der Umsetzung.
 
 ## Entschieden
+
 ### Fachlich
+
 - [x] Dashboard-Umfang → **Einnahmenverlauf als Liniendiagramm, verkaufte Artikel als Balkendiagramm, Summe der verkauften Artikel** (F09).
 - [x] Service eigene Bestellungen suchen → **Ja, reduziert** (nur eigene, Filter Tisch/Nummer/Zahlungsstatus, einzige Aktion: kassieren) (F08).
 - [x] Zieldrucker beim Bestellen anzeigen → **Nein** (F02).
@@ -23,6 +26,7 @@ Ungeklärte Punkte, die vor oder während der Umsetzung entschieden werden müss
 - [x] Auswertungen → **Ja, als Graph mit Verlauf** (F09).
 
 ### Technisch
+
 - [x] Druck-Library → **die bekannteste: `node-thermal-printer`** (ADR-005).
 - [x] Druckerausfall → **Jobs bleiben in der Warteschlange**, kein automatisches Umleiten (F03).
 - [x] Tri-State Drucker-Override → **`printerMode` (`inherit` | `custom` | `none`)** (02-domain-model, F04).
