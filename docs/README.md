@@ -7,7 +7,7 @@
 | [02-domain-model.md](02-domain-model.md) | Entitäten, Beziehungen, Zustände |
 | [03-tech-stack.md](03-tech-stack.md) | Technologien & nicht-funktionale Anforderungen |
 | [features/](features/) | Ein File pro Feature (`F01-…md`), Vorlage: `_template.md` |
-| [decisions/](decisions/) | Architekturentscheide (`ADR-001-…md`), Vorlage: `_template.md` |
+| [decisions/](decisions/) | Architekturentscheide (ADR-001 Monolith, ADR-002 svelte-ui, ADR-003 SQLite/Drizzle, ADR-004 Services/Repositories), Vorlage: `_template.md` |
 | [open-questions.md](open-questions.md) | Ungeklärte Punkte |
 
 ## Konventionen
