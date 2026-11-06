@@ -18,11 +18,11 @@ Service-Personal nimmt am Tisch eine Bestellung in vier Schritten auf: Tisch wä
 
 ## Akzeptanzkriterien
 - [ ] Nur angemeldete Benutzer (`service` oder `admin`).
-- [ ] Schritt 1 zeigt nur aktive Tische (`Table.active`), sortiert nach `sortOrder`. Pflicht: Tisch, Name des Bestellers.
+- [ ] Schritt 1 zeigt nur aktive Tische (`Table.active`), sortiert nach `sortOrder`. **Pflichtfelder: Tisch und Name des Bestellers.**
 - [ ] Schritt 2 zeigt nur aktive Artikel in aktiven Kategorien; Menge per +/– (0 entfernt die Position); Zwischensumme laufend sichtbar; Zurück zu Schritt 1 ohne Datenverlust.
 - [ ] Schritt 3 ist ein einziger Button „Bestellung abschicken“, deaktiviert ohne Position. Doppelklick/Netzwerk-Retry erzeugt keine zweite Bestellung (Idempotenz-Token).
 - [ ] Beim Abschicken: `orderNumber` fortlaufend; `tableLabel`, `articleName`, `priceCents`, effektiver `printerId` und `totalCents` als Snapshot gespeichert.
-- [ ] Bestellung wird gespeichert, auch wenn der Druck fehlschlägt; Druckstatus pro Drucker sichtbar.
+- [ ] Bestellung wird gespeichert und die Zettel in die Druckwarteschlange gestellt (F03); auch bei nicht erreichbarem Drucker geht die Bestellung durch. Druckstatus pro Drucker sichtbar (wartet / gedruckt).
 - [ ] Nach Schritt 3 wechselt die Ansicht automatisch zu Schritt 4 (F07) mit Bestellnummer und Betrag.
 - [ ] „Neue Bestellung“ startet wieder bei Schritt 1.
 
@@ -35,7 +35,7 @@ Service-Personal nimmt am Tisch eine Bestellung in vier Schritten auf: Tisch wä
 - Mobile-first, Bedienelemente mindestens 44 px.
 
 ## Nicht im Scope
-- Bestellung nachträglich ändern oder stornieren (offen).
+- Bestellung nachträglich ändern oder stornieren: **bewusst nicht möglich**. Korrektur = neue Bestellung.
 - Rabatte, Trinkgeld.
 
 ## Abhängigkeiten
@@ -43,4 +43,3 @@ Service-Personal nimmt am Tisch eine Bestellung in vier Schritten auf: Tisch wä
 
 ## Offene Fragen
 - Zieldrucker beim Bestellen als Badge anzeigen?
-- Ist der Name des Bestellers Pflicht oder optional (z. B. bei Bar-Bestellungen)?

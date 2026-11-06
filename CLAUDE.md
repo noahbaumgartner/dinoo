@@ -26,6 +26,6 @@ Die gesamte fachliche und technische Spezifikation liegt in `docs/` (Übersicht:
 - Alles mit Fachbezug (Bestellung, Artikel, Drucker): in dinoo unter `src/lib/components/`.
 
 ## Konventionen
-- Code, Dateinamen, Bezeichner: **Englisch**. UI-Texte und Doku: **Deutsch (Schweiz)**, `ss` statt `ß`.
+- **Sprache:** Alles ausser `docs/` ist **Englisch**: Code, Dateinamen, Bezeichner, Kommentare, Commit-Messages, PR-Beschreibungen, README, Konfiguration. Nur `docs/` (Spezifikation) und UI-Texte sind **Deutsch (Schweiz)**, `ss` statt `ß`. Gilt auch, wenn die Konversation Deutsch ist.
 - Mobile-first: Haupt-Clients sind Smartphones/Tablets im WLAN.
 - Keine Laufzeit-Abhängigkeit auf Internet oder externe Dienste.

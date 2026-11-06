@@ -5,10 +5,12 @@
 | Anwendung | **SvelteKit-Monolith** (Svelte 5, TypeScript) | Ein Prozess auf dem Server-Laptop liefert Frontend, API und Druckanbindung. → [ADR-001](decisions/ADR-001-sveltekit-monolith.md) |
 | UI-Komponenten | **`@noahbaumgartner/svelte-ui`** (lokal via `npm link`) | Eigene, wiederverwendbare Komponentenbibliothek. → [ADR-002](decisions/ADR-002-svelte-ui-via-npm-link.md) |
 | Icons | `@lucide/svelte` | Peer-Dependency von svelte-ui |
-| Datenbank | **SQLite** mit **Drizzle ORM** | Dateibasiert, kein separater DB-Prozess, ideal für Offline-Betrieb auf einem Laptop. → [ADR-003](decisions/ADR-003-sqlite-drizzle.md) |
-| Drucker | Epson TM-T20IV, TM-T20III im lokalen Netz, ESC/POS über TCP/9100 | Vorhandene Hardware; Anbindung per IP, unabhängig von Kabel/WLAN. Library offen. |
-| Hosting | Lokal auf dem Server-Laptop, kein Internet | Siehe Betriebsszenario in `00-overview.md` |
-| Auth | Session-basiert, lokal | Konkrete Umsetzung offen |
+| Datenbank | **SQLite** (`better-sqlite3`) mit **Drizzle ORM**, eine Datei pro Anlass | → [ADR-003](decisions/ADR-003-sqlite-drizzle.md), [ADR-006](decisions/ADR-006-sqlite-treiber.md) |
+| Drucker | Epson TM-T20IV, TM-T20III im lokalen Netz, ESC/POS über TCP/9100 via `node-thermal-printer` | → [ADR-005](decisions/ADR-005-druck-library.md) |
+| Auth | **Better Auth** (Drizzle-Adapter, username-Plugin) | → [ADR-007](decisions/ADR-007-auth-library.md) |
+| QR | Scan clientseitig (`BarcodeDetector`/`jsQR`), Generierung clientseitig (`qrcode`) | Statischer TWINT-QR, Inhalt wird gespeichert (F06) |
+| Diagramme | Svelte-Chart-Bibliothek ohne Internetabhängigkeit (z. B. `layerchart`) | F09 |
+| Hosting | Lokal auf dem Server-Laptop, Start via `node build` bzw. `vite dev`; kein Dienst, kein HTTPS | Siehe Betriebsszenario in `00-overview.md` |
 | Tests | Vitest (Unit), Playwright (E2E) | SvelteKit-Standard |
 
 ## Server-Architektur: Services & Repositories
@@ -29,6 +31,7 @@ src/lib/server/
 ## Nicht-funktionale Anforderungen
 - **Offline-first:** Kein Internetzugang, keine externen Dienste zur Laufzeit.
 - **Geräte:** Smartphones und Tablets im WLAN als Haupt-Clients → Mobile-first, grosse Bedienelemente.
-- **Robustheit:** Druckerausfall darf keine Bestellung verlieren (Druckaufträge persistieren, Wiederholung möglich).
+- **Robustheit:** Druckerausfall darf keine Bestellung verlieren: persistente Druckwarteschlange, automatisches Nachdrucken beim Wiederverbinden (F03).
+- **Hintergrundarbeit im Prozess:** Der Druck-Worker läuft im selben Node-Prozess wie SvelteKit (Start in `hooks.server.ts`); kein separater Dienst.
 - **Sprache:** UI in Deutsch (Schweiz). Code und Bezeichner auf Englisch.
 - **Installation:** Muss von Vereinsmitgliedern auf einem neuen Laptop einrichtbar sein (dokumentierter Setup-Prozess).

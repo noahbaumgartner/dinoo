@@ -15,7 +15,7 @@ Der Admin pflegt Kategorien und Artikel inkl. Preisen, legt pro Kategorie den St
 - [ ] Nur Rolle `admin` (`/admin/menu`).
 - [ ] Kategorien: anlegen, umbenennen, sortieren, Standard-Drucker wählen (inkl. „kein Druck“); löschen nur ohne Artikel.
 - [ ] Artikel: anlegen, bearbeiten (Name, Preis in CHF mit Rappen, Kategorie, Sortierung), aktiv/inaktiv.
-- [ ] Artikel-Druckerwahl ist ein Tri-State: „Standard der Kategorie (= X)“, konkreter Drucker, „kein Druck“.
+- [ ] Artikel-Druckerwahl über `printerMode`: „Standard der Kategorie (= X)“ (`inherit`), konkreter Drucker (`custom`), „kein Druck“ (`none`).
 - [ ] Effektiver Drucker wird in der Artikelliste angezeigt.
 - [ ] Artikel mit bestehenden Bestellungen werden deaktiviert statt gelöscht.
 - [ ] Änderungen wirken sofort auf neue Bestellungen.
@@ -37,4 +37,4 @@ Der Admin pflegt Kategorien und Artikel inkl. Preisen, legt pro Kategorie den St
 - F01, F05
 
 ## Offene Fragen
-- Tri-State im Datenmodell: `Article.printerId` null + zusätzliches Flag `printerMode` (`inherit` | `custom` | `none`)? Domänenmodell ggf. anpassen.
+- keine

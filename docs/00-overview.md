@@ -32,15 +32,19 @@ dinoo ist ein Essensbestellsystem für Vereinsanlässe (Feste, Turniere, Beizli)
 ## Kernfunktionen
 <!-- Details in docs/features/ -->
 - Service: Bestellung in 4 Schritten aufnehmen (Tisch → Artikel → abschicken → abrechnen)
-- Bestellzettel automatisch auf die zuständigen Küchendrucker verteilen
-- Abrechnung bar (mit Rückgeldhilfe) oder per TWINT-QR
+- Bestellzettel über eine persistente Druckwarteschlange auf die zuständigen Küchendrucker verteilen
+- Abrechnung bar (mit Rückgeldhilfe) oder per TWINT-QR, Teilzahlungen möglich
 - Admin: Angebot (Kategorien, Artikel, Preise, Druckzuordnung) pflegen
-- Admin: Drucker, Benutzer, Tische und Einstellungen verwalten
+- Admin: Drucker und Druckwarteschlange, Benutzer, Tische, Einstellungen verwalten
+- Admin: Bestellungen suchen (Tisch, Personal, Bestellnummer), Dashboard mit Bestellverlauf
+- Admin: Datenbank pro Anlass anlegen, wechseln, sichern
 
 ## Nicht im Scope
-- Internet-/Cloud-Anbindung, Online-Bezahlung
+- Internet-/Cloud-Anbindung, Online-Bezahlung, dynamischer TWINT-QR
 - Native Mobile-Apps
-- Mehrere Server-Laptops gleichzeitig (ein Anlass = ein Server)
+- Mehrere Server-Laptops gleichzeitig (ein Anlass = ein Server = eine Datenbank)
+- Storno oder Änderung abgeschickter Bestellungen
+- Küchenansicht am Bildschirm (die Zettel sind die Küchenschnittstelle)
 
 ## Glossar
 | Begriff | Bedeutung |

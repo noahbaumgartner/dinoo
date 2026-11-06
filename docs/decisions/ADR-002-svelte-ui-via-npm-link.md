@@ -26,4 +26,4 @@ Es existiert eine eigene Komponentenbibliothek `@noahbaumgartner/svelte-ui` (Sve
 ## Konsequenzen
 - Setup-Schritt: `npm link` in svelte-ui, danach `npm link @noahbaumgartner/svelte-ui` in dinoo. Zu dokumentieren in der README.
 - svelte-ui muss gebaut sein (`npm run build`), da `exports` auf `dist/` zeigt; alternativ `npm run dev`/Watch in svelte-ui laufen lassen.
-- Für einen Produktions-Build auf dem Server-Laptop ist offen, ob gelinkt, als Tarball (`npm pack`) oder als veröffentlichtes Paket eingebunden wird → `open-questions.md`.
+- Für den Produktions-Build auf dem Server-Laptop wird das veröffentlichte Paket verwendet: `npm i @noahbaumgartner/svelte-ui`. Änderungen an svelte-ui, die dinoo braucht, müssen also vorher veröffentlicht sein.

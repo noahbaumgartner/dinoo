@@ -47,11 +47,17 @@ Ein bestellbares Produkt.
 | name | string | ✓ | |
 | priceCents | int | ✓ | Preis in Rappen (CHF) |
 | categoryId | → Category | ✓ | |
-| printerId | → Printer | – | **Überschreibt** den Standard-Drucker der Kategorie. Leer = Kategorie-Default gilt |
+| printerMode | enum `inherit` \| `custom` \| `none` | ✓ | `inherit` = Kategorie-Default, `custom` = eigener Drucker (`printerId`), `none` = nicht drucken |
+| printerId | → Printer | – | Nur bei `printerMode = custom` |
 | sortOrder | int | ✓ | Reihenfolge innerhalb der Kategorie |
 | active | bool | ✓ | Inaktive Artikel sind nicht bestellbar (z. B. ausverkauft) |
 
-**Regel „effektiver Drucker“:** `article.printerId ?? category.defaultPrinterId`. Ist beides leer, wird der Artikel nicht gedruckt.
+**Regel „effektiver Drucker“:**
+```
+inherit → category.defaultPrinterId (leer = kein Druck)
+custom  → article.printerId
+none    → kein Druck
+```
 
 ### Tisch (`Table`)
 Vom Admin vorkonfigurierte Tische, aus denen der Service beim Bestellen auswählt.
@@ -77,9 +83,10 @@ Eine vom Service-Personal aufgenommene Bestellung für einen Tisch.
 | createdAt | datetime | ✓ | |
 | note | string | – | Freitext für die Küche, falls nötig |
 | totalCents | int | ✓ | Summe der Positionen zum Bestellzeitpunkt |
-| paymentMethod | enum `cash` \| `twint` | – | Leer = noch nicht bezahlt |
-| paidAt | datetime | – | Zeitpunkt der Bezahlung |
-| paidByUserId | → User | – | Wer die Bezahlung erfasst hat |
+
+Abgeleitet (nicht gespeichert): `paidCents = Σ Payment.amountCents`, `openCents = totalCents − paidCents`, Status `offen` / `teilbezahlt` / `bezahlt`.
+
+Eine Bestellung ist nach dem Abschicken **unveränderlich**: kein Storno, keine Änderung (Entscheid). Korrekturen erfolgen durch eine neue Bestellung.
 
 ### Einstellungen (`Settings`)
 Einzelwerte für den Anlass, Key-Value.
@@ -87,7 +94,9 @@ Einzelwerte für den Anlass, Key-Value.
 | Key | Typ | Beschreibung |
 |-----|-----|--------------|
 | eventName | string | Name des Anlasses (Zettelkopf) |
-| twintQrImage | blob/Pfad | Statischer TWINT-QR-Code des Vereins, wird beim Bezahlen angezeigt |
+| twintQrContent | string | **Inhalt** des statischen TWINT-QR-Codes des Vereins (beim Einrichten gescannt oder eingefügt). Der QR wird daraus zur Anzeige neu generiert. |
+
+Eine Datenbankdatei = genau ein Anlass. Für einen neuen Anlass wird eine neue Datei angelegt (F10).
 
 ### Bestellposition (`OrderItem`)
 Ein Artikel in einer bestimmten Menge innerhalb einer Bestellung. Name und Preis werden **kopiert**, damit spätere Preisänderungen alte Bestellungen nicht verändern.
@@ -103,41 +112,59 @@ Ein Artikel in einer bestimmten Menge innerhalb einer Bestellung. Name und Preis
 | printerId | → Printer | – | Effektiver Drucker zum Bestellzeitpunkt (Snapshot), leer = nicht gedruckt |
 
 ### Druckauftrag (`PrintJob`)
-Ein Bestellzettel für genau einen Drucker. Wird persistiert, damit bei Druckerausfall nichts verloren geht und wiederholt werden kann.
+Ein Eintrag in der **Druckwarteschlange**: genau ein Zettel für genau einen Drucker. Alles, was gedruckt wird (Bestellzettel, Testdrucke), läuft über diese Warteschlange. Sie ist persistent: Ist ein Drucker nicht erreichbar, bleiben die Aufträge stehen und werden nach dem Wiederverbinden in Reihenfolge nachgedruckt.
+
+| Feld | Typ | Pflicht | Beschreibung |
+|------|-----|---------|--------------|
+| id | int | ✓ | |
+| kind | enum `order` \| `test` | ✓ | Art des Zettels |
+| orderId | → Order | – | Bei `kind = order` |
+| printerId | → Printer | ✓ | Zieldrucker (bei Umleitung geändert) |
+| payload | text | ✓ | Fertig gerenderter Zettelinhalt, damit der Druck unabhängig von späteren Datenänderungen ist |
+| status | enum `queued` \| `printing` \| `printed` \| `cancelled` | ✓ | |
+| attempts | int | ✓ | Anzahl Druckversuche |
+| lastError | string | – | Letzte Fehlermeldung |
+| lastAttemptAt | datetime | – | |
+| createdAt / printedAt | datetime | ✓ / – | |
+
+### Zahlung (`Payment`)
+Eine (Teil-)Zahlung zu einer Bestellung. Mehrere Zahlungen pro Bestellung ermöglichen Splitting; eine Bestellung gilt als bezahlt, wenn die Summe der Zahlungen den Gesamtbetrag erreicht.
 
 | Feld | Typ | Pflicht | Beschreibung |
 |------|-----|---------|--------------|
 | id | int | ✓ | |
 | orderId | → Order | ✓ | |
-| printerId | → Printer | ✓ | |
-| status | enum `pending` \| `printed` \| `failed` | ✓ | |
-| attempts | int | ✓ | Anzahl Druckversuche |
-| lastError | string | – | Letzte Fehlermeldung |
-| createdAt / printedAt | datetime | ✓ / – | |
+| amountCents | int | ✓ | > 0 |
+| method | enum `cash` \| `twint` | ✓ | |
+| paidAt | datetime | ✓ | |
+| paidByUserId | → User | ✓ | Wer die Zahlung erfasst hat |
 
 ## Beziehungen
 ```
 User 1 ──── n Order n ──── 1 Table
 Order 1 ──── n OrderItem n ──── 1 Article n ──── 1 Category
 Order 1 ──── n PrintJob n ──── 1 Printer
+Order 1 ──── n Payment  n ──── 1 User
 Category n ──── 0..1 Printer   (Default)
 Article  n ──── 0..1 Printer   (Override)
 ```
 
 ## Zustände / Lebenszyklen
 
-**PrintJob**
+**PrintJob (Warteschlange)**
 ```
-pending ──(Druck ok)──► printed
-   │
-   └──(Fehler)──► failed ──(Admin: erneut drucken)──► pending
+queued ──(Worker nimmt ältesten Job des Druckers)──► printing ──(ok)──► printed
+  ▲                                                      │
+  └──────────(Fehler: attempts+1, lastError, Pause)──────┘
+queued ──(Admin: abbrechen)──► cancelled
 ```
+Es gibt keinen Endzustand „failed“: Ein Job bleibt `queued`, bis er gedruckt oder vom Admin abgebrochen wird. Pro Drucker wird strikt in Reihenfolge (`createdAt`) gedruckt; ein hängender Job blockiert nur seinen Drucker.
 
-**Order (Bezahlung)**
+**Order (Bezahlung, abgeleitet aus `Payment`)**
 ```
-offen (paymentMethod leer) ──(Bar kassiert / TWINT bestätigt)──► bezahlt (paymentMethod, paidAt gesetzt)
+offen (0 bezahlt) ──(Zahlung)──► teilbezahlt (0 < bezahlt < total) ──(Zahlung)──► bezahlt (bezahlt ≥ total)
 ```
-Die Bezahlung folgt direkt auf das Absenden (Schritt 4 im Bestellablauf, F07), kann aber auch später aus der Bestellübersicht nachgeholt werden. Storno/Änderung sind offen (→ `open-questions.md`).
+Die Bezahlung folgt direkt auf das Absenden (Schritt 4, F07), kann aber auch später aus „Offene Bestellungen“ nachgeholt werden.
 
 ## Bestellzettel (Inhalt)
 Pro effektivem Drucker ein Zettel mit:
@@ -148,4 +175,4 @@ Pro effektivem Drucker ein Zettel mit:
 5. Notiz (falls vorhanden)
 6. Aufgenommen von: `User.displayName`
 
-Positionen anderer Drucker erscheinen nicht (Küche sieht nur, was sie zubereitet). Ob ein Hinweis „+ 2 Positionen am Grill“ nötig ist, ist offen.
+Positionen anderer Drucker erscheinen nicht und werden auch nicht erwähnt (Küche sieht nur, was sie zubereitet).

@@ -19,4 +19,5 @@ Die Daten eines Anlasses (Angebot, Bestellungen, Benutzer, Drucker) liegen auf d
 - Backup = Kopie einer Datei. Sinnvoll vor/nach jedem Anlass.
 - Drizzle-Schema und Migrationen liegen unter `src/lib/server/repositories/db/`.
 - Nur Repositories greifen auf Drizzle zu (→ [ADR-004](ADR-004-services-und-repositories.md)).
-- Treiber (`better-sqlite3` vs. `@libsql/client` o. ä.) ist noch zu wählen → `open-questions.md`.
+- Treiber: `better-sqlite3` (→ [ADR-006](ADR-006-sqlite-treiber.md)).
+- Eine Datenbankdatei = ein Anlass; Wechsel im Admin (F10).
