@@ -6,7 +6,7 @@
 | UI-Komponenten | **`@noahbaumgartner/svelte-ui`** (lokal via `npm link`) | Eigene, wiederverwendbare Komponentenbibliothek. → [ADR-002](decisions/ADR-002-svelte-ui-via-npm-link.md) |
 | Icons | `@lucide/svelte` | Peer-Dependency von svelte-ui |
 | Datenbank | **SQLite** mit **Drizzle ORM** | Dateibasiert, kein separater DB-Prozess, ideal für Offline-Betrieb auf einem Laptop. → [ADR-003](decisions/ADR-003-sqlite-drizzle.md) |
-| Drucker | Epson TM-T20IV, TM-T20III via Ethernet (ESC/POS) | Vorhandene Hardware. Konkretes Protokoll/Library offen. |
+| Drucker | Epson TM-T20IV, TM-T20III im lokalen Netz, ESC/POS über TCP/9100 | Vorhandene Hardware; Anbindung per IP, unabhängig von Kabel/WLAN. Library offen. |
 | Hosting | Lokal auf dem Server-Laptop, kein Internet | Siehe Betriebsszenario in `00-overview.md` |
 | Auth | Session-basiert, lokal | Konkrete Umsetzung offen |
 | Tests | Vitest (Unit), Playwright (E2E) | SvelteKit-Standard |
@@ -18,7 +18,7 @@ Der serverseitige Code (`src/lib/server/`) ist in zwei Schichten gegliedert. →
 src/lib/server/
 ├── repositories/     # Zugriff auf Aussenwelt: DB und Drucker
 │   ├── db/           # Drizzle-Schema, Migrationen, ein Repository pro Aggregat
-│   └── printer/      # Druckerzugriff (ESC/POS über Ethernet)
+│   └── printer/      # Druckerzugriff (ESC/POS über TCP)
 └── services/         # Fachlogik, orchestriert Repositories
 ```
 

@@ -2,25 +2,30 @@
 
 ## Rollen
 
-| Rolle | Beschreibung |
-|-------|--------------|
-| Besteller | Gibt Bestellungen über die Web-Oberfläche auf. Unklar, ob anonym oder angemeldet (siehe offene Fragen). |
-| Admin | Verwaltet Angebot, Drucker, Benutzer und Einstellungen des Anlasses. Zugriff auf das Admin-Interface von jedem Gerät im WLAN. |
+| Rolle | Code | Beschreibung |
+|-------|------|--------------|
+| Service | `service` | Vereinsmitglied, das am Tisch Bestellungen aufnimmt (F02) und abrechnet (F07). Muss angemeldet sein. |
+| Admin | `admin` | Verwaltet Angebot, Drucker, Benutzer, Tische und Einstellungen des Anlasses. Kann alles, was Service kann. Zugriff von jedem Gerät im Netz. |
 
-<!-- Weitere Rollen (z. B. Küche mit Bildschirmansicht, Kasse) sind nicht definiert; nur ergänzen, wenn fachlich nötig. -->
+Gäste haben keinen eigenen Zugang; sie bestellen über das Service-Personal.
+
+<!-- Weitere Rollen (z. B. Küche mit Bildschirmansicht) sind nicht definiert; nur ergänzen, wenn fachlich nötig. -->
 
 ## Berechtigungsmatrix
 
-| Aktion | Besteller | Admin |
-|--------|-----------|-------|
-| Angebot ansehen | ✓ | ✓ |
-| Bestellung aufgeben | ✓ | ✓ |
-| Angebot pflegen (Artikel, Preise, Kategorien) | – | ✓ |
-| Drucker verwalten und zuordnen | – | ✓ |
-| Benutzer und Rollen verwalten | – | ✓ |
-| Admin-Interface aufrufen | – | ✓ |
+| Aktion | Service | Admin |
+|--------|---------|-------|
+| Anmelden / Abmelden | ✓ | ✓ |
+| Bestellung aufnehmen und abschicken | ✓ | ✓ |
+| Bestellung abrechnen (Bar / TWINT) | ✓ | ✓ |
+| Offene Bestellungen einsehen | ✓ | ✓ |
+| Druckstatus der eigenen Bestellung sehen | ✓ | ✓ |
+| Zahlung zurücksetzen | – | ✓ |
+| Angebot pflegen (Kategorien, Artikel, Druckzuordnung) | – | ✓ |
+| Drucker verwalten, Testdruck, Druckaufträge wiederholen/umleiten | – | ✓ |
+| Benutzer, Tische, Einstellungen verwalten | – | ✓ |
+| Einnahmen-Übersicht | – | ✓ |
 
 ## Authentifizierung
-- Das Admin-Interface ist nur nach Anmeldung mit einem Benutzer der Rolle *Admin* erreichbar.
-- Die Anmeldung erfolgt in der Web-Oberfläche; der Server-Laptop ist dabei nicht privilegiert, auch dort muss man sich als Admin anmelden.
-- Ob Besteller sich anmelden müssen, ist offen (→ `open-questions.md`).
+- Jede Nutzung erfordert eine Anmeldung (F01). Nur `/login` ist öffentlich.
+- Das Admin-Interface (`/admin/*`) ist nur mit Rolle `admin` erreichbar. Der Server-Laptop ist dabei nicht privilegiert.

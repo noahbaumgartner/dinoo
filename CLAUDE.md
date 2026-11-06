@@ -1,7 +1,7 @@
 # dinoo – Essensbestellsystem für Vereinsanlässe
 
 ## Projekt
-Offline-Bestellsystem: Ein Laptop vor Ort ist Server (WLAN, Web-App, SQLite) und druckt Bestellzettel auf Epson-Thermodrucker (TM-T20IV/TM-T20III) am Ethernet. Alle Geräte im WLAN nutzen dieselbe Web-Oberfläche; das Admin-Interface ist Teil davon und nur für die Rolle Admin. Details: `docs/00-overview.md`.
+Offline-Bestellsystem: Ein Laptop vor Ort ist Server (WLAN, Web-App, SQLite) und druckt Bestellzettel auf Epson-Thermodrucker (TM-T20IV/TM-T20III) im selben Netz (TCP/9100). Alle Geräte im WLAN nutzen dieselbe Web-Oberfläche; das Admin-Interface ist Teil davon und nur für die Rolle Admin. Details: `docs/00-overview.md`.
 
 ## Spezifikation
 Die gesamte fachliche und technische Spezifikation liegt in `docs/` (Übersicht: `docs/README.md`).

@@ -11,31 +11,31 @@ dinoo ist ein Essensbestellsystem für Vereinsanlässe (Feste, Turniere, Beizli)
 
 ## Betriebsszenario
 ```
-┌──────────────────────── lokales WLAN (vom Laptop aufgebaut) ────────────────────────┐
-│                                                                                     │
-│   Smartphone ──┐                                                                    │
-│   Tablet ──────┼── http://<dns-name> ──►  Server-Laptop (fixe IP, DNS-Eintrag)      │
-│   Laptop ──────┘                             │  SvelteKit-Monolith + SQLite         │
-│                                              │                                      │
-└──────────────────────────────────────────────┼──────────────────────────────────────┘
-                                               │ Ethernet
-                               ┌───────────────┴───────────────┐
-                        Epson TM-T20IV                   Epson TM-T20III
-                        (Küchenzettel)                   (Küchenzettel)
+┌──────────────────── lokales Netzwerk (WLAN vom Laptop aufgebaut, optional Kabel) ────────────────────┐
+│                                                                                                      │
+│   Smartphone ──┐                                                                                     │
+│   Tablet ──────┼── http://<dns-name> ──►  Server-Laptop (fixe IP, DNS-Eintrag)                       │
+│   Laptop ──────┘                             SvelteKit-Monolith + SQLite                             │
+│                                                   │                                                  │
+│                                                   │ TCP/9100 (ESC/POS)                               │
+│                                   ┌───────────────┴───────────────┐                                  │
+│                            Epson TM-T20IV                   Epson TM-T20III                          │
+│                            (Küchenzettel)                   (Küchenzettel)                           │
+└──────────────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
 - Ein **Laptop ist der Server**: Er baut das WLAN auf, hat eine fixe IP und einen DNS-Eintrag, so dass die Oberfläche unter einem lesbaren Namen erreichbar ist.
-- Die **Drucker** (Epson TM-T20IV und TM-T20III) sind per Ethernet mit dem Laptop verbunden und drucken die Bestellzettel für die Küche.
+- Die **Drucker** (Epson TM-T20IV und TM-T20III) hängen als normale Netzwerkteilnehmer im selben Netz wie Server und Clients, per Kabel oder WLAN. Der Server spricht sie über ihre IP-Adresse an (ESC/POS über TCP, Port 9100).
 - **Alle Clients** im WLAN greifen auf dieselbe Web-Oberfläche zu. Es gibt keine separate App, keinen Internetzugang und keinen Cloud-Dienst.
 - Das **Admin-Interface** ist Teil derselben Web-Oberfläche und nur mit der Rolle *Admin* nutzbar, egal ob direkt am Server-Laptop oder von einem anderen Gerät im WLAN.
 
 ## Kernfunktionen
 <!-- Details in docs/features/ -->
-- Bestellung aufgeben (Web-Oberfläche)
-- Bestellzettel automatisch auf Küchendrucker ausgeben
-- Admin: Angebot (Artikel, Preise, Kategorien) pflegen
-- Admin: Drucker und Druckzuordnung verwalten
-- Admin: Benutzer und Rollen verwalten
+- Service: Bestellung in 4 Schritten aufnehmen (Tisch → Artikel → abschicken → abrechnen)
+- Bestellzettel automatisch auf die zuständigen Küchendrucker verteilen
+- Abrechnung bar (mit Rückgeldhilfe) oder per TWINT-QR
+- Admin: Angebot (Kategorien, Artikel, Preise, Druckzuordnung) pflegen
+- Admin: Drucker, Benutzer, Tische und Einstellungen verwalten
 
 ## Nicht im Scope
 - Internet-/Cloud-Anbindung, Online-Bezahlung
@@ -48,4 +48,5 @@ dinoo ist ein Essensbestellsystem für Vereinsanlässe (Feste, Turniere, Beizli)
 | Anlass | Ein Vereinsevent, an dem dinoo eingesetzt wird |
 | Server-Laptop | Der Laptop, der WLAN, Web-App, Datenbank und Druckeranbindung bereitstellt |
 | Bestellzettel | Der Thermodruck-Beleg für die Küche zu einer Bestellung |
-| Küchendrucker | Epson-Thermodrucker (TM-T20IV / TM-T20III) am Ethernet |
+| Küchendrucker | Epson-Thermodrucker (TM-T20IV / TM-T20III) im lokalen Netz |
+| Service | Vereinsmitglied, das Bestellungen am Tisch aufnimmt und kassiert |
