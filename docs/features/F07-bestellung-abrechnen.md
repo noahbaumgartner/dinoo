@@ -29,7 +29,7 @@ Direkt nach dem Abschicken kassiert der Service bar (mit Rechnungshilfe für das
 - [ ] Ohne hinterlegten QR-Inhalt ist „TWINT“ deaktiviert mit Hinweis.
 
 **Später / Korrektur**
-- [ ] „Später bezahlen“ lässt die Bestellung offen bzw. teilbezahlt; unter „Offene Bestellungen“ (pro Tisch, Service-Ansicht) kann weiterkassiert werden.
+- [ ] „Später bezahlen“ lässt die Bestellung offen bzw. teilbezahlt; unter „Meine Bestellungen“ (F08, Filter „offen“) kann weiterkassiert werden.
 - [ ] Admin kann Zahlungen einzeln löschen (Fehleingabe); Service kann nur die eigene letzte Zahlung innerhalb von 5 Minuten rückgängig machen.
 - [ ] Summe der Zahlungen kann den Gesamtbetrag nicht überschreiten.
 
@@ -49,4 +49,4 @@ Direkt nach dem Abschicken kassiert der Service bar (mit Rechnungshilfe für das
 - F02, F06
 
 ## Offene Fragen
-- Kassenabschluss pro Service-Mitarbeiter: Daten via `Payment.paidByUserId` vorhanden; Auswertung in F09 als „Bar pro Mitarbeiter“.
+- keine (Kassenabschluss pro Mitarbeiter ist nicht Teil des Dashboards; Daten via `Payment.paidByUserId` wären vorhanden)

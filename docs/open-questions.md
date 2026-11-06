@@ -3,12 +3,13 @@
 Ungeklärte Punkte, die vor oder während der Umsetzung entschieden werden müssen. Erledigte Fragen mit Antwort (und ggf. Verweis auf ADR/Feature) abhaken.
 
 ## Offen
-- [ ] **Dashboard-Umfang** (F09): Verlauf, Einnahmen, Artikel-Ranking, Bar pro Mitarbeiter, Drucker-Status. Annahme, da Nachricht abgeschnitten war. Bestätigen oder kürzen?
-- [ ] Soll der **Service** eigene Bestellungen suchen dürfen (F08), oder nur Admin?
-- [ ] Zieldrucker beim Bestellen als Badge anzeigen (F02)?
+- keine. Neue Fragen hier eintragen; sie entstehen typischerweise während der Umsetzung.
 
 ## Entschieden
 ### Fachlich
+- [x] Dashboard-Umfang → **Einnahmenverlauf als Liniendiagramm, verkaufte Artikel als Balkendiagramm, Summe der verkauften Artikel** (F09).
+- [x] Service eigene Bestellungen suchen → **Ja, reduziert** (nur eigene, Filter Tisch/Nummer/Zahlungsstatus, einzige Aktion: kassieren) (F08).
+- [x] Zieldrucker beim Bestellen anzeigen → **Nein** (F02).
 - [x] Besteller anmelden? → **Service-Personal meldet sich an, Gäste bestellen über den Service** (01-roles, F01).
 - [x] Zettelinhalt? → **Bestellnummer, Tisch, Name des Bestellers, Positionen** (02-domain-model).
 - [x] Druckzuordnung? → **Default pro Kategorie, Override pro Artikel** (F04).

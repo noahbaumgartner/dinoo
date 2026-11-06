@@ -36,7 +36,7 @@ dinoo ist ein Essensbestellsystem für Vereinsanlässe (Feste, Turniere, Beizli)
 - Abrechnung bar (mit Rückgeldhilfe) oder per TWINT-QR, Teilzahlungen möglich
 - Admin: Angebot (Kategorien, Artikel, Preise, Druckzuordnung) pflegen
 - Admin: Drucker und Druckwarteschlange, Benutzer, Tische, Einstellungen verwalten
-- Admin: Bestellungen suchen (Tisch, Personal, Bestellnummer), Dashboard mit Bestellverlauf
+- Admin: Bestellungen suchen (Tisch, Personal, Bestellnummer), Dashboard mit Einnahmenverlauf und Artikelverkäufen; Service: eigene Bestellungen
 - Admin: Datenbank pro Anlass anlegen, wechseln, sichern
 
 ## Nicht im Scope

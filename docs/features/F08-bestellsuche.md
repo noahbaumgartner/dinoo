@@ -4,7 +4,7 @@
 **Priorität:** Muss
 
 ## Ziel
-Der Admin findet jede Bestellung schnell wieder: nach Tisch, nach Service-Mitarbeiter oder nach Bestellnummer, und sieht alle Details inkl. Druck- und Zahlungsstatus.
+Der Admin findet jede Bestellung schnell wieder: nach Tisch, nach Service-Mitarbeiter oder nach Bestellnummer, und sieht alle Details inkl. Druck- und Zahlungsstatus. Der Service sieht eine reduzierte Variante nur für seine eigenen Bestellungen.
 
 ## User Stories
 - Als Admin möchte ich bei einer Reklamation („Tisch 12 hat keine Pommes bekommen“) sofort die Bestellungen von Tisch 12 sehen.
@@ -12,12 +12,18 @@ Der Admin findet jede Bestellung schnell wieder: nach Tisch, nach Service-Mitarb
 - Als Admin möchte ich sehen, welche Bestellungen ein bestimmter Helfer aufgenommen hat.
 
 ## Akzeptanzkriterien
-- [ ] Nur Rolle `admin` (`/admin/orders`).
+**Admin** (`/admin/orders`)
 - [ ] Ein Suchfeld plus Filter: **Tisch** (Auswahl), **Personal** (Auswahl), **Bestellnummer** (exakt). Freitext im Suchfeld trifft Bestellnummer und Name des Bestellers.
 - [ ] Zusatzfilter: Zahlungsstatus (offen / teilbezahlt / bezahlt), Zeitraum.
 - [ ] Ergebnisliste, neueste zuerst: Bestellnummer, Zeit, Tisch, Besteller, Personal, Betrag, Zahlungsstatus, Druckstatus (alle Zettel gedruckt / wartend).
 - [ ] Detailansicht: Positionen, Zahlungen, PrintJobs mit Status; von dort: Zahlung erfassen/löschen (F07), Zettel erneut drucken (F05).
 - [ ] Ergebnis wird paginiert oder begrenzt (z. B. 100), Suche antwortet unter 500 ms bei 5000 Bestellungen.
+
+**Service, reduziert** (`/orders`, „Meine Bestellungen“)
+- [ ] Zeigt ausschliesslich Bestellungen mit `createdByUserId = aktueller Benutzer`; kein Personal-Filter.
+- [ ] Filter: Tisch, Bestellnummer, Zahlungsstatus. Liste: Bestellnummer, Zeit, Tisch, Besteller, Betrag, Zahlungsstatus.
+- [ ] Detailansicht: Positionen und Zahlungen; einzige Aktion: Zahlung erfassen (F07). Keine PrintJob-Aktionen, kein Löschen von Zahlungen.
+- [ ] Ersetzt die bisherige Ansicht „Offene Bestellungen“ aus F07 (dort als Standardfilter „offen“).
 
 ## Daten / API
 - Liest: `Order`, `OrderItem`, `Payment`, `PrintJob`, `Table`, `User`
@@ -34,4 +40,4 @@ Der Admin findet jede Bestellung schnell wieder: nach Tisch, nach Service-Mitarb
 - F01, F02, F07
 
 ## Offene Fragen
-- Soll der Service (nicht nur Admin) seine eigenen Bestellungen suchen dürfen? Vorerst nur „Offene Bestellungen“ pro Tisch (F07).
+- keine

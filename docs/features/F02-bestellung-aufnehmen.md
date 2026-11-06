@@ -42,4 +42,4 @@ Service-Personal nimmt am Tisch eine Bestellung in vier Schritten auf: Tisch wä
 - F01, F03, F04 (Angebot), F05 (Drucker), F06 (Tische), F07 (Abrechnung)
 
 ## Offene Fragen
-- Zieldrucker beim Bestellen als Badge anzeigen?
+- keine (Zieldrucker wird beim Bestellen **nicht** angezeigt, Entscheid)

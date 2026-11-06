@@ -18,14 +18,14 @@ Gäste haben keinen eigenen Zugang; sie bestellen über das Service-Personal.
 | Anmelden / Abmelden | ✓ | ✓ |
 | Bestellung aufnehmen und abschicken | ✓ | ✓ |
 | Bestellung abrechnen (Bar / TWINT) | ✓ | ✓ |
-| Offene Bestellungen einsehen | ✓ | ✓ |
+| Eigene Bestellungen suchen (reduziert) | ✓ | ✓ |
 | Druckstatus der eigenen Bestellung sehen | ✓ | ✓ |
 | Eigene letzte Zahlung rückgängig machen (5 min) | ✓ | ✓ |
 | Beliebige Zahlung löschen | – | ✓ |
 | Angebot pflegen (Kategorien, Artikel, Druckzuordnung) | – | ✓ |
 | Drucker verwalten, Testdruck, Druckwarteschlange einsehen und eingreifen | – | ✓ |
 | Benutzer, Tische, Einstellungen verwalten | – | ✓ |
-| Bestellungen suchen (Tisch, Personal, Bestellnummer) | – | ✓ |
+| Alle Bestellungen suchen (Tisch, Personal, Bestellnummer) | – | ✓ |
 | Dashboard | – | ✓ |
 | Datenbank anlegen, wechseln, sichern | – | ✓ |
 
