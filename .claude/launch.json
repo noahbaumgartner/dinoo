@@ -1,0 +1,11 @@
+{
+	"version": "0.0.1",
+	"configurations": [
+		{
+			"name": "dinoo-dev",
+			"runtimeExecutable": "npm",
+			"runtimeArgs": ["run", "dev:fake", "--", "--port", "5173", "--strictPort"],
+			"port": 5173
+		}
+	]
+}
