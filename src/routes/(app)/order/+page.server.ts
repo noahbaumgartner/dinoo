@@ -5,9 +5,9 @@ import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = ({ locals }) => {
 	const { tables, categories } = locals.services.orders.orderingData();
-	const { rows, columns } = locals.services.tables.plan();
+	const { rows, columns, numbering } = locals.services.tables.plan();
 	return {
-		plan: { rows, columns },
+		plan: { rows, columns, numbering },
 		tables: tables.map(({ id, label, gridRow, gridColumn }) => ({
 			id,
 			label,

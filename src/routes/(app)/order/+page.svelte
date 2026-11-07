@@ -3,6 +3,7 @@
 	import ActionBar from '$lib/components/ActionBar.svelte';
 	import SeatingPlan from '$lib/components/SeatingPlan.svelte';
 	import { categoryColor } from '$lib/category-colors';
+	import { rowLabel } from '$lib/table-grid';
 	import { formatChf } from '$lib/money';
 	import { uid } from '$lib/uid';
 	import {
@@ -13,9 +14,17 @@
 		Input,
 		Label,
 		NumberStepper,
+		Tabs,
 		Textarea
 	} from '@noahbaumgartner/svelte-ui';
-	import { ArrowLeft, ClipboardCheck, Send, UtensilsCrossed } from '@lucide/svelte';
+	import {
+		ArrowLeft,
+		ClipboardCheck,
+		LayoutGrid,
+		List,
+		Send,
+		UtensilsCrossed
+	} from '@lucide/svelte';
 	import { SvelteMap } from 'svelte/reactivity';
 	import type { PageProps } from './$types';
 
@@ -30,10 +39,43 @@
 	let activeCategory = $state<number | null>(null);
 	let reviewOpen = $state(false);
 
+	/** How the tables are shown; remembered per device. */
+	type TableView = 'list' | 'plan';
+	const TABLE_VIEW_KEY = 'dinoo.tableView';
+	let tableView = $state<TableView>('list');
+
+	// Read after hydration so the server-rendered list and the client agree first.
+	$effect(() => {
+		try {
+			if (localStorage.getItem(TABLE_VIEW_KEY) === 'plan') tableView = 'plan';
+		} catch {
+			// Storage unavailable; keep the default.
+		}
+	});
+
+	function setTableView(view: TableView) {
+		try {
+			localStorage.setItem(TABLE_VIEW_KEY, view);
+		} catch {
+			// Storage unavailable (private mode); the choice just isn't remembered.
+		}
+	}
+
 	let articles = $derived(data.categories.flatMap((category) => category.articles));
 	let table = $derived(data.tables.find((t) => t.id === tableId));
 	let planTables = $derived(data.tables.filter((t) => t.gridRow !== null));
 	let freeTables = $derived(data.tables.filter((t) => t.gridRow === null));
+	/** Plan tables grouped by row, in column order. */
+	let planRows = $derived(
+		Array.from({ length: data.plan.rows }, (_, index) => index + 1)
+			.map((row) => ({
+				row,
+				tables: planTables
+					.filter((t) => t.gridRow === row)
+					.sort((a, b) => (a.gridColumn ?? 0) - (b.gridColumn ?? 0))
+			}))
+			.filter((group) => group.tables.length > 0)
+	);
 	let lines = $derived(
 		articles
 			.filter((article) => (quantities.get(article.id) ?? 0) > 0)
@@ -84,20 +126,50 @@
 		/>
 	{:else if step === 0}
 		<section class="stack" aria-labelledby="step-table">
-			<h1 id="step-table">Tisch wählen</h1>
+			<div class="row heading-row">
+				<h1 id="step-table">Tisch wählen</h1>
+				{#if planTables.length > 0}
+					<Tabs
+						bind:value={tableView}
+						onchange={setTableView}
+						label="Ansicht"
+						size="sm"
+						options={[
+							{ value: 'list', label: 'Liste', icon: List },
+							{ value: 'plan', label: 'Saalplan', icon: LayoutGrid }
+						]}
+					/>
+				{/if}
+			</div>
 			<div class="stack" role="radiogroup" aria-label="Tisch">
 				{#if planTables.length > 0}
-					<SeatingPlan rows={data.plan.rows} columns={data.plan.columns} tables={planTables}>
-						{#snippet cell(t)}
-							{@render tile(t)}
-						{/snippet}
-					</SeatingPlan>
+					{#if tableView === 'plan'}
+						<SeatingPlan rows={data.plan.rows} columns={data.plan.columns} tables={planTables}>
+							{#snippet cell(t)}
+								{@render tile(t)}
+							{/snippet}
+						</SeatingPlan>
+					{:else}
+						{#each planRows as group (group.row)}
+							<div class="table-group">
+								<h2>{rowLabel(data.plan.numbering, group.row)}</h2>
+								<div class="tables">
+									{#each group.tables as t (t.id)}
+										{@render tile(t)}
+									{/each}
+								</div>
+							</div>
+						{/each}
+					{/if}
 				{/if}
 				{#if freeTables.length > 0}
-					<div class="tables">
-						{#each freeTables as t (t.id)}
-							{@render tile(t)}
-						{/each}
+					<div class="table-group">
+						{#if planTables.length > 0 && tableView === 'list'}<h2>Weitere Tische</h2>{/if}
+						<div class="tables">
+							{#each freeTables as t (t.id)}
+								{@render tile(t)}
+							{/each}
+						</div>
 					</div>
 				{/if}
 			</div>
@@ -261,6 +333,10 @@
 		grid-template-columns: repeat(auto-fill, 72px);
 		grid-auto-rows: 72px;
 		gap: 6px;
+	}
+
+	.table-group h2 {
+		margin-bottom: 8px;
 	}
 
 	.table-tile {

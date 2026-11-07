@@ -11,3 +11,8 @@ export function gridLabel(numbering: TableNumbering, row: number, column: number
 		return String.fromCharCode(64 + row) + String(column).padStart(2, '0');
 	return String(row * 100 + column);
 }
+
+/** Name of a seating plan row: «Reihe A» or «Reihe 1». */
+export function rowLabel(numbering: TableNumbering, row: number): string {
+	return `Reihe ${numbering === 'letter' ? String.fromCharCode(64 + row) : row}`;
+}
