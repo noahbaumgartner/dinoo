@@ -5,6 +5,7 @@
 	import { inPlace, notify } from '$lib/components/notify';
 	import { MAX_GRID_COLUMNS, MAX_GRID_ROWS, type TableNumbering } from '$lib/table-grid';
 	import {
+		AlertDialog,
 		Button,
 		Card,
 		CardContent,
@@ -20,7 +21,7 @@
 		Switch,
 		Tabs
 	} from '@noahbaumgartner/svelte-ui';
-	import { Check, LayoutGrid, Pencil, Plus, Power, Trash2 } from '@lucide/svelte';
+	import { Check, Eye, EyeOff, LayoutGrid, Pencil, Plus, Power, Trash2 } from '@lucide/svelte';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -67,6 +68,9 @@
 		active = table?.active ?? true;
 		editOpen = true;
 	}
+
+	let deleteOpen = $state(false);
+	let deleting = $state<Table | null>(null);
 </script>
 
 {#snippet lineHandle(line: { row: number } | { column: number }, name: string, short: string)}
@@ -227,29 +231,42 @@
 			<h2 id="free-heading">Weitere Tische</h2>
 			<Button variant="secondary" icon={Plus} onclick={() => edit(null)}>Tisch erfassen</Button>
 		</div>
-		{#if freeTables.length === 0}
-			<p class="hint">Tische ausserhalb des Saalplans, z. B. «Bar» oder «Terrasse».</p>
-		{:else}
+		<p class="hint">Tische ausserhalb des Saalplans, z. B. «Bar» oder «Terrasse».</p>
+		{#if freeTables.length > 0}
 			<ul class="tables">
 				{#each freeTables as table (table.id)}
 					<li class={['table', { 'table--inactive': !table.active }]}>
-						<button
-							type="button"
-							class="label"
-							onclick={() => edit(table)}
-							aria-label="Tisch {table.label} bearbeiten"
-						>
-							{table.label}
-						</button>
-						<form method="POST" action="?/toggle" use:enhance={inPlace()}>
-							<input type="hidden" name="id" value={table.id} />
-							<input type="hidden" name="active" value={String(!table.active)} />
-							<Switch
-								checked={table.active}
-								aria-label="Tisch {table.label} aktiv"
-								onchange={(event) => event.currentTarget.form?.requestSubmit()}
+						<span class="table-label">{table.label}</span>
+						{#if !table.active}<span class="muted status">Inaktiv</span>{/if}
+						<span class="icon-actions">
+							<form method="POST" action="?/toggle" use:enhance={inPlace()} class="toggle">
+								<input type="hidden" name="id" value={table.id} />
+								<input type="hidden" name="active" value={String(!table.active)} />
+								<Button
+									type="submit"
+									variant="ghost"
+									size="sm"
+									icon={table.active ? Eye : EyeOff}
+									label={table.active
+										? `Tisch ${table.label} deaktivieren`
+										: `Tisch ${table.label} aktivieren`}
+								/>
+							</form>
+							<Button
+								variant="ghost"
+								size="sm"
+								icon={Pencil}
+								label="Tisch {table.label} bearbeiten"
+								onclick={() => edit(table)}
 							/>
-						</form>
+							<Button
+								variant="ghost"
+								size="sm"
+								icon={Trash2}
+								label="Tisch {table.label} löschen"
+								onclick={() => ((deleting = table), (deleteOpen = true))}
+							/>
+						</span>
 					</li>
 				{/each}
 			</ul>
@@ -295,16 +312,24 @@
 		</Field>
 	</form>
 	{#snippet actions(close)}
-		{#if editing}
-			<form method="POST" action="?/delete" use:enhance={notify(close)} class="delete">
-				<input type="hidden" name="id" value={editing.id} />
-				<Button type="submit" variant="ghost" icon={Trash2}>Löschen</Button>
-			</form>
-		{/if}
 		<Button variant="secondary" onclick={close}>Abbrechen</Button>
 		<Button type="submit" form="table-form">Speichern</Button>
 	{/snippet}
 </Dialog>
+
+<AlertDialog
+	bind:open={deleteOpen}
+	title="Tisch löschen?"
+	description="«{deleting?.label}» wird gelöscht. Hat der Tisch schon Bestellungen, wird er nur deaktiviert."
+>
+	{#snippet actions(close)}
+		<Button variant="secondary" onclick={close}>Abbrechen</Button>
+		<form method="POST" action="?/delete" use:enhance={notify(close)}>
+			<input type="hidden" name="id" value={deleting?.id} />
+			<Button type="submit" icon={Trash2}>Löschen</Button>
+		</form>
+	{/snippet}
+</AlertDialog>
 
 <style>
 	.grid-form {
@@ -410,8 +435,7 @@
 	}
 
 	.cell:focus-visible,
-	.handle:focus-visible,
-	.label:focus-visible {
+	.handle:focus-visible {
 		outline: 2px solid var(--color-accent);
 		outline-offset: 2px;
 	}
@@ -428,53 +452,44 @@
 		font-weight: 400;
 	}
 
+	/* White like the seating plan above, rows divided like the article list in the menu. */
 	.tables {
-		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-		gap: 8px;
+		display: flex;
+		flex-direction: column;
 		margin: 0;
-		padding: 0;
+		padding: 4px 16px;
+		border-radius: 14px;
+		background-color: var(--color-fill);
 		list-style: none;
 	}
 
 	.table {
 		display: flex;
 		align-items: center;
-		justify-content: space-between;
-		gap: 8px;
-		padding: 8px 8px 8px 4px;
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius);
+		gap: 12px;
+		min-height: 52px;
 	}
 
-	.table--inactive {
-		background-color: var(--color-surface);
+	.table + .table {
+		border-top: 1px solid var(--color-border);
 	}
 
-	.table--inactive .label {
-		color: var(--color-text-muted);
-		text-decoration: line-through;
-	}
-
-	.label {
+	.table-label {
 		flex: 1;
-		padding: 6px;
-		border: none;
-		border-radius: 6px;
-		background: none;
-		color: var(--color-text);
-		font: inherit;
-		font-size: 18px;
+		min-width: 0;
+		overflow-wrap: anywhere;
 		font-weight: 600;
-		text-align: left;
-		cursor: pointer;
 	}
 
-	.label:hover {
-		background-color: var(--color-surface);
+	.table--inactive .table-label {
+		color: var(--color-text-muted);
 	}
 
-	.delete {
-		margin-right: auto;
+	.status {
+		font-size: 13px;
+	}
+
+	.toggle {
+		display: flex;
 	}
 </style>
