@@ -17,8 +17,8 @@ Jede Bestellung wird automatisch auf die zuständigen Küchendrucker verteilt; p
 **Einreihen**
 
 - [ ] Beim Abschicken wird pro **effektivem Drucker** (Regel in `02-domain-model.md`) genau ein `PrintJob` (`kind = order`, `status = queued`) erzeugt; Positionen ohne Drucker erzeugen keinen Job.
-- [ ] Der Zettel wird beim Einreihen fertig gerendert und als `payload` gespeichert (Inhalt gemäss „Bestellzettel“ in `02-domain-model.md`).
-- [ ] Bestellnummer und Tisch in doppelter Grösse; Zettel endet mit Schnitt; Umlaute korrekt.
+- [ ] Der Zettel wird beim Einreihen mit der aktuellen **Druckvorlage** (F11) fertig gerendert und als `payload` gespeichert (Inhalt gemäss „Bestellzettel“ in `02-domain-model.md`).
+- [ ] Standardvorlage: Bestellnummer und Tisch in doppelter Grösse; jeder Zettel endet mit Schnitt; Umlaute korrekt.
 - [ ] Testdrucke (F05) laufen ebenfalls als `PrintJob` (`kind = test`) über die Warteschlange.
 
 **Abarbeiten**
@@ -41,7 +41,7 @@ Jede Bestellung wird automatisch auf die zuständigen Küchendrucker verteilt; p
 
 ## Daten / API
 
-- Liest: `Order`, `OrderItem`, `Printer`, `Settings.eventName`
+- Liest: `Order`, `OrderItem`, `Printer`, `Settings.eventName`, `Settings.ticketTemplate`
 - Schreibt: `PrintJob`
 - `PrintQueueService` (Einreihen, Worker-Schleife, Admin-Aktionen) nutzt `PrintJobRepository` (DB) und `PrinterRepository` (ESC/POS über TCP/9100, → ADR-005).
 
@@ -58,7 +58,7 @@ Jede Bestellung wird automatisch auf die zuständigen Küchendrucker verteilt; p
 
 ## Abhängigkeiten
 
-- F02, F05
+- F02, F05, F11
 
 ## Offene Fragen
 

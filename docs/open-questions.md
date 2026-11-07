@@ -21,6 +21,8 @@ Ungeklärte Punkte, die vor oder während der Umsetzung entschieden werden müss
 - [x] Küchenansicht am Bildschirm → **Nein** (F03).
 - [x] Storno / Änderung → **Nicht möglich**, Bestellung ist unveränderlich (02-domain-model, F02).
 - [x] Zettel-Hinweis auf andere Drucker → **Nicht nötig** (F03).
+- [x] Zettel konfigurierbar? → **Ja, eine Druckvorlage pro Anlass für alle Drucker**, als Blockliste mit Platzhaltern, Live-Vorschau und Testdruck mit Beispieldaten (F11, ADR-008).
+- [x] Drucker-Testdruck → **Titel „Testdruck“ und ein zufälliger Witz** (100 Stück), ohne Druckvorlage (F05).
 - [x] Teilzahlungen / Splitting → **Ja, so einfach wie möglich**: Betrag pro Zahlung frei wählbar, mehrere `Payment`s pro Bestellung (F07).
 - [x] Mehrere Anlässe → **Genau ein Anlass pro Datenbank; Datenbank im Admin austauschbar** (F10).
 - [x] Auswertungen → **Ja, als Graph mit Verlauf** (F09).

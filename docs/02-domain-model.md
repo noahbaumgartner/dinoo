@@ -113,6 +113,7 @@ Einzelwerte für den Anlass, Key-Value.
 | eventName      | string | Name des Anlasses (Zettelkopf)                                                                                                                |
 | tableNumbering | string | Nummerierung des Saalplans: `letter` (A01, Standard) oder `number` (101)                                                                      |
 | twintQrContent | string | **Inhalt** des statischen TWINT-QR-Codes des Vereins (beim Einrichten gescannt oder eingefügt). Der QR wird daraus zur Anzeige neu generiert. |
+| ticketTemplate | JSON   | Druckvorlage für alle Bestellzettel (Blöcke, Stil, Platzhalter, → F11). Leer = Standardvorlage.                                               |
 
 Eine Datenbankdatei = genau ein Anlass. Für einen neuen Anlass wird eine neue Datei angelegt (F10).
 
@@ -138,7 +139,7 @@ Ein Eintrag in der **Druckwarteschlange**: genau ein Zettel für genau einen Dru
 | Feld                  | Typ                                                     | Pflicht | Beschreibung                                                                                                                                                              |
 | --------------------- | ------------------------------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | id                    | int                                                     | ✓       |                                                                                                                                                                           |
-| kind                  | enum `order` \| `test`                                  | ✓       | Art des Zettels                                                                                                                                                           |
+| kind                  | enum `order` \| `test`                                  | ✓       | Art des Zettels; `test` = Drucker-Testdruck (F05) oder Testdruck der Druckvorlage (F11)                                                                                   |
 | orderId               | → Order                                                 | –       | Bei `kind = order`                                                                                                                                                        |
 | printerId             | → Printer                                               | ✓       | Zieldrucker (bei Umleitung geändert)                                                                                                                                      |
 | payload               | text                                                    | ✓       | Fertig aufbereiteter Zettel als JSON (Zeilen mit Stil), damit der Druck unabhängig von späteren Datenänderungen ist; erst das Drucker-Repository übersetzt ihn in ESC/POS |
@@ -207,7 +208,7 @@ Die Bezahlung folgt direkt auf das Absenden (Schritt 4, F07), kann aber auch sp�
 
 ## Bestellzettel (Inhalt)
 
-Pro effektivem Drucker ein Zettel mit:
+Pro effektivem Drucker ein Zettel. Aufbau, Reihenfolge und Grössen bestimmt die **Druckvorlage** (`Settings.ticketTemplate`, F11). Die Standardvorlage enthält:
 
 1. Bestellnummer (gross), Datum/Zeit
 2. Tisch (gross)
