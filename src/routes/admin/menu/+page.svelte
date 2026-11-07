@@ -439,14 +439,15 @@
 		align-items: center;
 		gap: 12px;
 		min-height: 52px;
+		padding: 0 12px;
 	}
 
 	/* The divider starts at the name, so the handles stand apart in the gutter. */
 	.article::after {
 		position: absolute;
-		right: 0;
+		right: 12px;
 		bottom: 0;
-		left: 28px;
+		left: 40px;
 		border-bottom: 1px solid var(--color-border);
 		content: '';
 	}
@@ -491,7 +492,7 @@
 	@media (max-width: 720px) {
 		.article {
 			grid-template-columns: auto 1fr auto;
-			padding: 8px 0;
+			padding: 8px 12px;
 		}
 
 		.article-handle {
