@@ -139,7 +139,6 @@
 		key={(cat) => cat.id}
 		handleLabel={(cat) => `${cat.name} verschieben`}
 		announce={position}
-		revealHandles
 		onreorder={(ordered) =>
 			saveOrder(
 				'reorderCategories',
