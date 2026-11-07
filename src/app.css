@@ -1,4 +1,4 @@
-/* Base color tokens and light/dark come from @noahbaumgartner/svelte-ui/tokens.css (imported in
+/* Base color tokens and light theme come from @noahbaumgartner/svelte-ui/tokens.css (imported in
    the root layout). Components use only the semantic --color-* tokens. */
 
 :root {
