@@ -392,9 +392,11 @@
 		cursor: text;
 	}
 
-	.cell-input:focus {
+	/* One ring while typing: the accent border replaces the focus-visible outline of .cell. */
+	.cell.cell-input:focus {
 		border-color: var(--color-accent);
 		outline: none;
+		box-shadow: 0 0 0 1px var(--color-accent);
 	}
 
 	.handle {
