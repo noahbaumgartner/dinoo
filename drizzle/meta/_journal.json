@@ -29,6 +29,13 @@
       "when": 1794073204995,
       "tag": "0003_drop_article_printer_mode",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1794073269865,
+      "tag": "0004_category_color",
+      "breakpoints": true
     }
   ]
 }

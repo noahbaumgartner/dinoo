@@ -6,6 +6,7 @@ import type { ArticleRecord, CategoryRecord } from './types';
 export type CategoryInput = {
 	name: string;
 	sortOrder: number;
+	color: string;
 	defaultPrinterId: number | null;
 };
 

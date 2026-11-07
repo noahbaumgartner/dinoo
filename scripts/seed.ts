@@ -11,6 +11,7 @@
 import path from 'node:path';
 import type { RequestEvent } from '@sveltejs/kit';
 import { FakePrinterDeviceRepository } from '../src/lib/server/repositories/printer/FakePrinterDeviceRepository.ts';
+import { nextCategoryColor } from '../src/lib/category-colors.ts';
 import { Runtime } from '../src/lib/server/runtime.ts';
 
 const DATABASE = process.env.SEED_DATABASE ?? 'demo';
@@ -129,6 +130,7 @@ menu.forEach(([name, printerId, items], categoryIndex) => {
 	const category = s.menu.saveCategory(null, {
 		name,
 		sortOrder: categoryIndex + 1,
+		color: nextCategoryColor(categoryIndex),
 		defaultPrinterId: printerId
 	})!;
 	items.forEach(([articleName, priceCents, mode], index) => {

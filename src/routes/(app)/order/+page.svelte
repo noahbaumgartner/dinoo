@@ -2,6 +2,7 @@
 	import { enhance } from '$app/forms';
 	import ActionBar from '$lib/components/ActionBar.svelte';
 	import SeatingPlan from '$lib/components/SeatingPlan.svelte';
+	import { categoryColor } from '$lib/category-colors';
 	import { formatChf } from '$lib/money';
 	import { uid } from '$lib/uid';
 	import {
@@ -137,14 +138,22 @@
 						<button
 							type="button"
 							class={['chip', { 'chip--active': activeCategory === category.id }]}
-							onclick={() => jumpTo(category.id)}>{category.name}</button
+							style:--category-color={categoryColor(category.color)}
+							onclick={() => jumpTo(category.id)}
+							><span class="category-dot" aria-hidden="true"></span>{category.name}</button
 						>
 					{/each}
 				</nav>
 			{/if}
 			{#each data.categories as category (category.id)}
-				<div class="category" id="category-{category.id}">
-					<h2>{category.name}</h2>
+				<div
+					class="category"
+					id="category-{category.id}"
+					style:--category-color={categoryColor(category.color)}
+				>
+					<h2 class="category-heading">
+						<span class="category-dot" aria-hidden="true"></span>{category.name}
+					</h2>
 					<ul class="articles">
 						{#each category.articles as article (article.id)}
 							{@const quantity = quantities.get(article.id) ?? 0}
@@ -335,6 +344,9 @@
 	}
 
 	.chip {
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
 		flex-shrink: 0;
 		padding: 8px 14px;
 		border: 1px solid var(--color-border);
@@ -347,12 +359,30 @@
 	}
 
 	.chip--active {
-		border-color: var(--color-accent);
+		border-color: var(--category-color);
 		background-color: var(--color-surface);
 	}
 
 	.category {
 		scroll-margin-top: 64px;
+	}
+
+	.category-heading {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+	}
+
+	.category-dot {
+		flex-shrink: 0;
+		width: 10px;
+		height: 10px;
+		border-radius: 3px;
+		background-color: var(--category-color);
+	}
+
+	.category .articles {
+		box-shadow: inset 3px 0 0 var(--category-color);
 	}
 
 	.articles {

@@ -215,6 +215,15 @@ describe('search and dashboard', () => {
 	});
 });
 
+describe('menu', () => {
+	it('stores a category color from the palette and rejects others', () => {
+		const s = t.services();
+		const input = { name: 'Dessert', sortOrder: 3, defaultPrinterId: null };
+		expect(s.menu.saveCategory(null, { ...input, color: 'pink' })?.color).toBe('pink');
+		expect(() => s.menu.saveCategory(null, { ...input, color: '#ff0000' })).toThrow(/Farbe/);
+	});
+});
+
 describe('users', () => {
 	it('protects the last active admin', () => {
 		const s = t.services();

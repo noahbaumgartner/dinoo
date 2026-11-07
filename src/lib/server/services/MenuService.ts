@@ -1,3 +1,4 @@
+import { isCategoryColor } from '../../category-colors';
 import type {
 	ArticleInput,
 	CategoryInput,
@@ -34,6 +35,7 @@ export class MenuService {
 	saveCategory(id: number | null, input: CategoryInput): CategoryRecord | undefined {
 		const name = input.name.trim();
 		if (!name) throw new DomainError('Bitte einen Namen für die Kategorie angeben.');
+		if (!isCategoryColor(input.color)) throw new DomainError('Bitte eine Farbe auswählen.');
 		if (input.defaultPrinterId !== null) this.printer(input.defaultPrinterId);
 		const clean = { ...input, name };
 		if (id === null) return this.menu.createCategory(clean);

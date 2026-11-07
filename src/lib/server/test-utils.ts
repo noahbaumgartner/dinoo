@@ -64,11 +64,13 @@ export async function seedBasics(runtime: Runtime) {
 	const food = s.menu.saveCategory(null, {
 		name: 'Warme Küche',
 		sortOrder: 1,
+		color: 'orange',
 		defaultPrinterId: kitchen.id
 	})!;
 	const drinks = s.menu.saveCategory(null, {
 		name: 'Getränke',
 		sortOrder: 2,
+		color: 'sky',
 		defaultPrinterId: null
 	})!;
 	const fries = s.menu.saveArticle(null, {

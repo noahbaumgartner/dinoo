@@ -17,6 +17,8 @@ Der Admin pflegt Kategorien und Artikel inkl. Preisen, legt pro Kategorie den St
 
 - [ ] Nur Rolle `admin` (`/admin/menu`).
 - [ ] Kategorien: anlegen, umbenennen, sortieren, Standard-Drucker wählen (inkl. „kein Druck“); löschen nur ohne Artikel.
+- [ ] Kategorien haben eine Farbe aus einer festen Palette von 10 Farben, passend zum Farbschema. Auswahl über ein Popover mit 10 Quadraten (Tastatur: Pfeiltasten). Neue Kategorien erhalten reihum eine noch passende Vorschlagsfarbe.
+- [ ] Die Farbe erscheint in der Kategorienliste (Akzentbalken, Farbpunkt) und in der Bestellansicht (Kategorie-Chips und -Überschriften).
 - [ ] Artikel: anlegen, bearbeiten (Name, Preis in CHF mit Rappen, Kategorie, Sortierung), aktiv/inaktiv.
 - [ ] Artikel-Druckerwahl: „Wie Kategorie (= X)“ (`printerId` leer) oder ein konkreter Drucker. Ein Artikel kann den Druck nicht separat abschalten; „kein Druck“ wird über die Kategorie gesteuert.
 - [ ] Effektiver Drucker wird in der Artikelliste angezeigt.
@@ -30,7 +32,7 @@ Der Admin pflegt Kategorien und Artikel inkl. Preisen, legt pro Kategorie den St
 
 ## UI
 
-1. Kategorienliste mit Drucker-Badge; ausklappbar die Artikel.
+1. Kategorienliste mit Farbe und Drucker-Badge; ausklappbar die Artikel.
 2. Drawer/Dialog zum Bearbeiten.
 3. Schnellaktion „Ausverkauft“ (Toggle) in der Liste.
 

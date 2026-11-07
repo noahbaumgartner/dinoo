@@ -1,6 +1,13 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import AdminPage from '$lib/components/AdminPage.svelte';
+	import CategoryColorPicker from '$lib/components/CategoryColorPicker.svelte';
+	import {
+		categoryColor,
+		isCategoryColor,
+		nextCategoryColor,
+		type CategoryColor
+	} from '$lib/category-colors';
 	import { notify } from '$lib/components/notify';
 	import { formatChf } from '$lib/money';
 	import {
@@ -39,10 +46,15 @@
 	let categoryOpen = $state(false);
 	let category = $state<Category | null>(null);
 	let categoryPrinter = $state(NO_PRINTER);
+	let categoryColorKey = $state<CategoryColor>(nextCategoryColor(0));
 
 	function editCategory(value: Category | null) {
 		category = value;
 		categoryPrinter = value?.defaultPrinterId ? String(value.defaultPrinterId) : NO_PRINTER;
+		categoryColorKey =
+			value && isCategoryColor(value.color)
+				? value.color
+				: nextCategoryColor(data.categories.length);
 		categoryOpen = true;
 	}
 
@@ -90,9 +102,13 @@
 	{/if}
 
 	{#each data.categories as cat (cat.id)}
-		<Card>
+		<Card class="category-card" style="--category-color: {categoryColor(cat.color)}">
 			<CardHeader>
-				<CardTitle>{cat.name}</CardTitle>
+				<CardTitle
+					><span class="category-title"
+						><span class="category-dot" aria-hidden="true"></span>{cat.name}</span
+					></CardTitle
+				>
 				<CardAction>
 					<span class="row">
 						<Badge icon={Printer}
@@ -204,6 +220,11 @@
 				placeholder="z. B. Warme Küche"
 				required
 			/>
+		</Field>
+		<Field>
+			<Label for="category-color">Farbe</Label>
+			<CategoryColorPicker id="category-color" bind:value={categoryColorKey} />
+			<FieldDescription>Hilft beim Bestellen, Kategorien schnell zu erkennen.</FieldDescription>
 		</Field>
 		<Field>
 			<Label for="category-printer">Standard-Drucker</Label>
@@ -325,6 +346,24 @@
 </AlertDialog>
 
 <style>
+	:global(.category-card) {
+		box-shadow: inset 3px 0 0 var(--category-color);
+	}
+
+	.category-title {
+		display: inline-flex;
+		align-items: center;
+		gap: 10px;
+	}
+
+	.category-dot {
+		flex-shrink: 0;
+		width: 12px;
+		height: 12px;
+		border-radius: 4px;
+		background-color: var(--category-color);
+	}
+
 	.articles {
 		display: flex;
 		flex-direction: column;

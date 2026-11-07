@@ -17,6 +17,7 @@ export const load: PageServerLoad = ({ locals }) => {
 		categories: categories.map((category) => ({
 			id: category.id,
 			name: category.name,
+			color: category.color,
 			articles: category.articles.map(({ id, name, priceCents }) => ({ id, name, priceCents }))
 		}))
 	};

@@ -14,6 +14,7 @@ export const actions: Actions = {
 			locals.services.menu.saveCategory(id, {
 				name: form.string('name'),
 				sortOrder: form.optionalInt('sortOrder') ?? 0,
+				color: form.string('color'),
 				defaultPrinterId: form.optionalInt('defaultPrinterId')
 			});
 			return { message: id === null ? 'Kategorie erfasst' : 'Kategorie gespeichert' };

@@ -97,6 +97,8 @@ export const categories = sqliteTable('categories', {
 	id: integer('id').primaryKey({ autoIncrement: true }),
 	name: text('name').notNull(),
 	sortOrder: integer('sort_order').notNull().default(0),
+	/** Key from `CATEGORY_COLORS` in `src/lib/category-colors.ts`. */
+	color: text('color').notNull().default('blue'),
 	defaultPrinterId: integer('default_printer_id').references(() => printers.id, {
 		onDelete: 'set null'
 	}),

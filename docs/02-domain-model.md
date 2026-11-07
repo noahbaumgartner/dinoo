@@ -36,12 +36,13 @@ Ein per Ethernet erreichbarer Thermodrucker.
 
 Gruppiert Artikel und legt den **Standard-Drucker** fest.
 
-| Feld             | Typ       | Pflicht | Beschreibung                                                                                                                   |
-| ---------------- | --------- | ------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| id               | int       | ✓       |                                                                                                                                |
-| name             | string    | ✓       | z. B. „Warme Küche“, „Getränke“                                                                                                |
-| sortOrder        | int       | ✓       | Reihenfolge in der Bestellansicht                                                                                              |
-| defaultPrinterId | → Printer | –       | Wohin Artikel dieser Kategorie standardmässig gedruckt werden. Leer = kein Druck (z. B. Getränke, die der Service selbst holt) |
+| Feld             | Typ       | Pflicht | Beschreibung                                                                                                                                                             |
+| ---------------- | --------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| id               | int       | ✓       |                                                                                                                                                                          |
+| name             | string    | ✓       | z. B. „Warme Küche“, „Getränke“                                                                                                                                          |
+| sortOrder        | int       | ✓       | Reihenfolge in der Bestellansicht                                                                                                                                        |
+| color            | enum      | ✓       | Eine von 10 Farben der Palette (`blue`, `sky`, `teal`, `green`, `yellow`, `orange`, `red`, `pink`, `violet`, `gray`); Erkennungsmerkmal in Verwaltung und Bestellansicht |
+| defaultPrinterId | → Printer | –       | Wohin Artikel dieser Kategorie standardmässig gedruckt werden. Leer = kein Druck (z. B. Getränke, die der Service selbst holt)                                           |
 
 ### Artikel (`Article`)
 
