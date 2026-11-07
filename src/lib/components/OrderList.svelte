@@ -79,7 +79,17 @@
 		overflow: hidden;
 	}
 
-	li + li {
+	/* Inset divider like the tables list; the row link keeps its full-width hover. */
+	li {
+		position: relative;
+	}
+
+	li + li::before {
+		content: '';
+		position: absolute;
+		top: 0;
+		right: 14px;
+		left: 14px;
 		border-top: 1px solid var(--color-border);
 	}
 
