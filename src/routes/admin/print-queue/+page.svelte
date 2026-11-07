@@ -226,6 +226,20 @@
 		overflow-x: auto;
 	}
 
+	/* Inset divider like the order list, also below the header. */
+	.table-wrap :global(tbody tr) {
+		position: relative;
+	}
+
+	.table-wrap :global(tbody tr::before) {
+		content: '';
+		position: absolute;
+		top: 0;
+		right: 14px;
+		left: 14px;
+		border-top: 1px solid var(--color-border);
+	}
+
 	.status {
 		display: inline-flex;
 		flex-direction: column;
