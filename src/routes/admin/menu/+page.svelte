@@ -139,6 +139,7 @@
 		key={(cat) => cat.id}
 		handleLabel={(cat) => `${cat.name} verschieben`}
 		announce={position}
+		revealHandles
 		onreorder={(ordered) =>
 			saveOrder(
 				'reorderCategories',
@@ -193,6 +194,7 @@
 							key={(entry) => entry.id}
 							handleLabel={(entry) => `${entry.name} verschieben`}
 							announce={position}
+							revealHandles
 							onreorder={(ordered) =>
 								saveOrder(
 									'reorderArticles',
@@ -402,8 +404,9 @@
 		margin-left: -8px;
 	}
 
+	/* The dot lines up with the article names below. */
 	.category-title :global(.sortable-list-handle) {
-		margin-right: -6px;
+		margin-right: 2px;
 	}
 
 	.category-dot {
@@ -419,12 +422,22 @@
 	}
 
 	.article {
+		position: relative;
 		display: grid;
 		grid-template-columns: auto 1fr 90px 160px auto auto;
 		align-items: center;
 		gap: 12px;
 		min-height: 52px;
+	}
+
+	/* The divider starts at the name, so the handles stand apart in the gutter. */
+	.article::after {
+		position: absolute;
+		right: 0;
+		bottom: 0;
+		left: 28px;
 		border-bottom: 1px solid var(--color-border);
+		content: '';
 	}
 
 	.article--inactive .article-name,
