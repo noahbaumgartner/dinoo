@@ -389,19 +389,15 @@
 		justify-content: space-between;
 	}
 
-	/* Same fixed tile size as the seating plan. */
+	/* Same fixed tile size and white card as the seating plan; the row title stays outside. */
 	.tables {
+		padding: 12px;
+		border-radius: 14px;
+		background-color: var(--color-fill);
 		display: grid;
 		grid-template-columns: repeat(auto-fill, 72px);
 		grid-auto-rows: 72px;
 		gap: 6px;
-	}
-
-	/* White like the seating plan, so list and plan look the same on the off-white page. */
-	.table-group {
-		padding: 12px;
-		border-radius: 14px;
-		background-color: var(--color-fill);
 	}
 
 	.table-group h2 {
