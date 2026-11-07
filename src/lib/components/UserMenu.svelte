@@ -48,7 +48,8 @@
 		padding: 0;
 		background: none;
 		border: none;
-		border-radius: 999px;
+		/* Same corners as the md Avatar inside, so the focus ring follows its shape */
+		border-radius: 10px;
 		cursor: pointer;
 	}
 
