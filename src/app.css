@@ -7,7 +7,7 @@
    --ui-* theming variables are set here; it derives --color-* and --font-* from them. */
 
 :root {
-	--ui-base: oklch(0.984 0.005 75);
+	--ui-base: oklch(0.968 0.007 75);
 	--ui-ink: oklch(0.22 0.016 262);
 	--ui-accent: oklch(0.51 0.215 265);
 	/* Cards are white on the off-white page; inputs (--color-surface) stay a shade darker. */
