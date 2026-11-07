@@ -123,7 +123,7 @@
 				required={!editing}
 			/>
 			<FieldDescription
-				>Mindestens 4 Zeichen. Der Benutzer kann es nicht selbst ändern.</FieldDescription
+				>Mindestens 4 Zeichen. Der Benutzer kann es auch selbst im Profil ändern.</FieldDescription
 			>
 		</Field>
 		{#if editing}

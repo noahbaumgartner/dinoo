@@ -4,22 +4,20 @@
 	import { Button, Navbar, NavigationMenuItem } from '@noahbaumgartner/svelte-ui';
 	import { Menu, X } from '@lucide/svelte';
 	import type { Focus } from '$lib/focus-mode.svelte';
-	import UserMenu from './UserMenu.svelte';
+	import UserMenu, { type MenuUser } from './UserMenu.svelte';
 	import type { Snippet } from 'svelte';
 
 	type NavItem = { href: string; label: string; exact?: boolean };
 
 	let {
 		items,
-		userName,
-		userRole,
+		user,
 		subtitle,
 		extra,
 		focus
 	}: {
 		items: NavItem[];
-		userName: string;
-		userRole?: 'service' | 'admin';
+		user: MenuUser;
 		subtitle?: string;
 		/** Extra buttons before the user menu. */
 		extra?: Snippet;
@@ -52,7 +50,7 @@
 			<Button variant="secondary" icon={X} onclick={focus.onexit}>Abbrechen</Button>
 		{:else}
 			{@render extra?.()}
-			<UserMenu name={userName} role={userRole} />
+			<UserMenu {user} />
 		{/if}
 	{/snippet}
 	{#snippet trigger(props, open)}

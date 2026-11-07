@@ -94,6 +94,11 @@ export class AuthRepository {
 		return created.id;
 	}
 
+	/** Changes the signed-in user's own password; throws if the current password is wrong. */
+	async changePassword(headers: Headers, currentPassword: string, newPassword: string) {
+		await this.auth.api.changePassword({ body: { currentPassword, newPassword }, headers });
+	}
+
 	async setPassword(userId: string, password: string) {
 		const context = await this.auth.$context;
 		await context.internalAdapter.updatePassword(userId, await context.password.hash(password));

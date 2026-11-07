@@ -80,6 +80,29 @@ export class UserService {
 		if (!input.active) this.users.deleteSessions(id);
 	}
 
+	/** The signed-in user edits their own display name and, optionally, their password. */
+	async updateProfile(
+		user: UserRecord,
+		input: { name: string; currentPassword: string; newPassword: string },
+		headers: Headers
+	): Promise<{ passwordChanged: boolean }> {
+		const name = input.name.trim();
+		if (!name) throw new DomainError('Bitte einen Anzeigenamen angeben.');
+		const passwordChanged = input.newPassword !== '';
+		if (passwordChanged) {
+			this.checkPassword(input.newPassword);
+			if (!input.currentPassword)
+				throw new DomainError('Bitte das aktuelle Passwort angeben, um es zu ändern.');
+			try {
+				await this.auth.changePassword(headers, input.currentPassword, input.newPassword);
+			} catch {
+				throw new DomainError('Das aktuelle Passwort ist falsch.');
+			}
+		}
+		if (name !== user.name) this.users.update(user.id, { name });
+		return { passwordChanged };
+	}
+
 	async setPassword(id: string, password: string) {
 		ensure(this.users.get(id), 'Benutzer');
 		this.checkPassword(password);

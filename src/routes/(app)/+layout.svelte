@@ -17,8 +17,7 @@
 <div class="app">
 	<AppHeader
 		{items}
-		userName={data.user.name}
-		userRole={data.user.role}
+		user={data.user}
 		subtitle={data.eventName ?? undefined}
 		focus={focusMode.current}
 	/>

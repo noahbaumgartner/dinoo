@@ -150,7 +150,7 @@
 			</span>
 			<span class="topbar-title">Admin</span>
 			<span class="topbar-spacer"></span>
-			<UserMenu name={data.user.name} role={data.user.role} />
+			<UserMenu user={data.user} />
 			<!-- On phones the menu button sits top right, as in the ordering view -->
 			<span class="trigger-mobile">
 				<SidebarTrigger label="Menü öffnen" variant="secondary" size="md" icon={Menu} />

@@ -34,7 +34,7 @@ Service-Personal und Admins melden sich mit Benutzername und Passwort an, damit 
 
 ## Nicht im Scope
 
-- Passwort-Reset per E-Mail (kein Internet). Passwort setzt der Admin (F06).
+- Passwort-Reset per E-Mail (kein Internet). Passwort setzt der Admin oder der Benutzer im eigenen Profil (F06).
 - Selbstregistrierung.
 
 ## Abhängigkeiten

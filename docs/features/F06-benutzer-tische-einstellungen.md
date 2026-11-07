@@ -21,6 +21,12 @@ Der Admin legt Benutzer (Service, Admin), die Tische des Anlasses und allgemeine
 - [ ] Der letzte aktive Admin kann nicht deaktiviert oder zu `service` geändert werden.
 - [ ] Bei leerer Datenbank (erster Start, neuer Anlass) wird ein initialer Admin per Setup-Seite angelegt.
 
+**Eigenes Profil** (Avatar oben rechts → „Profil bearbeiten“, Dialog; alle Rollen)
+
+- [ ] Zeigt den `username` (nur lesbar, ändert nur der Admin).
+- [ ] Der Benutzer ändert seinen `displayName` selbst.
+- [ ] Optional neues Passwort (mind. 4 Zeichen); dafür muss das aktuelle Passwort angegeben werden. Bei falschem aktuellem Passwort wird nichts gespeichert. Die Sitzung bleibt bestehen.
+
 **Tische** (`/admin/tables`)
 
 - [ ] **Saalplan:** Der Admin gibt Anzahl Zeilen und Spalten sowie die Nummerierung an (`A01, A02, …` oder `101, 102, …`). Jede Zelle des Rasters ist ein Tisch; fehlende Zellen werden mit vorbelegter Bezeichnung angelegt.
