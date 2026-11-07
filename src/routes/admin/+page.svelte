@@ -135,6 +135,7 @@
 
 	/* White like the cards below instead of the off-white page background. */
 	.stats :global(.stat) {
+		border: none;
 		background-color: var(--color-fill);
 	}
 
