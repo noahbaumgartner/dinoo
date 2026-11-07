@@ -350,7 +350,7 @@ describe('seating plan', () => {
 		const s = t.services();
 		place(); // on 102
 		const first = s.tables.list()[0];
-		s.tables.save(first.id, { label: 'VIP', sortOrder: 0, active: true });
+		s.tables.save(first.id, { label: 'VIP', sortOrder: 0 });
 		s.tables.applyGrid({ rows: 2, columns: 1, numbering: 'letter' });
 		expect(cells()).toEqual(['VIP', 'B01']);
 		const free = s.tables.list().filter((table) => table.gridRow === null);
@@ -364,7 +364,7 @@ describe('seating plan', () => {
 		s.tables.setActive(cell.id, false);
 		expect(s.tables.list()[0].active).toBe(false);
 		expect(() => s.tables.delete(cell.id)).toThrow(/Saalplan/);
-		const bar = s.tables.save(null, { label: 'Bar', sortOrder: 1, active: true })!;
+		const bar = s.tables.save(null, { label: 'Bar', sortOrder: 1 })!;
 		expect(bar.gridRow).toBeNull();
 		expect(s.tables.delete(bar.id)).toBe('deleted');
 	});

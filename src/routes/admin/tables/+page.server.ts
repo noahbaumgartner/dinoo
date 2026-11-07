@@ -24,8 +24,7 @@ export const actions: Actions = {
 			const id = form.optionalInt('id');
 			locals.services.tables.save(id, {
 				label: form.string('label'),
-				sortOrder: form.optionalInt('sortOrder') ?? 0,
-				active: form.bool('active')
+				sortOrder: form.optionalInt('sortOrder') ?? 0
 			});
 			return { message: id === null ? 'Tisch erfasst' : 'Tisch gespeichert' };
 		}),

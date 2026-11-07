@@ -18,7 +18,6 @@
 		Input,
 		Label,
 		Select,
-		Switch,
 		Tabs
 	} from '@noahbaumgartner/svelte-ui';
 	import { Check, Eye, EyeOff, LayoutGrid, Pencil, Plus, Power, Trash2 } from '@lucide/svelte';
@@ -61,11 +60,9 @@
 
 	let editOpen = $state(false);
 	let editing = $state<Table | null>(null);
-	let active = $state(true);
 
 	function edit(table: Table | null) {
 		editing = table;
-		active = table?.active ?? true;
 		editOpen = true;
 	}
 
@@ -305,10 +302,6 @@
 				inputmode="numeric"
 				value={String(editing?.sortOrder ?? freeTables.length + 1)}
 			/>
-		</Field>
-		<Field orientation="horizontal">
-			<Switch id="table-active" name="active" bind:checked={active} />
-			<Label for="table-active">Aktiv</Label>
 		</Field>
 	</form>
 	{#snippet actions(close)}

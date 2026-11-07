@@ -18,8 +18,11 @@ export type SeatingPlan = {
 
 export type GridInput = SeatingPlan;
 
-/** Label, order and active flag; the position in the seating plan is set via `applyGrid`. */
-export type TableEdit = Omit<TableInput, 'gridRow' | 'gridColumn'>;
+/**
+ * Label and order; the position in the seating plan is set via `applyGrid`, the active flag via
+ * `setActive` (new tables start active).
+ */
+export type TableEdit = Omit<TableInput, 'gridRow' | 'gridColumn' | 'active'>;
 
 export class TableService {
 	constructor(
@@ -100,8 +103,8 @@ export class TableService {
 	save(id: number | null, input: TableEdit): TableRecord | undefined {
 		const label = input.label.trim();
 		if (!label) throw new DomainError('Bitte eine Bezeichnung für den Tisch angeben.');
-		const values = { label, sortOrder: input.sortOrder, active: input.active };
-		if (id === null) return this.tables.create(values);
+		const values = { label, sortOrder: input.sortOrder };
+		if (id === null) return this.tables.create({ ...values, active: true });
 		ensure(this.tables.get(id), 'Tisch');
 		this.tables.update(id, values);
 	}
@@ -114,7 +117,7 @@ export class TableService {
 	/** Rename only; used by the inline editing of the seating plan. */
 	rename(id: number, label: string) {
 		const table = ensure(this.tables.get(id), 'Tisch');
-		this.save(id, { label, sortOrder: table.sortOrder, active: table.active });
+		this.save(id, { label, sortOrder: table.sortOrder });
 	}
 
 	/**
