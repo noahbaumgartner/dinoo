@@ -209,14 +209,15 @@
 		flex-direction: column;
 		margin: 0;
 		padding: 0;
-		border: 1px solid var(--color-border);
 		border-radius: var(--radius);
+		background-color: var(--color-fill);
 		list-style: none;
 		/* Clips the active row's accent bar to the rounded corners. */
 		overflow: hidden;
 	}
 
 	.db {
+		position: relative;
 		display: grid;
 		grid-template-columns: 36px 1fr auto auto;
 		align-items: center;
@@ -224,7 +225,13 @@
 		padding: 12px 14px;
 	}
 
-	.db + .db {
+	/* Inset divider like the order list; ::after because the accent bar uses ::before. */
+	.db + .db::after {
+		content: '';
+		position: absolute;
+		top: 0;
+		right: 14px;
+		left: 14px;
 		border-top: 1px solid var(--color-border);
 	}
 
