@@ -13,7 +13,6 @@ export const actions: Actions = {
 			const id = form.optionalInt('id');
 			locals.services.menu.saveCategory(id, {
 				name: form.string('name'),
-				sortOrder: form.optionalInt('sortOrder') ?? 0,
 				color: form.string('color'),
 				defaultPrinterId: form.optionalInt('defaultPrinterId')
 			});
@@ -34,10 +33,19 @@ export const actions: Actions = {
 				priceCents: form.cents('price'),
 				categoryId: form.int('categoryId'),
 				printerId: form.optionalInt('printerId'),
-				sortOrder: form.optionalInt('sortOrder') ?? 0,
 				active: form.bool('active')
 			});
 			return { message: id === null ? 'Artikel erfasst' : 'Artikel gespeichert' };
+		}),
+	reorderCategories: ({ request, locals }) =>
+		action(async () => {
+			const form = await Form.from(request);
+			locals.services.menu.reorderCategories(form.ints('ids'));
+		}),
+	reorderArticles: ({ request, locals }) =>
+		action(async () => {
+			const form = await Form.from(request);
+			locals.services.menu.reorderArticles(form.int('categoryId'), form.ints('ids'));
 		}),
 	setActive: ({ request, locals }) =>
 		action(async () => {

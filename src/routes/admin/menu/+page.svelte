@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
+	import { deserialize, enhance } from '$app/forms';
+	import { invalidateAll } from '$app/navigation';
 	import AdminPage from '$lib/components/AdminPage.svelte';
 	import CategoryColorPicker from '$lib/components/CategoryColorPicker.svelte';
 	import {
@@ -26,9 +27,11 @@
 		Input,
 		Label,
 		Select,
-		Switch
+		SortableList,
+		Switch,
+		toast
 	} from '@noahbaumgartner/svelte-ui';
-	import { Pencil, Plus, Printer, Trash2, UtensilsCrossed } from '@lucide/svelte';
+	import { CircleAlert, Pencil, Plus, Printer, Trash2, UtensilsCrossed } from '@lucide/svelte';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -78,6 +81,35 @@
 		return id ? (printerName.get(id) ?? 'unbekannt') : 'kein Druck';
 	});
 
+	/** Saves a new order right after a drag; on failure the server's order is reloaded. */
+	async function saveOrder(
+		action: 'reorderCategories' | 'reorderArticles',
+		ids: number[],
+		categoryId?: number
+	) {
+		const body = new FormData();
+		if (categoryId !== undefined) body.set('categoryId', String(categoryId));
+		for (const id of ids) body.append('ids', String(id));
+		let error = 'Die Reihenfolge konnte nicht gespeichert werden.';
+		try {
+			const response = await fetch(`?/${action}`, {
+				method: 'POST',
+				body,
+				headers: { 'x-sveltekit-action': 'true' }
+			});
+			const result = deserialize(await response.text());
+			if (result.type === 'success') error = '';
+			else if (result.type === 'failure' && typeof result.data?.error === 'string')
+				error = result.data.error;
+		} catch {
+			// Network error: keep the generic message.
+		}
+		await invalidateAll();
+		if (error) toast(error, { icon: CircleAlert, duration: 6000 });
+	}
+
+	const position = (_: unknown, index: number, total: number) => `Position ${index} von ${total}`;
+
 	// Delete confirmation
 	let deleteOpen = $state(false);
 	let deleting = $state<{ kind: 'category' | 'article'; id: number; name: string } | null>(null);
@@ -101,103 +133,132 @@
 		</EmptyState>
 	{/if}
 
-	{#each data.categories as cat (cat.id)}
-		<Card style="--category-color: {categoryColor(cat.color)}">
-			<CardHeader>
-				<CardTitle
-					><span class="category-title"
-						><span class="category-dot" aria-hidden="true"></span>{cat.name}</span
-					></CardTitle
-				>
-				<CardAction>
-					<span class="row">
-						<Badge icon={Printer}
-							>{cat.defaultPrinterId ? printerName.get(cat.defaultPrinterId) : 'Kein Druck'}</Badge
-						>
-						<span class="icon-actions">
-							<Button
-								variant="ghost"
-								size="sm"
-								icon={Pencil}
-								label="Kategorie bearbeiten"
-								onclick={() => editCategory(cat)}
-							/>
-							<Button
-								variant="ghost"
-								size="sm"
-								icon={Trash2}
-								label="Kategorie löschen"
-								onclick={() => (
-									(deleting = { kind: 'category', id: cat.id, name: cat.name }),
-									(deleteOpen = true)
-								)}
-							/>
-						</span>
-					</span></CardAction
-				>
-			</CardHeader>
-			<CardContent>
-				{#if cat.articles.length === 0}
-					<p class="muted">Noch keine Artikel in dieser Kategorie.</p>
-				{:else}
-					<ul class="articles">
-						{#each cat.articles as item (item.id)}
-							<li class={['article', { 'article--inactive': !item.active }]}>
-								<span class="article-name">
-									{item.name}
-									{#if !item.active}<Badge>Ausverkauft</Badge>{/if}
-								</span>
-								<span class="tabular">{formatChf(item.priceCents)}</span>
-								<span class="printer muted">
-									<Printer size={14} aria-hidden="true" />
-									{item.effectivePrinterId
-										? printerName.get(item.effectivePrinterId)
-										: 'Kein Druck'}
-									{#if item.printerId}<Badge variant="primary">eigener</Badge>{/if}
-								</span>
-								<form method="POST" action="?/setActive" use:enhance={notify()} class="toggle">
-									<input type="hidden" name="id" value={item.id} />
-									<input type="hidden" name="active" value={item.active ? 'false' : 'true'} />
-									<Switch
-										checked={item.active}
-										aria-label="{item.name} bestellbar"
-										onchange={(event) => event.currentTarget.form?.requestSubmit()}
-									/>
-								</form>
-								<span class="icon-actions">
-									<Button
-										variant="ghost"
-										size="sm"
-										icon={Pencil}
-										label="{item.name} bearbeiten"
-										onclick={() => editArticle(item, cat.id)}
-									/>
-									<Button
-										variant="ghost"
-										size="sm"
-										icon={Trash2}
-										label="{item.name} löschen"
-										onclick={() => (
-											(deleting = { kind: 'article', id: item.id, name: item.name }),
-											(deleteOpen = true)
-										)}
-									/>
-								</span>
-							</li>
-						{/each}
-					</ul>
-				{/if}
-				<div class="add">
-					<Button
-						variant="secondary"
-						size="sm"
-						icon={Plus}
-						onclick={() => editArticle(null, cat.id)}>Artikel erfassen</Button
+	<SortableList
+		class="categories"
+		items={data.categories}
+		key={(cat) => cat.id}
+		handleLabel={(cat) => `${cat.name} verschieben`}
+		announce={position}
+		onreorder={(ordered) =>
+			saveOrder(
+				'reorderCategories',
+				ordered.map((cat) => cat.id)
+			)}
+	>
+		{#snippet item(cat, handle)}
+			<Card style="--category-color: {categoryColor(cat.color)}">
+				<CardHeader>
+					<CardTitle
+						><span class="category-title"
+							>{@render handle()}<span class="category-dot" aria-hidden="true"
+							></span>{cat.name}</span
+						></CardTitle
 					>
-				</div>
-			</CardContent>
-		</Card>
-	{/each}
+					<CardAction>
+						<span class="row">
+							<Badge icon={Printer}
+								>{cat.defaultPrinterId
+									? printerName.get(cat.defaultPrinterId)
+									: 'Kein Druck'}</Badge
+							>
+							<span class="icon-actions">
+								<Button
+									variant="ghost"
+									size="sm"
+									icon={Pencil}
+									label="Kategorie bearbeiten"
+									onclick={() => editCategory(cat)}
+								/>
+								<Button
+									variant="ghost"
+									size="sm"
+									icon={Trash2}
+									label="Kategorie löschen"
+									onclick={() => (
+										(deleting = { kind: 'category', id: cat.id, name: cat.name }),
+										(deleteOpen = true)
+									)}
+								/>
+							</span>
+						</span></CardAction
+					>
+				</CardHeader>
+				<CardContent>
+					{#if cat.articles.length === 0}
+						<p class="muted">Noch keine Artikel in dieser Kategorie.</p>
+					{:else}
+						<SortableList
+							class="articles"
+							items={cat.articles}
+							key={(entry) => entry.id}
+							handleLabel={(entry) => `${entry.name} verschieben`}
+							announce={position}
+							onreorder={(ordered) =>
+								saveOrder(
+									'reorderArticles',
+									ordered.map((entry) => entry.id),
+									cat.id
+								)}
+						>
+							{#snippet item(item, handle)}
+								<div class={['article', { 'article--inactive': !item.active }]}>
+									<span class="article-handle">{@render handle()}</span>
+									<span class="article-name">
+										{item.name}
+										{#if !item.active}<Badge>Ausverkauft</Badge>{/if}
+									</span>
+									<span class="tabular">{formatChf(item.priceCents)}</span>
+									<span class="printer muted">
+										<Printer size={14} aria-hidden="true" />
+										{item.effectivePrinterId
+											? printerName.get(item.effectivePrinterId)
+											: 'Kein Druck'}
+										{#if item.printerId}<Badge variant="primary">eigener</Badge>{/if}
+									</span>
+									<form method="POST" action="?/setActive" use:enhance={notify()} class="toggle">
+										<input type="hidden" name="id" value={item.id} />
+										<input type="hidden" name="active" value={item.active ? 'false' : 'true'} />
+										<Switch
+											checked={item.active}
+											aria-label="{item.name} bestellbar"
+											onchange={(event) => event.currentTarget.form?.requestSubmit()}
+										/>
+									</form>
+									<span class="icon-actions">
+										<Button
+											variant="ghost"
+											size="sm"
+											icon={Pencil}
+											label="{item.name} bearbeiten"
+											onclick={() => editArticle(item, cat.id)}
+										/>
+										<Button
+											variant="ghost"
+											size="sm"
+											icon={Trash2}
+											label="{item.name} löschen"
+											onclick={() => (
+												(deleting = { kind: 'article', id: item.id, name: item.name }),
+												(deleteOpen = true)
+											)}
+										/>
+									</span>
+								</div>
+							{/snippet}
+						</SortableList>
+					{/if}
+					<div class="add">
+						<Button
+							variant="secondary"
+							size="sm"
+							icon={Plus}
+							onclick={() => editArticle(null, cat.id)}>Artikel erfassen</Button
+						>
+					</div>
+				</CardContent>
+			</Card>
+		{/snippet}
+	</SortableList>
 </AdminPage>
 
 <Dialog
@@ -240,15 +301,6 @@
 				>Gilt für alle Artikel der Kategorie, die nichts anderes festlegen.</FieldDescription
 			>
 		</Field>
-		<Field>
-			<Label for="category-sort">Reihenfolge</Label>
-			<Input
-				id="category-sort"
-				name="sortOrder"
-				inputmode="numeric"
-				value={String(category?.sortOrder ?? data.categories.length + 1)}
-			/>
-		</Field>
 	</form>
 	{#snippet actions(close)}
 		<Button variant="secondary" onclick={close}>Abbrechen</Button>
@@ -273,28 +325,17 @@
 			<Label for="article-name">Name</Label>
 			<Input id="article-name" name="name" value={article?.name ?? ''} required />
 		</Field>
-		<div class="grid-2">
-			<Field>
-				<Label for="article-price">Preis (CHF)</Label>
-				<Input
-					id="article-price"
-					name="price"
-					inputmode="decimal"
-					value={article ? (article.priceCents / 100).toFixed(2) : ''}
-					placeholder="4.50"
-					required
-				/>
-			</Field>
-			<Field>
-				<Label for="article-sort">Reihenfolge</Label>
-				<Input
-					id="article-sort"
-					name="sortOrder"
-					inputmode="numeric"
-					value={String(article?.sortOrder ?? 0)}
-				/>
-			</Field>
-		</div>
+		<Field>
+			<Label for="article-price">Preis (CHF)</Label>
+			<Input
+				id="article-price"
+				name="price"
+				inputmode="decimal"
+				value={article ? (article.priceCents / 100).toFixed(2) : ''}
+				placeholder="4.50"
+				required
+			/>
+		</Field>
 		<Field>
 			<Label for="article-category">Kategorie</Label>
 			<Select
@@ -348,10 +389,21 @@
 </AlertDialog>
 
 <style>
+	:global(.categories) {
+		gap: 24px;
+		--sortable-list-dragging-radius: 14px;
+	}
+
 	.category-title {
 		display: inline-flex;
 		align-items: center;
 		gap: 10px;
+		/* The handle sits in the card's padding, so the dot stays aligned with the content. */
+		margin-left: -8px;
+	}
+
+	.category-title :global(.sortable-list-handle) {
+		margin-right: -6px;
 	}
 
 	.category-dot {
@@ -362,17 +414,13 @@
 		background-color: var(--category-color);
 	}
 
-	.articles {
-		display: flex;
-		flex-direction: column;
-		margin: 0;
-		padding: 0;
-		list-style: none;
+	:global(.articles) {
+		--sortable-list-dragging-background: var(--color-fill);
 	}
 
 	.article {
 		display: grid;
-		grid-template-columns: 1fr 90px 160px auto auto;
+		grid-template-columns: auto 1fr 90px 160px auto auto;
 		align-items: center;
 		gap: 12px;
 		min-height: 52px;
@@ -382,6 +430,11 @@
 	.article--inactive .article-name,
 	.article--inactive .tabular {
 		color: var(--color-text-muted);
+	}
+
+	.article-handle {
+		display: flex;
+		margin-left: -8px;
 	}
 
 	.article-name {
@@ -407,23 +460,18 @@
 		margin-top: 12px;
 	}
 
-	.grid-2 {
-		display: grid;
-		grid-template-columns: 1fr 110px;
-		gap: 12px;
-	}
-
 	@media (max-width: 720px) {
 		.article {
-			grid-template-columns: 1fr auto auto;
-			grid-template-areas:
-				'name toggle actions'
-				'meta meta meta';
+			grid-template-columns: auto 1fr auto auto;
 			padding: 8px 0;
 		}
 
+		.article-handle {
+			grid-row: 1 / span 2;
+		}
+
 		.article-name {
-			grid-area: name;
+			grid-row: 1;
 		}
 
 		.article .tabular,
@@ -431,8 +479,9 @@
 			grid-row: 2;
 		}
 
-		.toggle {
-			grid-area: toggle;
+		.toggle,
+		.article .icon-actions {
+			grid-row: 1;
 		}
 	}
 </style>

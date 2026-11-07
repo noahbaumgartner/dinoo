@@ -26,6 +26,15 @@ export class Form {
 		return value;
 	}
 
+	/** All values of a repeated field, e.g. an ordered list of ids. */
+	ints(name: string): number[] {
+		return this.data.getAll(name).map((raw) => {
+			const value = typeof raw === 'string' ? Number.parseInt(raw, 10) : Number.NaN;
+			if (Number.isNaN(value)) throw new DomainError('Ungültige Eingabe.');
+			return value;
+		});
+	}
+
 	optionalInt(name: string): number | null {
 		const raw = this.string(name).trim();
 		return raw === '' ? null : this.int(name);

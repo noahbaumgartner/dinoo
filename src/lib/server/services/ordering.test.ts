@@ -290,9 +290,26 @@ describe('search and dashboard', () => {
 describe('menu', () => {
 	it('stores a category color from the palette and rejects others', () => {
 		const s = t.services();
-		const input = { name: 'Dessert', sortOrder: 3, defaultPrinterId: null };
+		const input = { name: 'Dessert', defaultPrinterId: null };
 		expect(s.menu.saveCategory(null, { ...input, color: 'pink' })?.color).toBe('pink');
 		expect(() => s.menu.saveCategory(null, { ...input, color: '#ff0000' })).toThrow(/Farbe/);
+	});
+
+	it('reorders categories and the articles within a category', () => {
+		const s = t.services();
+		s.menu.reorderCategories([seed.drinks.id, seed.food.id]);
+		s.menu.reorderArticles(seed.food.id, [seed.sausage.id, seed.fries.id]);
+		const menu = s.menu.overview();
+		expect(menu.map((category) => category.name)).toEqual(['Getränke', 'Warme Küche']);
+		expect(menu[1].articles.map((article) => article.name)).toEqual(['Bratwurst', 'Pommes']);
+	});
+
+	it('rejects an order computed from an outdated list', () => {
+		const s = t.services();
+		expect(() => s.menu.reorderCategories([seed.food.id])).toThrow(/inzwischen geändert/);
+		expect(() => s.menu.reorderArticles(seed.food.id, [seed.fries.id, seed.beer.id])).toThrow(
+			/inzwischen geändert/
+		);
 	});
 });
 
