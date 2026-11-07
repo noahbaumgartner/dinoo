@@ -50,7 +50,7 @@ Environment: `DATA_DIR` (default `./data`), `PRINTER_DRIVER=fake`, `PORT`/`HOST`
 
 - A missing **generic** component (no domain terms, usable in any project) goes into `../svelte-ui`, exported from `src/lib/index.ts`, with a story, and built (`npm run build` there) so the link picks it up.
 - Anything with domain meaning (order, article, printer, TWINT) stays in dinoo under `src/lib/components/`.
-- **Contrast:** a container must never have the same background as the controls inside it. Inputs, selects, checkboxes, secondary buttons and steppers use `--color-surface`, so never put them on a `--color-surface` background (`Card variant="secondary"`, highlighted rows, info boxes). Use the default `Card`, a border, or an accent bar (`box-shadow: inset 3px 0 0 var(--color-accent)`) instead.
+- **Contrast:** a container must never have the same background as the controls inside it. Inputs, selects, checkboxes, secondary buttons and steppers use `--color-surface`, so never put them on a `--color-surface` background (`Card variant="secondary"`, highlighted rows, info boxes). Use the default `Card`, a border, or an accent bar (`.accent-bar` in `src/app.css`, colour via `--accent-bar-color`) instead.
 
 ## Conventions
 
@@ -58,3 +58,4 @@ Environment: `DATA_DIR` (default `./data`), `PRINTER_DRIVER=fake`, `PORT`/`HOST`
 - Mobile first: the main clients are phones and tablets in the local network.
 - No runtime dependency on the internet or external services; plain HTTP in the local network.
 - Formatting: tabs, single quotes, no trailing commas, 100 columns (Oxfmt via `vp fmt`).
+- **Commits:** always commit automatically after finishing a change, without asking first (one commit per coherent change, English message). Do not commit machine-specific or temporary files (e.g. scratchpad paths in `.claude/launch.json`). Pushing still needs an explicit request.
