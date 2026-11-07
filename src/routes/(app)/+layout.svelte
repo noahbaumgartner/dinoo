@@ -1,8 +1,11 @@
 <script lang="ts">
 	import AppHeader from '$lib/components/AppHeader.svelte';
+	import { provideFocusMode } from '$lib/focus-mode.svelte';
 	import type { LayoutProps } from './$types';
 
 	let { data, children }: LayoutProps = $props();
+
+	const focusMode = provideFocusMode();
 
 	let items = $derived([
 		{ href: '/order', label: 'Bestellen' },
@@ -16,6 +19,7 @@
 	userName={data.user.name}
 	userRole={data.user.role}
 	subtitle={data.eventName ?? undefined}
+	focus={focusMode.current}
 />
 
 <main class="app-main">

@@ -3,6 +3,7 @@
 	import { page } from '$app/state';
 	import { Button, Navbar, NavigationMenuItem } from '@noahbaumgartner/svelte-ui';
 	import { Menu, X } from '@lucide/svelte';
+	import type { Focus } from '$lib/focus-mode.svelte';
 	import UserMenu from './UserMenu.svelte';
 	import type { Snippet } from 'svelte';
 
@@ -13,7 +14,8 @@
 		userName,
 		userRole,
 		subtitle,
-		extra
+		extra,
+		focus
 	}: {
 		items: NavItem[];
 		userName: string;
@@ -21,6 +23,8 @@
 		subtitle?: string;
 		/** Extra buttons before the user menu. */
 		extra?: Snippet;
+		/** Replaces navigation and user menu with a title and a cancel button. */
+		focus?: Focus | null;
 	} = $props();
 
 	function isActive(item: NavItem) {
@@ -31,26 +35,41 @@
 
 <Navbar class="app-navbar" label="Hauptnavigation">
 	{#snippet logo()}
-		<a href={resolve('/')} class="logo">
-			dinoo
-			{#if subtitle}<span class="logo-subtitle">{subtitle}</span>{/if}
-		</a>
+		{#if focus}
+			<span class="logo">
+				dinoo
+				<span class="logo-subtitle">{focus.title}</span>
+			</span>
+		{:else}
+			<a href={resolve('/')} class="logo">
+				dinoo
+				{#if subtitle}<span class="logo-subtitle">{subtitle}</span>{/if}
+			</a>
+		{/if}
 	{/snippet}
 	{#snippet actions()}
-		{@render extra?.()}
-		<UserMenu name={userName} role={userRole} />
+		{#if focus}
+			<Button variant="secondary" icon={X} onclick={focus.onexit}>Abbrechen</Button>
+		{:else}
+			{@render extra?.()}
+			<UserMenu name={userName} role={userRole} />
+		{/if}
 	{/snippet}
 	{#snippet trigger(props, open)}
-		<Button
-			{...props}
-			variant="secondary"
-			icon={open ? X : Menu}
-			label={open ? 'Menü schliessen' : 'Menü öffnen'}
-		/>
+		{#if !focus}
+			<Button
+				{...props}
+				variant="secondary"
+				icon={open ? X : Menu}
+				label={open ? 'Menü schliessen' : 'Menü öffnen'}
+			/>
+		{/if}
 	{/snippet}
-	{#each items as item (item.href)}
-		<NavigationMenuItem href={item.href} active={isActive(item)}>{item.label}</NavigationMenuItem>
-	{/each}
+	{#if !focus}
+		{#each items as item (item.href)}
+			<NavigationMenuItem href={item.href} active={isActive(item)}>{item.label}</NavigationMenuItem>
+		{/each}
+	{/if}
 </Navbar>
 
 <style>
