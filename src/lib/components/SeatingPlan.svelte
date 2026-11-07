@@ -68,10 +68,12 @@
 </div>
 
 <style>
+	/* White like a Card, so the plan reads as one area on the off-white page. */
 	.scroller {
-		margin-inline: calc(-1 * var(--gutter, 0px));
-		padding: 4px var(--gutter, 0px) 8px;
+		padding: 12px;
 		overflow-x: auto;
+		border-radius: 14px;
+		background-color: var(--color-fill);
 	}
 
 	.plan {
