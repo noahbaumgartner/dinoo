@@ -29,6 +29,7 @@
 		Select,
 		SortableList,
 		Switch,
+		Toggle,
 		toast
 	} from '@noahbaumgartner/svelte-ui';
 	import { CircleAlert, Pencil, Plus, Printer, Trash2, UtensilsCrossed } from '@lucide/svelte';
@@ -206,24 +207,25 @@
 									<span class="article-handle">{@render handle()}</span>
 									<span class="article-name">
 										{item.name}
-										{#if !item.active}<Badge>Ausverkauft</Badge>{/if}
 									</span>
 									<span class="tabular">{formatChf(item.priceCents)}</span>
 									<span class="printer muted">
-										<Printer size={14} aria-hidden="true" />
-										{item.effectivePrinterId
-											? printerName.get(item.effectivePrinterId)
-											: 'Kein Druck'}
-										{#if item.printerId}<Badge variant="primary">eigener</Badge>{/if}
+										{#if item.effectivePrinterId}
+											<Printer size={14} aria-hidden="true" />
+											{printerName.get(item.effectivePrinterId)}
+											{#if item.printerId}<Badge variant="primary">eigener</Badge>{/if}
+										{/if}
 									</span>
 									<form method="POST" action="?/setActive" use:enhance={notify()} class="toggle">
 										<input type="hidden" name="id" value={item.id} />
 										<input type="hidden" name="active" value={item.active ? 'false' : 'true'} />
-										<Switch
-											checked={item.active}
-											aria-label="{item.name} bestellbar"
-											onchange={(event) => event.currentTarget.form?.requestSubmit()}
-										/>
+										<Toggle
+											size="sm"
+											pressed={!item.active}
+											aria-label="{item.name} ausverkauft"
+											onclick={(event) => event.currentTarget.closest('form')?.requestSubmit()}
+											>Ausverkauft</Toggle
+										>
 									</form>
 									<span class="icon-actions">
 										<Button
