@@ -52,7 +52,7 @@ export const actions: Actions = {
 			const form = await Form.from(request);
 			const active = form.bool('active');
 			locals.services.menu.setArticleActive(form.int('id'), active);
-			return { message: active ? 'Artikel wieder bestellbar' : 'Artikel als ausverkauft markiert' };
+			return { message: active ? 'Artikel aktiviert' : 'Artikel deaktiviert' };
 		}),
 	deleteArticle: ({ request, locals }) =>
 		action(async () => {

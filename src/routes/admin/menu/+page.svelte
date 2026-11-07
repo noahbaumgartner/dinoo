@@ -29,10 +29,18 @@
 		Select,
 		SortableList,
 		Switch,
-		Toggle,
 		toast
 	} from '@noahbaumgartner/svelte-ui';
-	import { CircleAlert, Pencil, Plus, Printer, Trash2, UtensilsCrossed } from '@lucide/svelte';
+	import {
+		CircleAlert,
+		Eye,
+		EyeOff,
+		Pencil,
+		Plus,
+		Printer,
+		Trash2,
+		UtensilsCrossed
+	} from '@lucide/svelte';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -208,7 +216,6 @@
 									<span class="article-name">
 										{item.name}
 									</span>
-									<span class="tabular">{formatChf(item.priceCents)}</span>
 									<span class="printer muted">
 										{#if item.effectivePrinterId}
 											<Printer size={14} aria-hidden="true" />
@@ -216,18 +223,21 @@
 											{#if item.printerId}<Badge variant="primary">eigener</Badge>{/if}
 										{/if}
 									</span>
-									<form method="POST" action="?/setActive" use:enhance={notify()} class="toggle">
-										<input type="hidden" name="id" value={item.id} />
-										<input type="hidden" name="active" value={item.active ? 'false' : 'true'} />
-										<Toggle
-											size="sm"
-											pressed={!item.active}
-											aria-label="{item.name} ausverkauft"
-											onclick={(event) => event.currentTarget.closest('form')?.requestSubmit()}
-											>Ausverkauft</Toggle
-										>
-									</form>
+									<span class="tabular">{formatChf(item.priceCents)}</span>
 									<span class="icon-actions">
+										<form method="POST" action="?/setActive" use:enhance={notify()} class="toggle">
+											<input type="hidden" name="id" value={item.id} />
+											<input type="hidden" name="active" value={item.active ? 'false' : 'true'} />
+											<Button
+												type="submit"
+												variant="ghost"
+												size="sm"
+												icon={item.active ? Eye : EyeOff}
+												label={item.active
+													? `${item.name} deaktivieren`
+													: `${item.name} aktivieren`}
+											/>
+										</form>
 										<Button
 											variant="ghost"
 											size="sm"
@@ -425,7 +435,7 @@
 	.article {
 		position: relative;
 		display: grid;
-		grid-template-columns: auto 1fr 90px 160px auto auto;
+		grid-template-columns: auto 1fr 160px 90px auto;
 		align-items: center;
 		gap: 12px;
 		min-height: 52px;
@@ -459,6 +469,10 @@
 		font-weight: 500;
 	}
 
+	.article .tabular {
+		text-align: right;
+	}
+
 	.printer {
 		display: inline-flex;
 		align-items: center;
@@ -476,7 +490,7 @@
 
 	@media (max-width: 720px) {
 		.article {
-			grid-template-columns: auto 1fr auto auto;
+			grid-template-columns: auto 1fr auto;
 			padding: 8px 0;
 		}
 
@@ -493,7 +507,6 @@
 			grid-row: 2;
 		}
 
-		.toggle,
 		.article .icon-actions {
 			grid-row: 1;
 		}
