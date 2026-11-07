@@ -43,6 +43,7 @@
 				{
 					'item--paid': left <= 0,
 					'item--dimmed': left > 0 && selecting && selected === 0,
+					'item--selected': selected > 0,
 					'accent-bar': selected > 0
 				}
 			]}
@@ -59,13 +60,12 @@
 					</span>
 				{/if}
 			</span>
-			<span class="tabular">{formatChf(item.quantity * item.priceCents)}</span>
+			<span class="item-price tabular">{formatChf(item.quantity * item.priceCents)}</span>
 			{#if selection}
 				<span class="item-select">
 					{#if left > 0 && selected === 0}
 						<Button
 							variant="secondary"
-							size="sm"
 							icon={Plus}
 							label="{item.articleName} für Teilzahlung wählen"
 							onclick={() => select(item.id, 1)}
@@ -73,6 +73,7 @@
 					{:else if left > 0}
 						<NumberStepper
 							value={selected}
+							size="md"
 							min={0}
 							max={left}
 							label="Teilzahlung {item.articleName}"
@@ -107,8 +108,8 @@
 		grid-template-columns: 40px 1fr auto auto;
 		align-items: center;
 		gap: 8px;
-		min-height: 44px;
-		padding: 6px 0 6px 12px;
+		min-height: 52px;
+		padding: 8px 0 8px 12px;
 		border-bottom: 1px solid var(--color-border);
 		--accent-bar-inset: 8px;
 	}
@@ -118,9 +119,22 @@
 		flex-direction: column;
 	}
 
+	.item-price {
+		white-space: nowrap;
+	}
+
 	.item-select {
 		display: flex;
 		justify-content: flex-end;
+		margin-left: 8px;
+	}
+
+	/* On phones the stepper does not fit next to name and price: it moves to its own line. */
+	@media (max-width: 479px) {
+		.item--selected .item-select {
+			grid-column: 2 / -1;
+			margin-left: 0;
+		}
 	}
 
 	.item--paid > :not(.item-select) {
@@ -128,7 +142,12 @@
 	}
 
 	.item-select :global(.number-stepper) {
+		gap: 8px;
 		font-size: 15px;
+	}
+
+	.item-select :global(.number-stepper-value) {
+		min-width: 44px;
 	}
 
 	.item--dimmed > :not(.item-select) {
