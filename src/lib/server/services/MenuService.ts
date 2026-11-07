@@ -54,15 +54,8 @@ export class MenuService {
 		if (!Number.isInteger(input.priceCents) || input.priceCents < 0)
 			throw new DomainError('Bitte einen gültigen Preis angeben.');
 		ensure(this.menu.getCategory(input.categoryId), 'Kategorie');
-		if (input.printerMode === 'custom') {
-			if (input.printerId === null) throw new DomainError('Bitte einen Drucker wählen.');
-			this.printer(input.printerId);
-		}
-		const clean = {
-			...input,
-			name,
-			printerId: input.printerMode === 'custom' ? input.printerId : null
-		};
+		if (input.printerId !== null) this.printer(input.printerId);
+		const clean = { ...input, name };
 		if (id === null) return this.menu.createArticle(clean);
 		ensure(this.menu.getArticle(id), 'Artikel');
 		this.menu.updateArticle(id, clean);

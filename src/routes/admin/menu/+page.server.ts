@@ -32,7 +32,6 @@ export const actions: Actions = {
 				name: form.string('name'),
 				priceCents: form.cents('price'),
 				categoryId: form.int('categoryId'),
-				printerMode: form.oneOf('printerMode', ['inherit', 'custom', 'none'] as const),
 				printerId: form.optionalInt('printerId'),
 				sortOrder: form.optionalInt('sortOrder') ?? 0,
 				active: form.bool('active')

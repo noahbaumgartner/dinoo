@@ -30,7 +30,7 @@ Ungeklärte Punkte, die vor oder während der Umsetzung entschieden werden müss
 
 - [x] Druck-Library → **die bekannteste: `node-thermal-printer`** (ADR-005).
 - [x] Druckerausfall → **Jobs bleiben in der Warteschlange**, kein automatisches Umleiten (F03).
-- [x] Tri-State Drucker-Override → **`printerMode` (`inherit` | `custom` | `none`)** (02-domain-model, F04).
+- [x] Drucker-Override pro Artikel → **`printerId` (leer = wie Kategorie, sonst eigener Drucker)**; der frühere Tri-State mit „kein Druck“ pro Artikel wurde entfernt (02-domain-model, F04).
 - [x] SQLite-Treiber → **`better-sqlite3`** (ADR-006).
 - [x] Auth → **Library: Better Auth** (ADR-007, vorgeschlagen).
 - [x] TWINT-QR → **QR-Inhalt speichern** (scannen oder einfügen), QR daraus generieren (F06, F07).

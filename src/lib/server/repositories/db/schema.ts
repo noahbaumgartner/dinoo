@@ -112,9 +112,7 @@ export const articles = sqliteTable(
 		categoryId: integer('category_id')
 			.notNull()
 			.references(() => categories.id),
-		printerMode: text('printer_mode', { enum: ['inherit', 'custom', 'none'] })
-			.notNull()
-			.default('inherit'),
+		/** Overrides the category default; null = printed like the category. */
 		printerId: integer('printer_id').references(() => printers.id, { onDelete: 'set null' }),
 		sortOrder: integer('sort_order').notNull().default(0),
 		active: integer('active', { mode: 'boolean' }).notNull().default(true),

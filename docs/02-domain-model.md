@@ -47,23 +47,21 @@ Gruppiert Artikel und legt den **Standard-Drucker** fest.
 
 Ein bestellbares Produkt.
 
-| Feld        | Typ                                  | Pflicht | Beschreibung                                                                                    |
-| ----------- | ------------------------------------ | ------- | ----------------------------------------------------------------------------------------------- |
-| id          | int                                  | ✓       |                                                                                                 |
-| name        | string                               | ✓       |                                                                                                 |
-| priceCents  | int                                  | ✓       | Preis in Rappen (CHF)                                                                           |
-| categoryId  | → Category                           | ✓       |                                                                                                 |
-| printerMode | enum `inherit` \| `custom` \| `none` | ✓       | `inherit` = Kategorie-Default, `custom` = eigener Drucker (`printerId`), `none` = nicht drucken |
-| printerId   | → Printer                            | –       | Nur bei `printerMode = custom`                                                                  |
-| sortOrder   | int                                  | ✓       | Reihenfolge innerhalb der Kategorie                                                             |
-| active      | bool                                 | ✓       | Inaktive Artikel sind nicht bestellbar (z. B. ausverkauft)                                      |
+| Feld       | Typ        | Pflicht | Beschreibung                                               |
+| ---------- | ---------- | ------- | ---------------------------------------------------------- |
+| id         | int        | ✓       |                                                            |
+| name       | string     | ✓       |                                                            |
+| priceCents | int        | ✓       | Preis in Rappen (CHF)                                      |
+| categoryId | → Category | ✓       |                                                            |
+| printerId  | → Printer  | –       | Eigener Drucker. Leer = wie Kategorie                      |
+| sortOrder  | int        | ✓       | Reihenfolge innerhalb der Kategorie                        |
+| active     | bool       | ✓       | Inaktive Artikel sind nicht bestellbar (z. B. ausverkauft) |
 
 **Regel „effektiver Drucker“:**
 
 ```
-inherit → category.defaultPrinterId (leer = kein Druck)
-custom  → article.printerId
-none    → kein Druck
+article.printerId gesetzt → article.printerId
+sonst                    → category.defaultPrinterId (leer = kein Druck)
 ```
 
 ### Tisch (`Table`)

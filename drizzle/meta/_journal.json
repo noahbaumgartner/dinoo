@@ -22,6 +22,13 @@
       "when": 1794071303698,
       "tag": "0002_seating_plan_grid",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1794073204995,
+      "tag": "0003_drop_article_printer_mode",
+      "breakpoints": true
     }
   ]
 }

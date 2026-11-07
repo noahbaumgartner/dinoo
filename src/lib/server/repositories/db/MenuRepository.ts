@@ -1,7 +1,7 @@
 import { asc, eq } from 'drizzle-orm';
 import { countRows, type Db } from './client';
 import { articles, categories, orderItems } from './schema';
-import type { ArticleRecord, CategoryRecord, PrinterMode } from './types';
+import type { ArticleRecord, CategoryRecord } from './types';
 
 export type CategoryInput = {
 	name: string;
@@ -13,7 +13,6 @@ export type ArticleInput = {
 	name: string;
 	priceCents: number;
 	categoryId: number;
-	printerMode: PrinterMode;
 	printerId: number | null;
 	sortOrder: number;
 	active: boolean;

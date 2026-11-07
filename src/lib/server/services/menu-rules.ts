@@ -1,16 +1,9 @@
 import type { ArticleRecord, CategoryRecord } from '../repositories/db/types';
 
-/** Where an article is printed: the category default unless the article overrides it. */
+/** Where an article is printed: its own printer if set, otherwise the category default. */
 export function effectivePrinterId(
-	article: Pick<ArticleRecord, 'printerMode' | 'printerId'>,
+	article: Pick<ArticleRecord, 'printerId'>,
 	category: Pick<CategoryRecord, 'defaultPrinterId'> | undefined
 ): number | null {
-	switch (article.printerMode) {
-		case 'inherit':
-			return category?.defaultPrinterId ?? null;
-		case 'custom':
-			return article.printerId;
-		case 'none':
-			return null;
-	}
+	return article.printerId ?? category?.defaultPrinterId ?? null;
 }

@@ -16,7 +16,6 @@ export type PrinterRecord = typeof printers.$inferSelect;
 export type PrinterModel = PrinterRecord['model'];
 export type CategoryRecord = typeof categories.$inferSelect;
 export type ArticleRecord = typeof articles.$inferSelect;
-export type PrinterMode = ArticleRecord['printerMode'];
 export type TableRecord = typeof tables.$inferSelect;
 export type OrderRecord = typeof orders.$inferSelect;
 export type OrderItemRecord = typeof orderItems.$inferSelect;

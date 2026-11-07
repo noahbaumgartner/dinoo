@@ -137,7 +137,6 @@ menu.forEach(([name, printerId, items], categoryIndex) => {
 				name: articleName,
 				priceCents,
 				categoryId: category.id,
-				printerMode: mode === 'grill' ? 'custom' : 'inherit',
 				printerId: mode === 'grill' ? grill.id : null,
 				sortOrder: index + 1,
 				active: true

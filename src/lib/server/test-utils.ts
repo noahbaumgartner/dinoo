@@ -75,7 +75,6 @@ export async function seedBasics(runtime: Runtime) {
 		name: 'Pommes',
 		priceCents: 600,
 		categoryId: food.id,
-		printerMode: 'inherit',
 		printerId: null,
 		sortOrder: 1,
 		active: true
@@ -84,7 +83,6 @@ export async function seedBasics(runtime: Runtime) {
 		name: 'Bratwurst',
 		priceCents: 750,
 		categoryId: food.id,
-		printerMode: 'custom',
 		printerId: grill.id,
 		sortOrder: 2,
 		active: true
@@ -93,7 +91,6 @@ export async function seedBasics(runtime: Runtime) {
 		name: 'Bier',
 		priceCents: 550,
 		categoryId: drinks.id,
-		printerMode: 'inherit',
 		printerId: null,
 		sortOrder: 1,
 		active: true

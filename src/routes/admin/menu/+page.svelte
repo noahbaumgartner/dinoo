@@ -18,8 +18,6 @@
 		FieldDescription,
 		Input,
 		Label,
-		RadioGroup,
-		RadioGroupItem,
 		Select,
 		Switch
 	} from '@noahbaumgartner/svelte-ui';
@@ -32,6 +30,7 @@
 	type Article = Category['articles'][number];
 
 	const NO_PRINTER = '';
+	const LIKE_CATEGORY = '';
 
 	let printerName = $derived(new Map(data.printers.map((p) => [p.id, p.name])));
 	let printerOptions = $derived(data.printers.map((p) => ({ value: String(p.id), label: p.name })));
@@ -51,15 +50,13 @@
 	let articleOpen = $state(false);
 	let article = $state<Article | null>(null);
 	let articleCategory = $state('');
-	let printerMode = $state<'inherit' | 'custom' | 'none'>('inherit');
-	let articlePrinter = $state('');
+	let articlePrinter = $state(LIKE_CATEGORY);
 	let articleActive = $state(true);
 
 	function editArticle(value: Article | null, categoryId: number) {
 		article = value;
 		articleCategory = String(value?.categoryId ?? categoryId);
-		printerMode = value?.printerMode ?? 'inherit';
-		articlePrinter = String(value?.printerId ?? data.printers[0]?.id ?? '');
+		articlePrinter = value?.printerId ? String(value.printerId) : LIKE_CATEGORY;
 		articleActive = value?.active ?? true;
 		articleOpen = true;
 	}
@@ -138,7 +135,7 @@
 									{item.effectivePrinterId
 										? printerName.get(item.effectivePrinterId)
 										: 'Kein Druck'}
-									{#if item.printerMode !== 'inherit'}<Badge variant="primary">eigener</Badge>{/if}
+									{#if item.printerId}<Badge variant="primary">eigener</Badge>{/if}
 								</span>
 								<form method="POST" action="?/setActive" use:enhance={notify()} class="toggle">
 									<input type="hidden" name="id" value={item.id} />
@@ -284,26 +281,18 @@
 				options={data.categories.map((c) => ({ value: String(c.id), label: c.name }))}
 			/>
 		</Field>
-		<fieldset class="printer-mode">
-			<legend>Drucker</legend>
-			<RadioGroup name="printerMode" bind:value={printerMode}>
-				<label class="radio"
-					><RadioGroupItem value="inherit" /> Standard der Kategorie ({inheritedPrinter})</label
-				>
-				<label class="radio"
-					><RadioGroupItem value="custom" disabled={data.printers.length === 0} /> Eigener Drucker</label
-				>
-				<label class="radio"><RadioGroupItem value="none" /> Kein Druck</label>
-			</RadioGroup>
-			{#if printerMode === 'custom'}
-				<Select
-					name="printerId"
-					bind:value={articlePrinter}
-					options={printerOptions}
-					aria-label="Eigener Drucker"
-				/>
-			{/if}
-		</fieldset>
+		<Field>
+			<Label for="article-printer">Drucker</Label>
+			<Select
+				id="article-printer"
+				name="printerId"
+				bind:value={articlePrinter}
+				options={[
+					{ value: LIKE_CATEGORY, label: `Wie Kategorie (${inheritedPrinter})` },
+					...printerOptions
+				]}
+			/>
+		</Field>
 		<Field orientation="horizontal">
 			<Switch id="article-active" name="active" bind:checked={articleActive} />
 			<Label for="article-active">Bestellbar (nicht ausverkauft)</Label>
@@ -385,28 +374,6 @@
 		display: grid;
 		grid-template-columns: 1fr 110px;
 		gap: 12px;
-	}
-
-	.printer-mode {
-		display: flex;
-		flex-direction: column;
-		gap: 10px;
-		margin: 0;
-		padding: 0;
-		border: none;
-	}
-
-	.printer-mode legend {
-		margin-bottom: 8px;
-		font-size: 14px;
-		font-weight: 500;
-	}
-
-	.radio {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-		font-size: 14px;
 	}
 
 	@media (max-width: 720px) {

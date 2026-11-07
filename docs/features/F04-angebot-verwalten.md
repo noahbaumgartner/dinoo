@@ -18,7 +18,7 @@ Der Admin pflegt Kategorien und Artikel inkl. Preisen, legt pro Kategorie den St
 - [ ] Nur Rolle `admin` (`/admin/menu`).
 - [ ] Kategorien: anlegen, umbenennen, sortieren, Standard-Drucker wählen (inkl. „kein Druck“); löschen nur ohne Artikel.
 - [ ] Artikel: anlegen, bearbeiten (Name, Preis in CHF mit Rappen, Kategorie, Sortierung), aktiv/inaktiv.
-- [ ] Artikel-Druckerwahl über `printerMode`: „Standard der Kategorie (= X)“ (`inherit`), konkreter Drucker (`custom`), „kein Druck“ (`none`).
+- [ ] Artikel-Druckerwahl: „Wie Kategorie (= X)“ (`printerId` leer) oder ein konkreter Drucker. Ein Artikel kann den Druck nicht separat abschalten; „kein Druck“ wird über die Kategorie gesteuert.
 - [ ] Effektiver Drucker wird in der Artikelliste angezeigt.
 - [ ] Artikel mit bestehenden Bestellungen werden deaktiviert statt gelöscht.
 - [ ] Änderungen wirken sofort auf neue Bestellungen.
