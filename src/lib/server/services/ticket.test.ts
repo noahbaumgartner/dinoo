@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vite-plus/test';
-import { TICKET_WIDTH } from '../repositories/printer/ticket';
-import { JOKES, wrapText } from './jokes';
+import { TICKET_WIDTH, wrapText } from '$lib/print/ticket';
+import { JOKES } from './jokes';
 import { TicketService } from './TicketService';
 
 describe('test ticket', () => {
@@ -10,7 +10,7 @@ describe('test ticket', () => {
 
 	it('prints the title and the joke picked by the random source', () => {
 		const ticket = new TicketService(() => 0.999).testTicket();
-		expect(ticket.lines[0]).toMatchObject({ type: 'text', text: 'Testdruck', size: 'large' });
+		expect(ticket.lines[0]).toMatchObject({ type: 'text', text: 'Testdruck', width: 2, height: 2 });
 		const text = ticket.lines
 			.flatMap((line) => (line.type === 'text' ? [line.text] : []))
 			.slice(1)

@@ -7,7 +7,9 @@ import type {
 import type { SettingsRepository } from '../repositories/db/SettingsRepository';
 import type { OrderItemRecord, OrderRecord, PrinterRecord } from '../repositories/db/types';
 import { ticketToText, type Ticket } from '../repositories/printer/ticket';
+import { parseStoredTemplate } from '$lib/print/template';
 import { DomainError, notFound } from './errors';
+import { checkedTemplate } from './SettingsService';
 import type { PrintWorker } from './PrintWorker';
 import type { TicketService } from './TicketService';
 
@@ -37,13 +39,21 @@ export class PrintQueueService {
 			byPrinter.set(item.printerId, [...(byPrinter.get(item.printerId) ?? []), item]);
 		}
 		const eventName = this.settings.get('eventName');
+		const template = parseStoredTemplate(this.settings.get('ticketTemplate'));
 		this.printJobs.enqueue(
 			[...byPrinter].map(([printerId, printerItems]) => ({
 				kind: 'order' as const,
 				orderId: order.id,
 				printerId,
 				payload: JSON.stringify(
-					this.tickets.orderTicket({ eventName, order, items: printerItems, createdByName })
+					this.tickets.orderTicket({
+						template,
+						eventName,
+						order,
+						items: printerItems,
+						createdByName,
+						printerName: this.printers.get(printerId)?.name ?? ''
+					})
 				)
 			})),
 			this.now()
@@ -58,6 +68,24 @@ export class PrintQueueService {
 	enqueueTest(printerId: number) {
 		if (!this.printers.get(printerId)) notFound('Drucker');
 		const ticket = this.tickets.testTicket();
+		this.printJobs.enqueue(
+			[{ kind: 'test', orderId: null, printerId, payload: JSON.stringify(ticket) }],
+			this.now()
+		);
+		this.worker.kick(printerId);
+	}
+
+	/** Template test print (F11): the template as it is in the editor, with the sample order. */
+	enqueueTemplateTest(printerId: number, template: unknown, serviceName: string) {
+		const printer = this.printers.get(printerId) ?? notFound('Drucker');
+		if (!printer.active) throw new DomainError('Dieser Drucker ist deaktiviert.');
+		const ticket = this.tickets.templateTestTicket({
+			template: checkedTemplate(template),
+			eventName: this.settings.get('eventName'),
+			serviceName,
+			printerName: printer.name,
+			at: this.now()
+		});
 		this.printJobs.enqueue(
 			[{ kind: 'test', orderId: null, printerId, payload: JSON.stringify(ticket) }],
 			this.now()

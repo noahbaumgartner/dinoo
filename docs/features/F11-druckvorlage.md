@@ -1,6 +1,6 @@
 # F11 – Druckvorlage
 
-**Status:** Entwurf
+**Status:** Umgesetzt
 **Priorität:** Soll
 
 ## Ziel
@@ -107,7 +107,7 @@ feed  1
 
 **Beispieldaten** (Vorschau und Testdruck, fest)
 
-- Anlass: `Settings.eventName` (leer → „Musterfest“), Bestellnummer 42, Tisch „B07“, aktuelles Datum und Zeit, Service: angemeldeter Admin, Drucker: gewählter Drucker (Vorschau: „Küche“).
+- Anlass: `Settings.eventName` (leer → „Musterfest“), Bestellnummer 42, Tisch „B07“, aktuelles Datum und Zeit, Service: angemeldeter Admin, Drucker: gewählter Drucker (Vorschau: erster aktiver Drucker, ohne Drucker „Küche“).
 - Positionen: `2 x Pommes`, `1 x Bratwurst` mit Notiz „ohne Senf, extra Brot“, `3 x Rivella`, `1 x Cordon bleu mit Pommes und Salat` (langer Name, zeigt den Umbruch).
 
 ## Daten / API

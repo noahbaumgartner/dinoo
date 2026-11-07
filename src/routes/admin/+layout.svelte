@@ -16,6 +16,7 @@
 	import {
 		ChartLine,
 		LayoutGrid,
+		LayoutTemplate,
 		Menu,
 		Printer,
 		ReceiptText,
@@ -53,6 +54,7 @@
 				{ href: '/admin/menu', label: 'Angebot', icon: UtensilsCrossed },
 				{ href: '/admin/tables', label: 'Tische', icon: LayoutGrid },
 				{ href: '/admin/printers', label: 'Drucker', icon: Printer },
+				{ href: '/admin/print-template', label: 'Druckvorlage', icon: LayoutTemplate },
 				{
 					label: 'Verwaltung',
 					icon: Settings,

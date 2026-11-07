@@ -1,6 +1,6 @@
 import { CharacterSet, PrinterTypes, ThermalPrinter } from 'node-thermal-printer';
 import type { PrinterDeviceRepository, PrinterTarget } from './PrinterDeviceRepository';
-import type { Ticket } from './ticket';
+import { textScale, type Ticket } from './ticket';
 
 const TIMEOUT_MS = 4000;
 
@@ -19,36 +19,54 @@ export class EscPosPrinterDeviceRepository implements PrinterDeviceRepository {
 
 		for (const line of ticket.lines) {
 			switch (line.type) {
-				case 'text':
+				case 'text': {
 					if (line.align === 'center') printer.alignCenter();
+					else if (line.align === 'right') printer.alignRight();
 					else printer.alignLeft();
-					if (line.size === 'large') printer.setTextQuadArea();
-					else printer.setTextNormal();
+					setScale(printer, textScale(line));
 					printer.bold(Boolean(line.bold));
+					printer.underline(Boolean(line.underline));
+					printer.invert(Boolean(line.invert));
 					printer.println(line.text);
 					break;
+				}
 				case 'pair':
-					printer.alignLeft();
-					printer.setTextNormal();
+					resetStyle(printer);
 					printer.bold(Boolean(line.bold));
 					printer.leftRight(line.left, line.right);
 					break;
 				case 'rule':
-					printer.setTextNormal();
-					printer.bold(false);
-					printer.drawLine();
+					resetStyle(printer);
+					printer.drawLine(line.char ?? '-');
 					break;
 				case 'feed':
-					printer.newLine();
+					for (let i = 0; i < (line.lines ?? 1); i++) printer.newLine();
 					break;
 			}
 		}
-		printer.setTextNormal();
-		printer.bold(false);
+		resetStyle(printer);
 		printer.cut();
 
 		// `execute` resolves once the socket was written and closed, and rejects on connection
 		// errors and timeouts, so a resolved promise means the printer accepted the data.
 		await printer.execute();
 	}
+}
+
+/**
+ * ESC/POS `GS ! n`: the high nibble is the width multiplier minus one, the low nibble the height.
+ * Written directly because the library's `setTextSize` puts the height into the width nibble.
+ */
+function setScale(printer: ThermalPrinter, scale: { width: number; height: number }) {
+	const width = Math.min(Math.max(scale.width, 1), 8) - 1;
+	const height = Math.min(Math.max(scale.height, 1), 8) - 1;
+	printer.append(Buffer.from([0x1d, 0x21, (width << 4) | height]));
+}
+
+function resetStyle(printer: ThermalPrinter) {
+	printer.alignLeft();
+	setScale(printer, { width: 1, height: 1 });
+	printer.bold(false);
+	printer.underline(false);
+	printer.invert(false);
 }

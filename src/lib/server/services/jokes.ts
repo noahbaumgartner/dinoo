@@ -104,21 +104,3 @@ export const JOKES: readonly string[] = [
 	'Was ist das Lieblingslied der Küchencrew?\n"Highway to Grill."',
 	'Was ist der Lieblingstanz eines Grillmeisters?\nDer Wurst-Walzer.'
 ];
-
-/** Splits a joke into lines and word-wraps each line to `width` characters. */
-export function wrapText(text: string, width: number): string[] {
-	const lines: string[] = [];
-	for (const paragraph of text.split('\n')) {
-		let current = '';
-		for (const word of paragraph.split(' ').filter(Boolean)) {
-			if (!current) current = word;
-			else if (current.length + 1 + word.length <= width) current += ` ${word}`;
-			else {
-				lines.push(current);
-				current = word;
-			}
-		}
-		lines.push(current);
-	}
-	return lines;
-}

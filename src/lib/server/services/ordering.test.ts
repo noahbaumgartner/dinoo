@@ -188,6 +188,72 @@ describe('print queue', () => {
 		expect(repo.get(job.id)?.status).toBe('queued');
 	});
 
+	it('lays out order tickets with the saved print template', () => {
+		const settings = t.services().settings;
+		settings.setTicketTemplate({
+			blocks: [
+				{
+					type: 'text',
+					text: '{tisch} / {drucker}',
+					style: { align: 'center', width: 3, height: 3, invert: true }
+				},
+				{
+					type: 'items',
+					line: { text: '{artikel} ({menge})', style: { align: 'left' } },
+					note: { text: '-> {notiz}', style: { align: 'left' } }
+				}
+			]
+		});
+		const order = place();
+		const grill = t
+			.services()
+			.printQueue.listByOrder(order.id)
+			.find((job) => job.printerName === 'Grill')!;
+		expect(grill.preview).toMatch(/102 \/ GRILL\nBratwurst \(1\)\n-> ohne Senf$/);
+		expect(grill.preview).not.toContain('Aufgenommen');
+
+		settings.resetTicketTemplate();
+		expect(settings.ticketTemplate().isDefault).toBe(true);
+	});
+
+	it('rejects invalid print templates', () => {
+		const settings = t.services().settings;
+		expect(() => settings.setTicketTemplate({ blocks: [] })).toThrow(/genau einen Block/);
+		expect(() =>
+			settings.setTicketTemplate({
+				blocks: [
+					{ type: 'text', text: '{preis}', style: {} },
+					{ type: 'items', line: { text: '', style: {} }, note: { text: '', style: {} } }
+				]
+			})
+		).toThrow(/Block 1: Unbekannter Platzhalter \{preis\}/);
+		expect(settings.ticketTemplate().isDefault).toBe(true);
+	});
+
+	it('queues a template test print with the sample order', async () => {
+		const template = {
+			blocks: [
+				{ type: 'text', text: 'Test {bestellnummer}', style: { align: 'left' } },
+				{
+					type: 'items',
+					line: { text: '{menge} {artikel}', style: { align: 'left' } },
+					note: { text: '{notiz}', style: { align: 'left' } }
+				}
+			]
+		};
+		const queue = t.services().printQueue;
+		queue.enqueueTemplateTest(seed.kitchen.id, template, 'Anna');
+		const [job] = queue.list({ status: 'pending' });
+		expect(job).toMatchObject({ kind: 'test', printerName: 'Küche' });
+		expect(job.preview).toContain('Test 42');
+		expect(job.preview).toContain('1 Cordon bleu mit Pommes und Salat');
+		expect(() => queue.enqueueTemplateTest(seed.kitchen.id, { blocks: [] }, 'Anna')).toThrow(
+			/ungültig/
+		);
+		await t.runtime.worker.tick();
+		expect(queue.countPending()).toBe(0);
+	});
+
 	it('does not deactivate printers with waiting jobs', () => {
 		t.device.offlineHosts.add(seed.kitchen.host);
 		place();
