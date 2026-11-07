@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
-	import OrderItems from '$lib/components/OrderItems.svelte';
 	import PaymentPanel from '$lib/components/PaymentPanel.svelte';
 	import PrintStatus from '$lib/components/PrintStatus.svelte';
 	import { Card, CardContent, CardHeader, CardTitle } from '@noahbaumgartner/svelte-ui';
@@ -15,7 +14,13 @@
 			totalCents: number;
 			createdAt: Date;
 		};
-		items: { id: number; quantity: number; articleName: string; priceCents: number }[];
+		items: {
+			id: number;
+			quantity: number;
+			paidQuantity: number;
+			articleName: string;
+			priceCents: number;
+		}[];
 		paidCents: number;
 		openCents: number;
 		createdByName: string;
@@ -72,9 +77,11 @@
 		</div>
 	</div>
 
-	<div class="grid">
+	<div class="grid" class:with-side={data.printJobs.length > 0}>
 		<div class="main">
 			<PaymentPanel
+				items={data.items}
+				note={data.order.note}
 				totalCents={data.order.totalCents}
 				paidCents={data.paidCents}
 				openCents={data.openCents}
@@ -82,22 +89,14 @@
 				twintQrContent={data.twintQrContent}
 			/>
 		</div>
-		<div class="side stack">
-			<Card>
-				<CardHeader><CardTitle>Druck</CardTitle></CardHeader>
-				<CardContent><PrintStatus jobs={data.printJobs} /></CardContent>
-			</Card>
-			<Card>
-				<CardHeader><CardTitle>Positionen</CardTitle></CardHeader>
-				<CardContent>
-					<OrderItems
-						items={data.items}
-						totalCents={data.order.totalCents}
-						note={data.order.note}
-					/>
-				</CardContent>
-			</Card>
-		</div>
+		{#if data.printJobs.length > 0}
+			<div class="side stack">
+				<Card>
+					<CardHeader><CardTitle>Druck</CardTitle></CardHeader>
+					<CardContent><PrintStatus jobs={data.printJobs} /></CardContent>
+				</Card>
+			</div>
+		{/if}
 	</div>
 </div>
 
@@ -124,7 +123,7 @@
 	}
 
 	@media (min-width: 900px) {
-		.grid {
+		.grid.with-side {
 			grid-template-columns: minmax(0, 1fr) 360px;
 			align-items: start;
 		}

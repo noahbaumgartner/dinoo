@@ -24,7 +24,7 @@ Service-Personal nimmt am Tisch eine Bestellung in vier Schritten auf: Tisch wä
 - [ ] Nur angemeldete Benutzer (`service` oder `admin`).
 - [ ] Schritt 1 zeigt den Saalplan als Raster (Zeilen × Spalten wie in F06); inaktive Rastertische sind leere Stellen. Darunter die aktiven freien Tische, sortiert nach `sortOrder`. Ist der Plan breiter als der Bildschirm, scrollt er horizontal. **Pflichtfeld: Tisch.** Ein Name des Bestellers wird nicht erfasst.
 - [ ] Schritt 2 zeigt nur aktive Artikel in aktiven Kategorien; Menge per +/– (0 entfernt die Position); Zwischensumme laufend sichtbar; Zurück zu Schritt 1 ohne Datenverlust.
-- [ ] Schritt 3 ist ein einziger Button „Bestellung abschicken“, deaktiviert ohne Position. Doppelklick/Netzwerk-Retry erzeugt keine zweite Bestellung (Idempotenz-Token).
+- [ ] Schritt 3 öffnet sich als Drawer über den Artikeln („Prüfen“): Positionen, Total, Notiz und ein einziger Button „Bestellung abschicken“, deaktiviert ohne Position. Doppelklick/Netzwerk-Retry erzeugt keine zweite Bestellung (Idempotenz-Token).
 - [ ] Beim Abschicken: `orderNumber` fortlaufend; `tableLabel`, `articleName`, `priceCents`, effektiver `printerId` und `totalCents` als Snapshot gespeichert.
 - [ ] Bestellung wird gespeichert und die Zettel in die Druckwarteschlange gestellt (F03); auch bei nicht erreichbarem Drucker geht die Bestellung durch. Druckstatus pro Drucker sichtbar (wartet / gedruckt).
 - [ ] Nach Schritt 3 wechselt die Ansicht automatisch zu Schritt 4 (F07) mit Bestellnummer und Betrag.
@@ -37,7 +37,8 @@ Service-Personal nimmt am Tisch eine Bestellung in vier Schritten auf: Tisch wä
 
 ## UI
 
-- Fortschrittsanzeige der 4 Schritte oben, fixe Aktionsleiste unten (Zwischensumme + primärer Button).
+- Keine Fortschrittsanzeige (spart Platz auf dem Handy). Ein Tipp auf einen Tisch führt direkt zu den Artikeln; ab Schritt 2 fixe Aktionsleiste unten (Zwischensumme + primärer Button, «Zurück»).
+- Zwischenschritte (Prüfen, Bar, TWINT) erscheinen als Drawer – auf dem Handy von unten, ab 768 px als Panel rechts –, damit die Ansicht darunter sichtbar bleibt und alles auf einem Bildschirm Platz hat.
 - Mobile-first, Bedienelemente mindestens 44 px.
 
 ## Nicht im Scope

@@ -198,6 +198,25 @@ export const payments = sqliteTable(
 	(t) => [index('payments_order_idx').on(t.orderId)]
 );
 
+/** Which positions (and how many of each) a payment covered. */
+export const paymentItems = sqliteTable(
+	'payment_items',
+	{
+		id: integer('id').primaryKey({ autoIncrement: true }),
+		paymentId: integer('payment_id')
+			.notNull()
+			.references(() => payments.id, { onDelete: 'cascade' }),
+		orderItemId: integer('order_item_id')
+			.notNull()
+			.references(() => orderItems.id, { onDelete: 'cascade' }),
+		quantity: integer('quantity').notNull()
+	},
+	(t) => [
+		index('payment_items_payment_idx').on(t.paymentId),
+		index('payment_items_order_item_idx').on(t.orderItemId)
+	]
+);
+
 export const printJobs = sqliteTable(
 	'print_jobs',
 	{
@@ -241,6 +260,7 @@ export const schema = {
 	orders,
 	orderItems,
 	payments,
+	paymentItems,
 	printJobs,
 	settings
 };

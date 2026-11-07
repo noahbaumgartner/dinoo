@@ -11,32 +11,58 @@
 		tables: T[];
 		/** Content of a cell that has a table. */
 		cell: Snippet<[table: T]>;
+		/** Optional handle above each column (e.g. to switch the whole column). */
+		columnHandle?: Snippet<[column: number]>;
+		/** Optional handle left of each row. */
+		rowHandle?: Snippet<[row: number]>;
 		label?: string;
 		role?: string;
 	};
 
-	let { rows, columns, tables, cell, label = 'Saalplan', role }: Props = $props();
+	let {
+		rows,
+		columns,
+		tables,
+		cell,
+		columnHandle,
+		rowHandle,
+		label = 'Saalplan',
+		role
+	}: Props = $props();
 
 	let byCell = $derived(
 		new Map(tables.map((table) => [`${table.gridRow}:${table.gridColumn}`, table]))
 	);
-	let positions = $derived(
-		Array.from({ length: rows * columns }, (_, index) => ({
-			row: Math.floor(index / columns) + 1,
-			column: (index % columns) + 1
-		}))
-	);
+	let rowNumbers = $derived(Array.from({ length: rows }, (_, index) => index + 1));
+	let columnNumbers = $derived(Array.from({ length: columns }, (_, index) => index + 1));
+	let handles = $derived(Boolean(columnHandle || rowHandle));
 </script>
 
 <div class="scroller">
-	<div class="plan" style:--columns={columns} {role} aria-label={label}>
-		{#each positions as { row, column } (`${row}:${column}`)}
-			{@const table = byCell.get(`${row}:${column}`)}
-			{#if table}
-				{@render cell(table)}
-			{:else}
-				<span class="gap" aria-hidden="true"></span>
+	<div
+		class={['plan', { 'plan--handles': handles }]}
+		style:--columns={columns}
+		{role}
+		aria-label={label}
+	>
+		{#if handles}
+			<span aria-hidden="true"></span>
+			{#each columnNumbers as column (column)}
+				{#if columnHandle}{@render columnHandle(column)}{:else}<span></span>{/if}
+			{/each}
+		{/if}
+		{#each rowNumbers as row (row)}
+			{#if handles}
+				{#if rowHandle}{@render rowHandle(row)}{:else}<span></span>{/if}
 			{/if}
+			{#each columnNumbers as column (column)}
+				{@const table = byCell.get(`${row}:${column}`)}
+				{#if table}
+					{@render cell(table)}
+				{:else}
+					<span aria-hidden="true"></span>
+				{/if}
+			{/each}
 		{/each}
 	</div>
 </div>
@@ -44,21 +70,23 @@
 <style>
 	.scroller {
 		margin-inline: calc(-1 * var(--gutter, 0px));
-		padding-inline: var(--gutter, 0px);
-		padding-bottom: 8px;
+		padding: 4px var(--gutter, 0px) 8px;
 		overflow-x: auto;
 	}
 
 	.plan {
+		--tile: var(--table-tile-size, 72px);
 		display: grid;
 		/* Fixed tile size on every screen; wide plans scroll instead of shrinking. */
-		grid-template-columns: repeat(var(--columns), var(--table-tile-size, 72px));
-		grid-auto-rows: var(--table-tile-size, 72px);
+		grid-template-columns: repeat(var(--columns), var(--tile));
+		grid-auto-rows: var(--tile);
 		gap: 6px;
 		width: max-content;
 	}
 
-	.gap {
-		aspect-ratio: 1;
+	/* Handles: a narrow first column and a low first row. */
+	.plan--handles {
+		grid-template-columns: 32px repeat(var(--columns), var(--tile));
+		grid-template-rows: 32px;
 	}
 </style>

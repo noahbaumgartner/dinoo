@@ -18,26 +18,28 @@ Direkt nach dem Abschicken kassiert der Service bar (mit Rechnungshilfe für das
 
 **Grundablauf (Schritt 4)**
 
-- [ ] Anzeige: Bestellnummer, Tisch, Gesamtbetrag und **Restbetrag** gross. Darunter Betragsfeld (vorbelegt mit Restbetrag) und zwei Buttons „Bar“ und „TWINT“.
-- [ ] Der Betrag ist änderbar (Splitting): zwischen 0.05 und Restbetrag, 5-Rappen-Schritte.
-- [ ] Jede bestätigte Zahlung erzeugt ein `Payment`. Restbetrag wird neu berechnet; bei Rest > 0 bleibt die Ansicht für die nächste Teilzahlung offen.
+- [ ] Anzeige: Bestellnummer, Tisch, Gesamtbetrag und **Restbetrag** gross. Darunter die Positionen und zwei Buttons „Bar“ und „TWINT“.
+- [ ] Ohne Auswahl wird der ganze Restbetrag bezahlt (inkl. aller noch offenen Positionen).
+- [ ] **Teilzahlung (Splitting):** Jede noch nicht vollständig bezahlte Position hat einen „+“-Button. Sobald eine Position gewählt ist, ist die Teilzahlung aktiv: Betrag = Summe der gewählten Mengen × Preis. Die Menge pro Position ist bis zur noch offenen Menge änderbar; „Aufheben“ verwirft die Auswahl. Ein frei eingegebener Betrag ist nicht möglich.
+- [ ] Bezahlte Mengen werden pro Position gespeichert und angezeigt („1 von 3 bezahlt“, „bezahlt“); bereits bezahlte Mengen können nicht nochmals gewählt werden.
+- [ ] Jede bestätigte Zahlung erzeugt ein `Payment` mit den bezahlten Positionen (`PaymentItem`). Restbetrag wird neu berechnet; bei Rest > 0 bleibt die Ansicht für die nächste Teilzahlung offen.
 - [ ] Bei Restbetrag 0: Bestätigung „Bezahlt“ und Button „Neue Bestellung“.
 - [ ] Liste der bereits erfassten Zahlungen (Betrag, Art) ist sichtbar.
 
 **Bar**
 
-- [ ] Nach „Bar“: Eingabe „Erhalten“ mit Schnellwahl (passend, 10, 20, 50, 100 CHF) und Ziffernblock; Rückgeld = Erhalten − Betrag, live und gross, auf 5 Rappen gerundet.
+- [ ] Nach „Bar“ öffnet sich ein Drawer: Eingabe „Erhalten“ mit Schnellwahl (passend, 10, 20, 50, 100 CHF) und Zahlenfeld (numerische Tastatur des Geräts); Rückgeld = Erhalten − Betrag, live und gross, auf 5 Rappen gerundet.
 - [ ] Button „Bar bezahlt“ schliesst die Teilzahlung ab.
 
 **TWINT**
 
-- [ ] Nach „TWINT“: Vollbild-QR, generiert aus `Settings.twintQrContent`, mit dem zu zahlenden Betrag als Text; Button „TWINT bezahlt“ schliesst die Teilzahlung ab.
-- [ ] Ohne hinterlegten QR-Inhalt ist „TWINT“ deaktiviert mit Hinweis.
+- [ ] Nach „TWINT“ öffnet sich ein Drawer mit grossem QR, generiert aus `Settings.twintQrContent`, mit dem zu zahlenden Betrag als Text; Button „TWINT bezahlt“ schliesst die Teilzahlung ab.
+- [ ] Ohne hinterlegten QR-Inhalt ist „TWINT“ deaktiviert (ohne zusätzlichen Hinweistext).
 
 **Später / Korrektur**
 
 - [ ] „Später bezahlen“ lässt die Bestellung offen bzw. teilbezahlt; unter „Meine Bestellungen“ (F08, Filter „offen“) kann weiterkassiert werden.
-- [ ] Admin kann Zahlungen einzeln löschen (Fehleingabe); Service kann nur die eigene letzte Zahlung innerhalb von 5 Minuten rückgängig machen.
+- [ ] Admin kann Zahlungen einzeln löschen (Fehleingabe); Service kann nur die eigene letzte Zahlung innerhalb von 5 Minuten rückgängig machen. Die Positionen einer gelöschten Zahlung sind danach wieder offen.
 - [ ] Summe der Zahlungen kann den Gesamtbetrag nicht überschreiten.
 
 ## Daten / API
@@ -47,7 +49,10 @@ Direkt nach dem Abschicken kassiert der Service bar (mit Rechnungshilfe für das
 
 ## UI
 
-- Grosse Zahlen, kontrastreich; Ziffernblock für Bar; QR füllt den Bildschirm.
+- Grosse Zahlen, kontrastreich; numerische Tastatur für Bar.
+- Bar und TWINT sind Drawer (Handy: von unten, ab 768 px: Panel rechts); die Abrechnungsansicht bleibt dahinter, alles passt auf einen Bildschirm.
+- Keine Fortschrittsanzeige und keine Navigations-Buttons oben. Erst wenn die Bestellung vollständig bezahlt ist, erscheint unten eine fixe Aktionsleiste mit „Bezahlt“ und dem primären Button „Neue Bestellung“.
+- Die Karte „Druck“ erscheint nur, wenn es Zettel zu drucken gibt.
 
 ## Nicht im Scope
 

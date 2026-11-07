@@ -33,7 +33,7 @@ export type OrderingData = {
 
 export type OrderDetail = {
 	order: OrderRecord;
-	items: OrderItemRecord[];
+	items: (OrderItemRecord & { paidQuantity: number })[];
 	payments: PaymentWithUser[];
 	printJobs: PrintJobView[];
 	paidCents: number;
@@ -133,9 +133,12 @@ export class OrderService {
 	detail(orderId: number): OrderDetail {
 		const order = this.orders.get(orderId) ?? notFound('Bestellung');
 		const paidCents = this.payments.sumByOrder(orderId);
+		const paid = this.payments.paidQuantities(orderId);
 		return {
 			order,
-			items: this.orders.items(orderId),
+			items: this.orders
+				.items(orderId)
+				.map((item) => ({ ...item, paidQuantity: paid.get(item.id) ?? 0 })),
 			payments: this.payments.listByOrder(orderId),
 			printJobs: this.printQueue.listByOrder(orderId),
 			paidCents,

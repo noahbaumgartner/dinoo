@@ -65,10 +65,17 @@ h1 {
 	font-family: var(--font-display);
 	font-weight: 750;
 	letter-spacing: -0.03em;
+	line-height: 1.15;
 }
 
 p {
 	margin: 0;
+	line-height: 1.5;
+}
+
+/* A page title with its lead text below: give the pair room to breathe. */
+h1 + p {
+	margin-top: 10px;
 }
 
 .tabular {
@@ -99,6 +106,31 @@ p {
 	flex-wrap: wrap;
 	align-items: center;
 	gap: 8px;
+}
+
+/* Icon-only ghost buttons (edit, delete) sit close together: their hit area already pads them. */
+.icon-actions {
+	display: flex;
+	align-items: center;
+	gap: 2px;
+}
+
+/* A coloured bar on the left edge (category colour, selection). Drawn as a pill inset from the
+   top and bottom instead of an inset box-shadow, so it never bends around a rounded corner. */
+.accent-bar {
+	position: relative;
+}
+
+.accent-bar::before {
+	content: '';
+	position: absolute;
+	top: var(--accent-bar-inset, 12px);
+	bottom: var(--accent-bar-inset, 12px);
+	left: 0;
+	width: 4px;
+	border-radius: 0 4px 4px 0;
+	background-color: var(--accent-bar-color, var(--color-accent));
+	pointer-events: none;
 }
 
 .form-error {

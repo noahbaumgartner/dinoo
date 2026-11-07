@@ -1,9 +1,10 @@
 import { asc, eq, sql } from 'drizzle-orm';
 import type { Db } from './client';
-import { payments, user } from './schema';
+import { paymentItems, payments, user } from './schema';
 import type { PaymentRecord } from './types';
 
 export type PaymentWithUser = PaymentRecord & { paidByName: string };
+export type PaymentLine = { orderItemId: number; quantity: number };
 
 export class PaymentRepository {
 	constructor(private readonly db: Db) {}
@@ -28,15 +29,40 @@ export class PaymentRepository {
 		return Number(row?.total ?? 0);
 	}
 
+	/** Paid quantity per order item id. */
+	paidQuantities(orderId: number): Map<number, number> {
+		const rows = this.db
+			.select({
+				orderItemId: paymentItems.orderItemId,
+				quantity: sql<number>`sum(${paymentItems.quantity})`
+			})
+			.from(paymentItems)
+			.innerJoin(payments, eq(payments.id, paymentItems.paymentId))
+			.where(eq(payments.orderId, orderId))
+			.groupBy(paymentItems.orderItemId)
+			.all();
+		return new Map(rows.map((row) => [row.orderItemId, Number(row.quantity)]));
+	}
+
 	get(id: number): PaymentRecord | undefined {
 		return this.db.select().from(payments).where(eq(payments.id, id)).get();
 	}
 
-	create(payment: Omit<PaymentRecord, 'id'>): PaymentRecord {
-		return this.db.insert(payments).values(payment).returning().get();
+	create(payment: Omit<PaymentRecord, 'id'>, lines: PaymentLine[]): PaymentRecord {
+		return this.db.transaction((tx) => {
+			const created = tx.insert(payments).values(payment).returning().get();
+			if (lines.length > 0)
+				tx.insert(paymentItems)
+					.values(lines.map((line) => ({ ...line, paymentId: created.id })))
+					.run();
+			return created;
+		});
 	}
 
 	delete(id: number) {
-		this.db.delete(payments).where(eq(payments.id, id)).run();
+		this.db.transaction((tx) => {
+			tx.delete(paymentItems).where(eq(paymentItems.paymentId, id)).run();
+			tx.delete(payments).where(eq(payments.id, id)).run();
+		});
 	}
 }

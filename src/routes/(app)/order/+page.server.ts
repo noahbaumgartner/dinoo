@@ -47,6 +47,6 @@ export const actions: Actions = {
 				},
 				user
 			);
-			redirect(303, `/orders/${order.id}?neu=1`);
+			redirect(303, `/orders/${order.id}`);
 		})
 };

@@ -7,26 +7,19 @@
 	import { uid } from '$lib/uid';
 	import {
 		Button,
+		Drawer,
 		EmptyState,
 		Field,
 		Input,
 		Label,
 		NumberStepper,
-		Steps,
 		Textarea
 	} from '@noahbaumgartner/svelte-ui';
-	import { ArrowLeft, ArrowRight, Send, UtensilsCrossed } from '@lucide/svelte';
+	import { ArrowLeft, ClipboardCheck, Send, UtensilsCrossed } from '@lucide/svelte';
 	import { SvelteMap } from 'svelte/reactivity';
 	import type { PageProps } from './$types';
 
 	let { data, form }: PageProps = $props();
-
-	const steps = [
-		{ label: 'Tisch' },
-		{ label: 'Artikel' },
-		{ label: 'Abschicken' },
-		{ label: 'Abrechnen' }
-	];
 
 	let step = $state(0);
 	let tableId = $state<number | null>(null);
@@ -35,6 +28,7 @@
 	let clientRequestId = $state(uid());
 	let submitting = $state(false);
 	let activeCategory = $state<number | null>(null);
+	let reviewOpen = $state(false);
 
 	let articles = $derived(data.categories.flatMap((category) => category.articles));
 	let table = $derived(data.tables.find((t) => t.id === tableId));
@@ -47,7 +41,6 @@
 	);
 	let itemCount = $derived(lines.reduce((sum, line) => sum + line.quantity, 0));
 	let totalCents = $derived(lines.reduce((sum, line) => sum + line.quantity * line.priceCents, 0));
-	let canContinue = $derived(tableId !== null);
 
 	function go(next: number) {
 		step = next;
@@ -71,7 +64,10 @@
 		role="radio"
 		aria-checked={tableId === t.id}
 		class={['table-tile', { 'table-tile--selected': tableId === t.id }]}
-		onclick={() => (tableId = t.id)}
+		onclick={() => {
+			tableId = t.id;
+			go(1);
+		}}
 	>
 		{t.label}
 	</button>
@@ -80,14 +76,6 @@
 <svelte:head><title>Bestellen · dinoo</title></svelte:head>
 
 <div class="order stack">
-	<Steps
-		{steps}
-		current={step}
-		label="Bestellablauf"
-		labels={{ done: 'erledigt', current: 'aktueller Schritt' }}
-		onselect={(index) => go(index)}
-	/>
-
 	{#if data.tables.length === 0 || data.categories.length === 0}
 		<EmptyState
 			icon={UtensilsCrossed}
@@ -114,18 +102,6 @@
 				{/if}
 			</div>
 		</section>
-		<ActionBar>
-			{#snippet summary()}
-				{#if table}
-					<strong>Tisch {table.label}</strong>
-				{:else}
-					<span class="muted">Tisch wählen</span>
-				{/if}
-			{/snippet}
-			<Button size="lg" icon={ArrowRight} disabled={!canContinue} onclick={() => go(1)}
-				>Weiter</Button
-			>
-		</ActionBar>
 	{:else if step === 1}
 		<section class="stack" aria-labelledby="step-articles">
 			<div class="row heading-row">
@@ -157,7 +133,7 @@
 					<ul class="articles">
 						{#each category.articles as article (article.id)}
 							{@const quantity = quantities.get(article.id) ?? 0}
-							<li class={['article', { 'article--selected': quantity > 0 }]}>
+							<li class={['article', { 'article--selected accent-bar': quantity > 0 }]}>
 								<button
 									type="button"
 									class="article-add"
@@ -193,19 +169,19 @@
 				<span class="muted"> · {itemCount} {itemCount === 1 ? 'Artikel' : 'Artikel'}</span>
 			{/snippet}
 			<Button variant="secondary" size="lg" icon={ArrowLeft} label="Zurück" onclick={() => go(0)} />
-			<Button size="lg" icon={ArrowRight} disabled={itemCount === 0} onclick={() => go(2)}
-				>Weiter</Button
+			<Button
+				size="lg"
+				icon={ClipboardCheck}
+				disabled={itemCount === 0}
+				onclick={() => (reviewOpen = true)}>Prüfen</Button
 			>
 		</ActionBar>
-	{:else}
-		<section class="stack" aria-labelledby="step-review">
-			<h1 id="step-review">Bestellung prüfen</h1>
-			<dl class="facts">
-				<div>
-					<dt>Tisch</dt>
-					<dd>{table?.label}</dd>
-				</div>
-			</dl>
+		<Drawer
+			bind:open={reviewOpen}
+			title="Bestellung prüfen"
+			description="Tisch {table?.label}"
+			closeLabel="Schliessen"
+		>
 			<ul class="review">
 				{#each lines as line (line.id)}
 					<li>
@@ -226,45 +202,37 @@
 			{#if form?.error}
 				<p class="form-error" role="alert">{form.error}</p>
 			{/if}
-		</section>
-		<form
-			method="POST"
-			action="?/place"
-			use:enhance={() => {
-				submitting = true;
-				return async ({ result, update }) => {
-					// A new id only after a definite answer; retries of the same submit keep it.
-					if (result.type === 'redirect') clientRequestId = uid();
-					await update();
-					submitting = false;
-				};
-			}}
-		>
-			<input type="hidden" name="clientRequestId" value={clientRequestId} />
-			<input type="hidden" name="tableId" value={tableId} />
-			<input type="hidden" name="note" value={note} />
-			<input
-				type="hidden"
-				name="items"
-				value={JSON.stringify(lines.map((l) => ({ articleId: l.id, quantity: l.quantity })))}
-			/>
-			<ActionBar>
-				{#snippet summary()}
-					<strong>{formatChf(totalCents)}</strong>
-				{/snippet}
-				<Button
-					variant="secondary"
-					size="lg"
-					icon={ArrowLeft}
-					label="Zurück"
-					disabled={submitting}
-					onclick={() => go(1)}
-				/>
-				<Button type="submit" size="lg" icon={Send} loading={submitting}
-					>Bestellung abschicken</Button
+			{#snippet actions(close)}
+				<Button variant="secondary" size="lg" disabled={submitting} onclick={close}
+					>Weiter bearbeiten</Button
 				>
-			</ActionBar>
-		</form>
+				<form
+					method="POST"
+					action="?/place"
+					use:enhance={() => {
+						submitting = true;
+						return async ({ result, update }) => {
+							// A new id only after a definite answer; retries of the same submit keep it.
+							if (result.type === 'redirect') clientRequestId = uid();
+							await update();
+							submitting = false;
+						};
+					}}
+				>
+					<input type="hidden" name="clientRequestId" value={clientRequestId} />
+					<input type="hidden" name="tableId" value={tableId} />
+					<input type="hidden" name="note" value={note} />
+					<input
+						type="hidden"
+						name="items"
+						value={JSON.stringify(lines.map((l) => ({ articleId: l.id, quantity: l.quantity })))}
+					/>
+					<Button type="submit" size="lg" icon={Send} loading={submitting}
+						>Bestellung abschicken · {formatChf(totalCents)}</Button
+					>
+				</form>
+			{/snippet}
+		</Drawer>
 	{/if}
 </div>
 
@@ -381,10 +349,6 @@
 		background-color: var(--category-color);
 	}
 
-	.category .articles {
-		box-shadow: inset 3px 0 0 var(--category-color);
-	}
-
 	.articles {
 		display: flex;
 		flex-direction: column;
@@ -409,7 +373,8 @@
 
 	/* Accent bar instead of a fill: the stepper buttons share the surface colour. */
 	.article--selected {
-		box-shadow: inset 3px 0 0 var(--color-accent);
+		--accent-bar-color: var(--color-accent);
+		--accent-bar-inset: 10px;
 	}
 
 	.article-add {
@@ -438,32 +403,9 @@
 		font-variant-numeric: tabular-nums;
 	}
 
-	.facts {
-		display: grid;
-		grid-template-columns: repeat(2, 1fr);
-		gap: 12px;
-		margin: 0;
-	}
-
-	.facts div {
-		padding: 12px 14px;
-		border-radius: var(--radius);
-		background-color: var(--color-surface);
-	}
-
-	.facts dt {
-		color: var(--color-text-muted);
-		font-size: 13px;
-	}
-
-	.facts dd {
-		margin: 2px 0 0;
-		font-size: 20px;
-		font-weight: 600;
-	}
-
 	.review {
 		display: flex;
+		font-size: 15px;
 		flex-direction: column;
 		margin: 0;
 		padding: 0;

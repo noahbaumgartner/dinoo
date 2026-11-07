@@ -52,7 +52,7 @@
 >
 	<ul class="databases">
 		{#each data.databases as db (db.name)}
-			<li class={['db', { 'db--active': db.active }]}>
+			<li class={['db', { 'db--active accent-bar': db.active }]}>
 				<span class="icon" aria-hidden="true"><Database size={18} /></span>
 				<span class="info">
 					<strong>{db.eventName ?? db.name}</strong>
@@ -230,7 +230,7 @@
 
 	/* Accent bar instead of a fill: buttons and icons inside share the surface colour. */
 	.db--active {
-		box-shadow: inset 3px 0 0 var(--color-accent);
+		--accent-bar-inset: 10px;
 	}
 
 	.icon {

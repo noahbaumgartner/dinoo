@@ -63,13 +63,11 @@ export async function seedBasics(runtime: Runtime) {
 	})!;
 	const food = s.menu.saveCategory(null, {
 		name: 'Warme Küche',
-		sortOrder: 1,
 		color: 'orange',
 		defaultPrinterId: kitchen.id
 	})!;
 	const drinks = s.menu.saveCategory(null, {
 		name: 'Getränke',
-		sortOrder: 2,
 		color: 'sky',
 		defaultPrinterId: null
 	})!;
@@ -78,7 +76,6 @@ export async function seedBasics(runtime: Runtime) {
 		priceCents: 600,
 		categoryId: food.id,
 		printerId: null,
-		sortOrder: 1,
 		active: true
 	})!;
 	const sausage = s.menu.saveArticle(null, {
@@ -86,7 +83,6 @@ export async function seedBasics(runtime: Runtime) {
 		priceCents: 750,
 		categoryId: food.id,
 		printerId: grill.id,
-		sortOrder: 2,
 		active: true
 	})!;
 	const beer = s.menu.saveArticle(null, {
@@ -94,7 +90,6 @@ export async function seedBasics(runtime: Runtime) {
 		priceCents: 550,
 		categoryId: drinks.id,
 		printerId: null,
-		sortOrder: 1,
 		active: true
 	})!;
 	s.tables.applyGrid({ rows: 1, columns: 3, numbering: 'number' });

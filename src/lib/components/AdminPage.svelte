@@ -42,7 +42,6 @@
 	}
 
 	.page-head p {
-		margin-top: 4px;
 		max-width: 640px;
 	}
 

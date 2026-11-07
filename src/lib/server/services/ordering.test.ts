@@ -164,30 +164,68 @@ describe('print queue', () => {
 });
 
 describe('payments', () => {
-	it('supports splitting until the open amount is zero', () => {
-		const order = place(); // 36.00
+	/** 2 × fries (6.00), 1 × sausage (7.50), 3 × beer (5.50) = 36.00 */
+	function itemsOf(orderId: number) {
+		const items = t.services().orders.detail(orderId).items;
+		const by = (articleId: number) => items.find((item) => item.articleId === articleId)!;
+		return { fries: by(seed.fries.id), sausage: by(seed.sausage.id), beer: by(seed.beer.id) };
+	}
+
+	it('splits by positions until everything is paid', () => {
+		const order = place();
 		const s = t.services();
-		s.payments.add(order.id, 2000, 'cash', seed.service);
-		expect(s.orders.detail(order.id).openCents).toBe(1600);
+		const { fries, beer } = itemsOf(order.id);
+		const first = s.payments.add(order.id, 'cash', seed.service, [
+			{ orderItemId: fries.id, quantity: 1 },
+			{ orderItemId: beer.id, quantity: 2 }
+		]);
+		expect(first.amountCents).toBe(1700);
+		const detail = s.orders.detail(order.id);
+		expect(detail.openCents).toBe(1900);
+		expect(itemsOf(order.id).beer.paidQuantity).toBe(2);
 		expect(s.orders.search({ paymentStatus: 'partial' })).toHaveLength(1);
-		expect(() => s.payments.add(order.id, 1700, 'twint', seed.service)).toThrow(/höher/);
-		expect(() => s.payments.add(order.id, 1003, 'twint', seed.service)).toThrow(/5 Rappen/);
-		s.payments.add(order.id, 1600, 'twint', seed.service);
-		expect(s.orders.detail(order.id).openCents).toBe(0);
+		expect(() =>
+			s.payments.add(order.id, 'twint', seed.service, [{ orderItemId: beer.id, quantity: 2 }])
+		).toThrow(/bereits bezahlt/);
+		expect(() =>
+			s.payments.add(order.id, 'twint', seed.service, [{ orderItemId: 9999, quantity: 1 }])
+		).toThrow(/gehört nicht/);
+
+		// Without a selection the rest is paid, and all remaining positions with it.
+		const rest = s.payments.add(order.id, 'twint', seed.service);
+		expect(rest.amountCents).toBe(1900);
+		expect(s.orders.detail(order.id).items.every((i) => i.paidQuantity === i.quantity)).toBe(true);
 		expect(s.orders.search({ paymentStatus: 'paid' })).toHaveLength(1);
-		expect(() => s.payments.add(order.id, 100, 'cash', seed.service)).toThrow(/bereits bezahlt/);
+		expect(() => s.payments.add(order.id, 'cash', seed.service)).toThrow(/bereits bezahlt/);
+	});
+
+	it('frees the positions of an undone payment', () => {
+		const order = place();
+		const s = t.services();
+		const { sausage } = itemsOf(order.id);
+		const payment = s.payments.add(order.id, 'cash', seed.service, [
+			{ orderItemId: sausage.id, quantity: 1 }
+		]);
+		s.payments.remove(payment.id, seed.service);
+		expect(itemsOf(order.id).sausage.paidQuantity).toBe(0);
+		expect(s.orders.detail(order.id).openCents).toBe(3600);
 	});
 
 	it('lets service staff undo only their own latest payment within five minutes', () => {
 		const order = place();
 		const s = t.services();
-		const first = s.payments.add(order.id, 1000, 'cash', seed.service);
-		const second = s.payments.add(order.id, 1000, 'cash', seed.service);
+		const { fries } = itemsOf(order.id);
+		const first = s.payments.add(order.id, 'cash', seed.service, [
+			{ orderItemId: fries.id, quantity: 1 }
+		]);
+		const second = s.payments.add(order.id, 'cash', seed.service, [
+			{ orderItemId: fries.id, quantity: 1 }
+		]);
 		expect(() => s.payments.remove(first.id, seed.service)).toThrow(/letzte Zahlung/);
 		t.advance(6 * 60 * 1000);
 		expect(() => s.payments.remove(second.id, seed.service)).toThrow(/5 Minuten/);
 		s.payments.remove(second.id, seed.admin);
-		expect(s.orders.detail(order.id).paidCents).toBe(1000);
+		expect(s.orders.detail(order.id).paidCents).toBe(600);
 	});
 });
 
@@ -278,6 +316,27 @@ describe('seating plan', () => {
 		const bar = s.tables.save(null, { label: 'Bar', sortOrder: 1, active: true })!;
 		expect(bar.gridRow).toBeNull();
 		expect(s.tables.delete(bar.id)).toBe('deleted');
+	});
+
+	it('toggles whole rows and columns', () => {
+		const s = t.services();
+		s.tables.applyGrid({ rows: 2, columns: 3, numbering: 'letter' });
+		const active = () =>
+			s.tables
+				.list()
+				.filter((table) => table.active)
+				.map((table) => table.label);
+		expect(s.tables.toggleGridLine({ column: 2 })).toBe(false);
+		expect(active()).toEqual(['A01', 'A03', 'B01', 'B03']);
+		expect(s.tables.toggleGridLine({ row: 1 })).toBe(false);
+		expect(active()).toEqual(['B01', 'B03']);
+		// Partly active lines are switched off first, fully inactive lines on.
+		expect(s.tables.toggleGridLine({ column: 1 })).toBe(false);
+		expect(s.tables.toggleGridLine({ column: 1 })).toBe(true);
+		expect(active()).toEqual(['A01', 'B01', 'B03']);
+		s.tables.rename(s.tables.list()[0].id, 'VIP');
+		expect(s.tables.list()[0]).toMatchObject({ label: 'VIP', active: true });
+		expect(() => s.tables.toggleGridLine({ row: 9 })).toThrow(/gibt es nicht/);
 	});
 
 	it('rejects grids that are too large', () => {

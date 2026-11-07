@@ -1,19 +1,11 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { formatChf, parseChf, roundTo5 } from '$lib/money';
+	import OrderItems from '$lib/components/OrderItems.svelte';
 	import TwintCode from '$lib/components/TwintCode.svelte';
-	import {
-		Badge,
-		Button,
-		Dialog,
-		Field,
-		FieldDescription,
-		Input,
-		Label,
-		Numpad,
-		toast
-	} from '@noahbaumgartner/svelte-ui';
-	import { Banknote, CircleCheck, QrCode, Smartphone, Undo2 } from '@lucide/svelte';
+	import { Badge, Button, Drawer, Field, Input, Label } from '@noahbaumgartner/svelte-ui';
+	import { Banknote, CircleCheck, QrCode, Smartphone, Undo2, X } from '@lucide/svelte';
+	import { SvelteMap } from 'svelte/reactivity';
 
 	type Payment = {
 		id: number;
@@ -24,13 +16,25 @@
 		canUndo: boolean;
 	};
 
+	type Item = {
+		id: number;
+		quantity: number;
+		paidQuantity: number;
+		articleName: string;
+		priceCents: number;
+	};
+
 	let {
+		items,
+		note,
 		totalCents,
 		paidCents,
 		openCents,
 		payments,
 		twintQrContent
 	}: {
+		items: Item[];
+		note: string | null;
 		totalCents: number;
 		paidCents: number;
 		openCents: number;
@@ -40,34 +44,32 @@
 
 	const time = new Intl.DateTimeFormat('de-CH', { hour: '2-digit', minute: '2-digit' });
 
-	let mode = $state<'choose' | 'cash'>('choose');
+	let cashOpen = $state(false);
 	let twintOpen = $state(false);
 	let submitting = $state(false);
-	const toInput = (cents: number) => (cents / 100).toFixed(2);
-
-	/**
-	 * Editable for splitting. Reset only when the open amount really changes (after a payment), not
-	 * on every reload of the page data, which happens while tickets are printing.
-	 */
-	// svelte-ignore state_referenced_locally
-	let amountInput = $state(toInput(openCents));
-	// svelte-ignore state_referenced_locally
-	let lastOpenCents = openCents;
-	$effect.pre(() => {
-		if (openCents === lastOpenCents) return;
-		lastOpenCents = openCents;
-		amountInput = toInput(openCents);
-	});
 	let received = $state('');
 
-	let amountCents = $derived(parseChf(amountInput));
-	let amountValid = $derived(amountCents !== null && amountCents > 0 && amountCents <= openCents);
+	// Every cash drawer starts with an empty «Erhalten».
+	$effect(() => {
+		if (!cashOpen) received = '';
+	});
+
+	/** Positions picked with «+»: as soon as one is picked, this is a partial payment. */
+	const selection = new SvelteMap<number, number>();
+	let selectedCents = $derived(
+		items.reduce((sum, item) => sum + (selection.get(item.id) ?? 0) * item.priceCents, 0)
+	);
+	let partial = $derived(selection.size > 0);
+	let amountCents = $derived(partial ? selectedCents : openCents);
+	let selectionJson = $derived(
+		JSON.stringify([...selection].map(([orderItemId, quantity]) => ({ orderItemId, quantity })))
+	);
 	let receivedCents = $derived(received === '' ? null : parseChf(received));
 	let changeCents = $derived(
 		amountCents !== null && receivedCents !== null ? roundTo5(receivedCents - amountCents) : null
 	);
 	let quickAmounts = $derived(
-		amountCents === null
+		amountCents === 0
 			? []
 			: [
 					...new Set([
@@ -77,7 +79,7 @@
 				].slice(0, 5)
 	);
 
-	function submitted(kind: 'cash' | 'twint') {
+	function submitted() {
 		return () => {
 			submitting = true;
 			return async ({
@@ -90,12 +92,10 @@
 				await update();
 				submitting = false;
 				if (result.type === 'success') {
-					toast(kind === 'cash' ? 'Barzahlung erfasst' : 'TWINT-Zahlung erfasst', {
-						icon: CircleCheck
-					});
-					mode = 'choose';
+					cashOpen = false;
 					twintOpen = false;
 					received = '';
+					selection.clear();
 				}
 			};
 		};
@@ -128,90 +128,30 @@
 				<p class="muted">Die Bestellung ist vollständig abgerechnet.</p>
 			</div>
 		</div>
-	{:else if mode === 'choose'}
-		<Field>
-			<Label for="amount">Betrag dieser Zahlung</Label>
-			<Input id="amount" bind:value={amountInput} inputmode="decimal" autocomplete="off" />
-			<FieldDescription>
-				Für eine Teilzahlung (Splitting) den Betrag anpassen. Danach den Rest gleich erneut
-				abrechnen.
-			</FieldDescription>
-		</Field>
-		{#if !amountValid}
-			<p class="form-error" role="alert">
-				Der Betrag muss grösser als 0 und höchstens {formatChf(openCents)} sein.
-			</p>
+	{/if}
+
+	<OrderItems {items} {totalCents} {note} selection={openCents > 0 ? selection : undefined} />
+
+	{#if openCents === 0}
+		<!-- Paid: nothing left to choose. -->
+	{:else}
+		{#if partial}
+			<div class="partial accent-bar">
+				<span>Teilzahlung <strong class="tabular">{formatChf(selectedCents)}</strong></span>
+				<Button variant="ghost" size="sm" icon={X} onclick={() => selection.clear()}
+					>Aufheben</Button
+				>
+			</div>
 		{/if}
 		<div class="methods">
-			<Button size="lg" icon={Banknote} disabled={!amountValid} onclick={() => (mode = 'cash')}
-				>Bar</Button
-			>
+			<Button size="lg" icon={Banknote} onclick={() => (cashOpen = true)}>Bar</Button>
 			<Button
 				size="lg"
 				variant="secondary"
 				icon={QrCode}
-				disabled={!amountValid || !twintQrContent}
+				disabled={!twintQrContent}
 				onclick={() => (twintOpen = true)}>TWINT</Button
 			>
-		</div>
-		{#if !twintQrContent}
-			<p class="muted small">
-				TWINT ist nicht verfügbar: Ein Admin muss zuerst den QR-Code erfassen.
-			</p>
-		{/if}
-	{:else}
-		<div class="cash stack">
-			<div class="cash-due">
-				<span class="muted">Zu bezahlen</span>
-				<strong class="tabular">{formatChf(amountCents ?? 0)}</strong>
-			</div>
-			<div class="quick" role="group" aria-label="Erhaltener Betrag">
-				{#each quickAmounts as value (value)}
-					<Button
-						variant={receivedCents === value ? 'primary' : 'secondary'}
-						onclick={() => (received = (value / 100).toFixed(2))}
-						>{value === amountCents ? 'Passend' : formatChf(value)}</Button
-					>
-				{/each}
-			</div>
-			<div class="cash-grid">
-				<div class="stack">
-					<div class="cash-line">
-						<span class="muted">Erhalten</span>
-						<output class="tabular"
-							>{receivedCents === null ? '–' : formatChf(receivedCents)}</output
-						>
-					</div>
-					<div
-						class={['cash-line', 'cash-change', { 'cash-change--short': (changeCents ?? 0) < 0 }]}
-					>
-						<span>{(changeCents ?? 0) < 0 ? 'Fehlt noch' : 'Rückgeld'}</span>
-						<output class="tabular" aria-live="polite"
-							>{changeCents === null ? '–' : formatChf(Math.abs(changeCents))}</output
-						>
-					</div>
-				</div>
-				<Numpad
-					bind:value={received}
-					decimals={2}
-					label="Erhaltener Betrag"
-					labels={{ delete: 'Löschen' }}
-				/>
-			</div>
-			<form method="POST" action="?/pay" use:enhance={submitted('cash')} class="row cash-actions">
-				<input type="hidden" name="amount" value={amountInput} />
-				<input type="hidden" name="method" value="cash" />
-				<Button variant="ghost" onclick={() => ((mode = 'choose'), (received = ''))}
-					>Abbrechen</Button
-				>
-				<Button
-					type="submit"
-					size="lg"
-					icon={CircleCheck}
-					loading={submitting}
-					disabled={changeCents !== null && changeCents < 0}>Bar bezahlt</Button
-				>
-			</form>
 		</div>
 	{/if}
 
@@ -251,8 +191,60 @@
 	{/if}
 </section>
 
+<Drawer
+	bind:open={cashOpen}
+	title={partial ? 'Teilzahlung bar' : 'Bar bezahlen'}
+	closeLabel="Schliessen"
+>
+	<div class="cash stack">
+		<div class="cash-due">
+			<span class="muted">Zu bezahlen</span>
+			<strong class="tabular">{formatChf(amountCents)}</strong>
+		</div>
+		<div class="quick" role="group" aria-label="Erhaltener Betrag">
+			{#each quickAmounts as value (value)}
+				<Button
+					variant={receivedCents === value ? 'primary' : 'secondary'}
+					onclick={() => (received = (value / 100).toFixed(2))}
+					>{value === amountCents ? 'Passend' : formatChf(value)}</Button
+				>
+			{/each}
+		</div>
+		<Field>
+			<Label for="received">Erhalten</Label>
+			<Input
+				id="received"
+				bind:value={received}
+				inputmode="decimal"
+				autocomplete="off"
+				placeholder="0.00"
+			/>
+		</Field>
+		<div class={['cash-change', { 'cash-change--short': (changeCents ?? 0) < 0 }]}>
+			<span>{(changeCents ?? 0) < 0 ? 'Fehlt noch' : 'Rückgeld'}</span>
+			<output class="tabular" aria-live="polite"
+				>{changeCents === null ? '–' : formatChf(Math.abs(changeCents))}</output
+			>
+		</div>
+	</div>
+	{#snippet actions(close)}
+		<Button variant="secondary" size="lg" onclick={close}>Abbrechen</Button>
+		<form method="POST" action="?/pay" use:enhance={submitted()}>
+			<input type="hidden" name="items" value={selectionJson} />
+			<input type="hidden" name="method" value="cash" />
+			<Button
+				type="submit"
+				size="lg"
+				icon={CircleCheck}
+				loading={submitting}
+				disabled={changeCents !== null && changeCents < 0}>Bar bezahlt</Button
+			>
+		</form>
+	{/snippet}
+</Drawer>
+
 {#if twintQrContent}
-	<Dialog
+	<Drawer
 		bind:open={twintOpen}
 		title="Mit TWINT bezahlen"
 		description="QR-Code mit der TWINT-App scannen und den Betrag eingeben."
@@ -260,17 +252,19 @@
 	>
 		<div class="twint stack">
 			<TwintCode content={twintQrContent} />
-			<p class="twint-amount tabular">{formatChf(amountCents ?? 0)}</p>
+			<p class="twint-amount tabular">{formatChf(amountCents)}</p>
 		</div>
 		{#snippet actions(close)}
-			<Button variant="secondary" onclick={close}>Abbrechen</Button>
-			<form method="POST" action="?/pay" use:enhance={submitted('twint')}>
-				<input type="hidden" name="amount" value={amountInput} />
+			<Button variant="secondary" size="lg" onclick={close}>Abbrechen</Button>
+			<form method="POST" action="?/pay" use:enhance={submitted()}>
+				<input type="hidden" name="items" value={selectionJson} />
 				<input type="hidden" name="method" value="twint" />
-				<Button type="submit" icon={CircleCheck} loading={submitting}>TWINT bezahlt</Button>
+				<Button type="submit" size="lg" icon={CircleCheck} loading={submitting}
+					>TWINT bezahlt</Button
+				>
 			</form>
 		{/snippet}
-	</Dialog>
+	</Drawer>
 {/if}
 
 <style>
@@ -329,6 +323,15 @@
 		font-size: 13px;
 	}
 
+	.partial {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 8px;
+		padding: 4px 0 4px 16px;
+		--accent-bar-inset: 4px;
+	}
+
 	.paid {
 		display: flex;
 		align-items: center;
@@ -339,9 +342,7 @@
 	}
 
 	.cash {
-		padding: 16px;
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius);
+		font-size: 15px;
 	}
 
 	.cash-due {
@@ -360,26 +361,11 @@
 		gap: 8px;
 	}
 
-	.cash-grid {
-		display: grid;
-		gap: 16px;
-	}
-
-	@media (min-width: 640px) {
-		.cash-grid {
-			grid-template-columns: 1fr 280px;
-			align-items: start;
-		}
-	}
-
-	.cash-line {
+	.cash-change {
 		display: flex;
 		align-items: baseline;
 		justify-content: space-between;
 		font-size: 18px;
-	}
-
-	.cash-change {
 		padding: 12px 14px;
 		border-radius: var(--radius);
 		background-color: var(--color-surface);
@@ -392,10 +378,6 @@
 
 	.cash-change--short {
 		color: var(--color-destructive);
-	}
-
-	.cash-actions {
-		justify-content: flex-end;
 	}
 
 	.payments-title {

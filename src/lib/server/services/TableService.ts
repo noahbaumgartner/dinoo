@@ -111,6 +111,29 @@ export class TableService {
 		this.tables.update(id, { active });
 	}
 
+	/** Rename only; used by the inline editing of the seating plan. */
+	rename(id: number, label: string) {
+		const table = ensure(this.tables.get(id), 'Tisch');
+		this.save(id, { label, sortOrder: table.sortOrder, active: table.active });
+	}
+
+	/**
+	 * Row or column handle: deactivates the whole line if any table in it is active, otherwise
+	 * activates it. Returns the new state.
+	 */
+	toggleGridLine(line: { row: number } | { column: number }): boolean {
+		const inLine = this.tables
+			.list()
+			.filter(isGridTable)
+			.filter((table) =>
+				'row' in line ? table.gridRow === line.row : table.gridColumn === line.column
+			);
+		if (inLine.length === 0) throw new DomainError('Diese Zeile oder Spalte gibt es nicht.');
+		const active = !inLine.some((table) => table.active);
+		this.tables.setGridLineActive(line, active);
+		return active;
+	}
+
 	/** Free tables with orders are only deactivated; seating plan cells are never deleted here. */
 	delete(id: number): 'deleted' | 'deactivated' {
 		const table = ensure(this.tables.get(id), 'Tisch');

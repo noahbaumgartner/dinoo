@@ -102,7 +102,7 @@
 	{/if}
 
 	{#each data.categories as cat (cat.id)}
-		<Card class="category-card" style="--category-color: {categoryColor(cat.color)}">
+		<Card style="--category-color: {categoryColor(cat.color)}">
 			<CardHeader>
 				<CardTitle
 					><span class="category-title"
@@ -114,25 +114,27 @@
 						<Badge icon={Printer}
 							>{cat.defaultPrinterId ? printerName.get(cat.defaultPrinterId) : 'Kein Druck'}</Badge
 						>
-						<Button
-							variant="ghost"
-							size="sm"
-							icon={Pencil}
-							label="Kategorie bearbeiten"
-							onclick={() => editCategory(cat)}
-						/>
-						<Button
-							variant="ghost"
-							size="sm"
-							icon={Trash2}
-							label="Kategorie löschen"
-							onclick={() => (
-								(deleting = { kind: 'category', id: cat.id, name: cat.name }),
-								(deleteOpen = true)
-							)}
-						/>
-					</span>
-				</CardAction>
+						<span class="icon-actions">
+							<Button
+								variant="ghost"
+								size="sm"
+								icon={Pencil}
+								label="Kategorie bearbeiten"
+								onclick={() => editCategory(cat)}
+							/>
+							<Button
+								variant="ghost"
+								size="sm"
+								icon={Trash2}
+								label="Kategorie löschen"
+								onclick={() => (
+									(deleting = { kind: 'category', id: cat.id, name: cat.name }),
+									(deleteOpen = true)
+								)}
+							/>
+						</span>
+					</span></CardAction
+				>
 			</CardHeader>
 			<CardContent>
 				{#if cat.articles.length === 0}
@@ -162,7 +164,7 @@
 										onchange={(event) => event.currentTarget.form?.requestSubmit()}
 									/>
 								</form>
-								<span class="row">
+								<span class="icon-actions">
 									<Button
 										variant="ghost"
 										size="sm"
@@ -346,10 +348,6 @@
 </AlertDialog>
 
 <style>
-	:global(.category-card) {
-		box-shadow: inset 3px 0 0 var(--category-color);
-	}
-
 	.category-title {
 		display: inline-flex;
 		align-items: center;

@@ -82,20 +82,22 @@
 								>Testdruck</Button
 							>
 						</form>
-						<Button
-							variant="ghost"
-							size="sm"
-							icon={Pencil}
-							label="Bearbeiten"
-							onclick={() => edit(printer)}
-						/>
-						<Button
-							variant="ghost"
-							size="sm"
-							icon={Trash2}
-							label="Löschen"
-							onclick={() => ((deleting = printer), (deleteOpen = true))}
-						/>
+						<span class="icon-actions">
+							<Button
+								variant="ghost"
+								size="sm"
+								icon={Pencil}
+								label="Bearbeiten"
+								onclick={() => edit(printer)}
+							/>
+							<Button
+								variant="ghost"
+								size="sm"
+								icon={Trash2}
+								label="Löschen"
+								onclick={() => ((deleting = printer), (deleteOpen = true))}
+							/>
+						</span>
 					</span>
 				</li>
 			{/each}

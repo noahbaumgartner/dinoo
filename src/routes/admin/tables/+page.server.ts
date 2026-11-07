@@ -35,6 +35,21 @@ export const actions: Actions = {
 			locals.services.tables.setActive(form.int('id'), form.bool('active'));
 			return {};
 		}),
+	rename: ({ request, locals }) =>
+		action(async () => {
+			const form = await Form.from(request);
+			locals.services.tables.rename(form.int('id'), form.string('label'));
+			return {};
+		}),
+	line: ({ request, locals }) =>
+		action(async () => {
+			const form = await Form.from(request);
+			const row = form.optionalInt('row');
+			locals.services.tables.toggleGridLine(
+				row === null ? { column: form.int('column') } : { row }
+			);
+			return {};
+		}),
 	delete: ({ request, locals }) =>
 		action(async () => {
 			const form = await Form.from(request);

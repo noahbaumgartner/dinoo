@@ -39,12 +39,25 @@ export class MenuRepository {
 		return this.db.insert(categories).values(input).returning().get();
 	}
 
-	updateCategory(id: number, input: CategoryInput) {
+	updateCategory(id: number, input: Partial<CategoryInput>) {
 		this.db.update(categories).set(input).where(eq(categories.id, id)).run();
 	}
 
 	deleteCategory(id: number) {
 		this.db.delete(categories).where(eq(categories.id, id)).run();
+	}
+
+	/** Sets `sortOrder` to the position in `ids` (1-based), atomically. */
+	setCategoryOrder(ids: number[]) {
+		this.db.transaction((tx) => {
+			ids.forEach((id, index) =>
+				tx
+					.update(categories)
+					.set({ sortOrder: index + 1 })
+					.where(eq(categories.id, id))
+					.run()
+			);
+		});
 	}
 
 	countArticlesInCategory(categoryId: number): number {
@@ -74,6 +87,19 @@ export class MenuRepository {
 
 	updateArticle(id: number, input: Partial<ArticleInput>) {
 		this.db.update(articles).set(input).where(eq(articles.id, id)).run();
+	}
+
+	/** Sets `sortOrder` to the position in `ids` (1-based), atomically. */
+	setArticleOrder(ids: number[]) {
+		this.db.transaction((tx) => {
+			ids.forEach((id, index) =>
+				tx
+					.update(articles)
+					.set({ sortOrder: index + 1 })
+					.where(eq(articles.id, id))
+					.run()
+			);
+		});
 	}
 
 	deleteArticle(id: number) {

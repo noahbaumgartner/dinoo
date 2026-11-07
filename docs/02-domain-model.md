@@ -161,6 +161,17 @@ Eine (Teil-)Zahlung zu einer Bestellung. Mehrere Zahlungen pro Bestellung ermög
 | paidAt       | datetime               | ✓       |                             |
 | paidByUserId | → User                 | ✓       | Wer die Zahlung erfasst hat |
 
+### Bezahlte Position (`PaymentItem`)
+
+Welche Positionen (und wie viele davon) eine Zahlung abdeckt. Eine Teilzahlung entsteht durch Auswahl von Positionen (F07); `Payment.amountCents` ist dann die Summe der gewählten Mengen × `OrderItem.priceCents`. Eine Zahlung ohne Auswahl deckt alle noch offenen Mengen ab. Wird die Zahlung gelöscht, werden ihre Positionen wieder offen.
+
+| Feld        | Typ         | Pflicht | Beschreibung                                   |
+| ----------- | ----------- | ------- | ---------------------------------------------- |
+| id          | int         | ✓       |                                                |
+| paymentId   | → Payment   | ✓       |                                                |
+| orderItemId | → OrderItem | ✓       |                                                |
+| quantity    | int         | ✓       | ≥ 1; Summe pro Position ≤ `OrderItem.quantity` |
+
 ## Beziehungen
 
 ```
@@ -168,6 +179,7 @@ User 1 ──── n Order n ──── 1 Table
 Order 1 ──── n OrderItem n ──── 1 Article n ──── 1 Category
 Order 1 ──── n PrintJob n ──── 1 Printer
 Order 1 ──── n Payment  n ──── 1 User
+Payment 1 ──── n PaymentItem n ──── 1 OrderItem
 Category n ──── 0..1 Printer   (Default)
 Article  n ──── 0..1 Printer   (Override)
 ```

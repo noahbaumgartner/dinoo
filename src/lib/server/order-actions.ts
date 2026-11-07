@@ -13,11 +13,21 @@ export const orderActions = {
 			const order = locals.services.orders.detail(orderId).order;
 			if (user.role !== 'admin' && order.createdByUserId !== user.id)
 				throw new DomainError('Diese Bestellung wurde von jemand anderem aufgenommen.', 403);
+			let selection: { orderItemId: number; quantity: number }[];
+			try {
+				selection = JSON.parse(form.string('items') || '[]');
+				if (!Array.isArray(selection)) throw new Error();
+			} catch {
+				throw new DomainError('Die Auswahl konnte nicht gelesen werden.');
+			}
 			locals.services.payments.add(
 				orderId,
-				form.cents('amount'),
 				form.oneOf('method', ['cash', 'twint'] as const),
-				user
+				user,
+				selection.map((line) => ({
+					orderItemId: Number(line.orderItemId),
+					quantity: Number(line.quantity)
+				}))
 			);
 			return { paid: true };
 		}),

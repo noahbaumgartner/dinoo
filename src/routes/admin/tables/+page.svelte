@@ -2,7 +2,7 @@
 	import { enhance } from '$app/forms';
 	import AdminPage from '$lib/components/AdminPage.svelte';
 	import SeatingPlan from '$lib/components/SeatingPlan.svelte';
-	import { notify } from '$lib/components/notify';
+	import { inPlace, notify } from '$lib/components/notify';
 	import { MAX_GRID_COLUMNS, MAX_GRID_ROWS, type TableNumbering } from '$lib/table-grid';
 	import {
 		Button,
@@ -17,9 +17,10 @@
 		Input,
 		Label,
 		Select,
-		Switch
+		Switch,
+		Tabs
 	} from '@noahbaumgartner/svelte-ui';
-	import { Check, LayoutGrid, Plus, Trash2 } from '@lucide/svelte';
+	import { Check, LayoutGrid, Pencil, Plus, Power, Trash2 } from '@lucide/svelte';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -32,10 +33,34 @@
 	// svelte-ignore state_referenced_locally
 	let numbering = $state<TableNumbering>(data.plan.numbering);
 
+	/** «Ein/Aus»: a tap switches a table, handles switch rows and columns. «Umbenennen»: inline. */
+	let mode = $state<'toggle' | 'rename'>('toggle');
+
+	let rowName = (row: number) =>
+		data.plan.numbering === 'letter' ? String.fromCharCode(64 + row) : String(row);
+	let columnName = (column: number) => String(column).padStart(2, '0');
+	let lineActive = (line: { row: number } | { column: number }) =>
+		gridTables.some(
+			(table) =>
+				table.active &&
+				('row' in line ? table.gridRow === line.row : table.gridColumn === line.column)
+		);
+
+	/** Enter moves to the next name like Tab; leaving a changed field saves it. */
+	function nextOnEnter(event: KeyboardEvent & { currentTarget: HTMLInputElement }) {
+		if (event.key !== 'Enter') return;
+		event.preventDefault();
+		const inputs = [...document.querySelectorAll<HTMLInputElement>('.cell-input')];
+		const next = inputs[inputs.indexOf(event.currentTarget) + 1];
+		if (next) {
+			next.focus();
+			next.select();
+		} else event.currentTarget.blur();
+	}
+
 	let editOpen = $state(false);
 	let editing = $state<Table | null>(null);
 	let active = $state(true);
-	let editingGrid = $derived(editing !== null && editing.gridRow !== null);
 
 	function edit(table: Table | null) {
 		editing = table;
@@ -43,6 +68,26 @@
 		editOpen = true;
 	}
 </script>
+
+{#snippet lineHandle(line: { row: number } | { column: number }, name: string, short: string)}
+	{@const on = lineActive(line)}
+	<form method="POST" action="?/line" class="handle-form" use:enhance={inPlace()}>
+		{#if 'row' in line}
+			<input type="hidden" name="row" value={line.row} />
+		{:else}
+			<input type="hidden" name="column" value={line.column} />
+		{/if}
+		<button
+			type="submit"
+			class={['handle', { 'handle--off': !on }]}
+			disabled={mode !== 'toggle'}
+			aria-label="{name} {on ? 'ausschalten' : 'einschalten'}"
+			title="{name} {on ? 'ausschalten' : 'einschalten'}"
+		>
+			{short}
+		</button>
+	</form>
+{/snippet}
 
 <AdminPage
 	title="Tische"
@@ -104,24 +149,74 @@
 		<EmptyState
 			icon={LayoutGrid}
 			title="Noch kein Saalplan"
-			description="Gib oben Zeilen und Spalten an. Tippe danach einen Tisch an, um ihn umzubenennen oder zu deaktivieren (z. B. für einen Gang)."
+			description="Gib oben Zeilen und Spalten an. Danach kannst du Tische, ganze Zeilen und Spalten ausschalten (z. B. für einen Gang) und Tische umbenennen."
 		/>
 	{:else}
 		<section class="stack-sm" aria-labelledby="plan-heading">
-			<h2 id="plan-heading">Plan</h2>
+			<div class="heading-row">
+				<h2 id="plan-heading">Plan</h2>
+				<Tabs
+					bind:value={mode}
+					label="Bearbeitung"
+					size="sm"
+					options={[
+						{ value: 'toggle', label: 'Ein/Aus', icon: Power },
+						{ value: 'rename', label: 'Umbenennen', icon: Pencil }
+					]}
+				/>
+			</div>
 			<p class="hint">
-				Tisch antippen zum Umbenennen oder Deaktivieren. Deaktivierte Tische sind Lücken im Plan.
+				{#if mode === 'toggle'}
+					Tisch antippen schaltet ihn ein oder aus; die Griffe oben und links schalten eine ganze
+					Spalte oder Zeile. Ausgeschaltete Tische sind Lücken im Plan.
+				{:else}
+					Namen direkt ändern; Enter springt zum nächsten Tisch.
+				{/if}
 			</p>
 			<SeatingPlan rows={data.plan.rows} columns={data.plan.columns} tables={gridTables}>
+				{#snippet columnHandle(column)}
+					{@render lineHandle({ column }, `Spalte ${columnName(column)}`, columnName(column))}
+				{/snippet}
+				{#snippet rowHandle(row)}
+					{@render lineHandle({ row }, `Zeile ${rowName(row)}`, rowName(row))}
+				{/snippet}
 				{#snippet cell(table)}
-					<button
-						type="button"
-						class={['cell', { 'cell--inactive': !table.active }]}
-						onclick={() => edit(table)}
-						aria-label="Tisch {table.label} bearbeiten{table.active ? '' : ' (inaktiv)'}"
-					>
-						{table.label}
-					</button>
+					{#if mode === 'toggle'}
+						<form method="POST" action="?/toggle" class="cell-form" use:enhance={inPlace()}>
+							<input type="hidden" name="id" value={table.id} />
+							<input type="hidden" name="active" value={String(!table.active)} />
+							<button
+								type="submit"
+								class={['cell', { 'cell--inactive': !table.active }]}
+								aria-pressed={table.active}
+								aria-label="Tisch {table.label}"
+							>
+								{table.label}
+							</button>
+						</form>
+					{:else}
+						<form method="POST" action="?/rename" class="cell-form" use:enhance={inPlace()}>
+							<input type="hidden" name="id" value={table.id} />
+							<input
+								class={['cell', 'cell-input', { 'cell--inactive': !table.active }]}
+								name="label"
+								value={table.label}
+								aria-label="Name von Tisch in Zeile {rowName(table.gridRow!)}, Spalte {columnName(
+									table.gridColumn!
+								)}"
+								autocomplete="off"
+								spellcheck="false"
+								onfocus={(event) => event.currentTarget.select()}
+								onkeydown={nextOnEnter}
+								onchange={(event) => {
+									const input = event.currentTarget;
+									// An empty name is not allowed; restore it instead of showing an error.
+									if (!input.value.trim()) input.value = table.label;
+									else input.form?.requestSubmit();
+								}}
+							/>
+						</form>
+					{/if}
 				{/snippet}
 			</SeatingPlan>
 		</section>
@@ -146,7 +241,7 @@
 						>
 							{table.label}
 						</button>
-						<form method="POST" action="?/toggle" use:enhance={notify()}>
+						<form method="POST" action="?/toggle" use:enhance={inPlace()}>
 							<input type="hidden" name="id" value={table.id} />
 							<input type="hidden" name="active" value={String(!table.active)} />
 							<Switch
@@ -175,39 +270,32 @@
 		use:enhance={notify(() => (editOpen = false))}
 	>
 		{#if editing}<input type="hidden" name="id" value={editing.id} />{/if}
-		{#if editingGrid && editing}
-			<p class="hint">Zeile {editing.gridRow}, Spalte {editing.gridColumn} im Saalplan.</p>
-		{/if}
 		<Field>
 			<Label for="table-label">Bezeichnung</Label>
 			<Input
 				id="table-label"
 				name="label"
 				value={editing?.label ?? ''}
-				placeholder={editingGrid ? 'z. B. A01 oder VIP' : 'z. B. Bar oder Terrasse'}
+				placeholder="z. B. Bar oder Terrasse"
 				required
 			/>
 		</Field>
-		{#if editingGrid}
-			<input type="hidden" name="sortOrder" value={editing?.sortOrder ?? 0} />
-		{:else}
-			<Field>
-				<Label for="table-sort">Reihenfolge</Label>
-				<Input
-					id="table-sort"
-					name="sortOrder"
-					inputmode="numeric"
-					value={String(editing?.sortOrder ?? freeTables.length + 1)}
-				/>
-			</Field>
-		{/if}
+		<Field>
+			<Label for="table-sort">Reihenfolge</Label>
+			<Input
+				id="table-sort"
+				name="sortOrder"
+				inputmode="numeric"
+				value={String(editing?.sortOrder ?? freeTables.length + 1)}
+			/>
+		</Field>
 		<Field orientation="horizontal">
 			<Switch id="table-active" name="active" bind:checked={active} />
 			<Label for="table-active">Aktiv</Label>
 		</Field>
 	</form>
 	{#snippet actions(close)}
-		{#if editing && !editingGrid}
+		{#if editing}
 			<form method="POST" action="?/delete" use:enhance={notify(close)} class="delete">
 				<input type="hidden" name="id" value={editing.id} />
 				<Button type="submit" variant="ghost" icon={Trash2}>Löschen</Button>
@@ -273,6 +361,59 @@
 		font-weight: 600;
 		cursor: pointer;
 		touch-action: manipulation;
+	}
+
+	.cell-form,
+	.handle-form {
+		display: contents;
+	}
+
+	.cell-input {
+		width: 100%;
+		text-align: center;
+		cursor: text;
+	}
+
+	.cell-input:focus {
+		border-color: var(--color-accent);
+		outline: none;
+	}
+
+	.handle {
+		display: grid;
+		place-items: center;
+		min-width: 0;
+		padding: 0;
+		border: none;
+		border-radius: 8px;
+		background: none;
+		color: var(--color-text-secondary);
+		font: inherit;
+		font-size: 13px;
+		font-weight: 600;
+		cursor: pointer;
+		touch-action: manipulation;
+	}
+
+	.handle:hover:not(:disabled) {
+		background-color: var(--color-surface);
+		color: var(--color-text);
+	}
+
+	.handle:disabled {
+		cursor: default;
+	}
+
+	.handle--off {
+		color: var(--color-text-muted);
+		text-decoration: line-through;
+	}
+
+	.cell:focus-visible,
+	.handle:focus-visible,
+	.label:focus-visible {
+		outline: 2px solid var(--color-accent);
+		outline-offset: 2px;
 	}
 
 	.cell:hover {

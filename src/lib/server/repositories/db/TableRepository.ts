@@ -1,4 +1,4 @@
-import { asc, eq, sql } from 'drizzle-orm';
+import { and, asc, eq, isNotNull, sql } from 'drizzle-orm';
 import { countRows, type Db } from './client';
 import { orders, tables } from './schema';
 import type { TableRecord } from './types';
@@ -45,6 +45,15 @@ export class TableRepository {
 
 	update(id: number, input: Partial<TableInput>) {
 		this.db.update(tables).set(input).where(eq(tables.id, id)).run();
+	}
+
+	/** Activates or deactivates a whole row or column of the seating plan. */
+	setGridLineActive(line: { row: number } | { column: number }, active: boolean) {
+		const where =
+			'row' in line
+				? and(eq(tables.gridRow, line.row), isNotNull(tables.gridColumn))
+				: and(eq(tables.gridColumn, line.column), isNotNull(tables.gridRow));
+		this.db.update(tables).set({ active }).where(where).run();
 	}
 
 	delete(id: number) {

@@ -129,7 +129,6 @@ const articles: { id: number; priceCents: number }[] = [];
 menu.forEach(([name, printerId, items], categoryIndex) => {
 	const category = s.menu.saveCategory(null, {
 		name,
-		sortOrder: categoryIndex + 1,
 		color: nextCategoryColor(categoryIndex),
 		defaultPrinterId: printerId
 	})!;
@@ -140,7 +139,6 @@ menu.forEach(([name, printerId, items], categoryIndex) => {
 				priceCents,
 				categoryId: category.id,
 				printerId: mode === 'grill' ? grill.id : null,
-				sortOrder: index + 1,
 				active: true
 			})!
 		);
@@ -182,11 +180,11 @@ for (const count of perHalfHour) {
 		);
 		// Most orders are paid right away, a few are split, some are still open.
 		const roll = random();
-		if (roll < 0.7)
-			s.payments.add(order.id, order.totalCents, random() < 0.6 ? 'cash' : 'twint', by);
-		else if (roll < 0.82 && order.totalCents >= 1000) {
-			s.payments.add(order.id, 500, 'cash', by);
-			s.payments.add(order.id, order.totalCents - 500, 'twint', by);
+		if (roll < 0.7) s.payments.add(order.id, random() < 0.6 ? 'cash' : 'twint', by);
+		else if (roll < 0.82 && items.length > 1) {
+			const first = s.orders.detail(order.id).items[0];
+			s.payments.add(order.id, 'cash', by, [{ orderItemId: first.id, quantity: first.quantity }]);
+			s.payments.add(order.id, 'twint', by);
 		}
 	}
 }
