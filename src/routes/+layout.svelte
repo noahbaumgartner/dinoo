@@ -12,7 +12,7 @@
 
 <svelte:head>
 	<link rel="icon" href={favicon} />
-	<meta name="theme-color" content="#f3f0ea" />
+	<meta name="theme-color" content="#fcf9f6" />
 	<title>dinoo</title>
 </svelte:head>
 

@@ -1,18 +1,18 @@
 /* Base color tokens and light theme come from @noahbaumgartner/svelte-ui/tokens.css (imported in
    the root layout). Components use only the semantic --color-* tokens.
 
-   Palette and type: an oat-paper page, white cards, ink text, cobalt as the accent and tomato red
-   for errors. Space Grotesk for everything, Bricolage Grotesque (with its optical-size axis) for
-   page titles. Both are self-hosted via @fontsource (no internet). Only
-   svelte-ui's --ui-* theming variables are set here; it derives --color-* and --font-* from them. */
+   Palette and type: a warm off-white page, white cards, ink text, a bright blue accent and a
+   coral red for errors. Space Grotesk for everything, Bricolage Grotesque (with its optical-size
+   axis) for page titles. Both are self-hosted via @fontsource (no internet). Only svelte-ui's
+   --ui-* theming variables are set here; it derives --color-* and --font-* from them. */
 
 :root {
-	--ui-base: oklch(0.962 0.01 85);
-	--ui-ink: oklch(0.2 0.012 280);
-	--ui-accent: oklch(0.5 0.22 266);
-	/* Cards are white on the oat page; inputs (--color-surface) stay a darker oat on them. */
+	--ui-base: oklch(0.984 0.005 75);
+	--ui-ink: oklch(0.22 0.016 262);
+	--ui-accent: oklch(0.54 0.19 256);
+	/* Cards are white on the off-white page; inputs (--color-surface) stay a shade darker. */
 	--ui-fill: oklch(1 0 0);
-	--ui-destructive: oklch(0.58 0.2 30);
+	--ui-destructive: oklch(0.6 0.19 24);
 	--ui-font-sans:
 		'Space Grotesk Variable', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 	--ui-font-display: 'Bricolage Grotesque Variable', var(--ui-font-sans);
@@ -25,7 +25,7 @@
 }
 
 ::selection {
-	background: oklch(0.86 0.16 88);
+	background: oklch(0.9 0.12 96);
 	color: var(--ui-ink);
 }
 
