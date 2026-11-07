@@ -5,6 +5,9 @@ import { DomainError, notFound } from './errors';
 
 const HOST_PATTERN = /^[a-zA-Z0-9.-]{1,253}$/;
 
+/** Connection data; the active flag is set via `setActive` (new printers start active). */
+export type PrinterEdit = Omit<PrinterInput, 'active'>;
+
 /** Printer configuration (F05). The queue itself is `PrintQueueService`. */
 export class PrinterService {
 	constructor(
@@ -16,21 +19,26 @@ export class PrinterService {
 		return this.printers.list();
 	}
 
-	save(id: number | null, input: PrinterInput): PrinterRecord | undefined {
+	save(id: number | null, input: PrinterEdit): PrinterRecord | undefined {
 		const clean = { ...input, name: input.name.trim(), host: input.host.trim() };
 		if (!clean.name) throw new DomainError('Bitte einen Namen für den Drucker angeben.');
 		if (!HOST_PATTERN.test(clean.host))
 			throw new DomainError('Bitte eine gültige IP-Adresse oder einen Hostnamen angeben.');
 		if (!Number.isInteger(clean.port) || clean.port < 1 || clean.port > 65535)
 			throw new DomainError('Der Port muss zwischen 1 und 65535 liegen.');
-		if (id === null) return this.printers.create(clean);
+		if (id === null) return this.printers.create({ ...clean, active: true });
 		const existing = this.printers.get(id) ?? notFound('Drucker');
-		if (existing.active && !clean.active && this.printJobs.countPending(id) > 0)
+		this.printers.update(id, { ...clean, active: existing.active });
+	}
+
+	setActive(id: number, active: boolean) {
+		const printer = this.printers.get(id) ?? notFound('Drucker');
+		if (printer.active && !active && this.printJobs.countPending(id) > 0)
 			throw new DomainError(
 				'Der Drucker hat noch wartende Druckaufträge. Bitte zuerst umleiten oder abbrechen.',
 				409
 			);
-		this.printers.update(id, clean);
+		this.printers.update(id, { ...printer, active });
 	}
 
 	/** Printers in use are only deactivated, never deleted. */

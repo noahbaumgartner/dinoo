@@ -74,15 +74,13 @@ const kitchen = s.printers.save(null, {
 	name: 'Küche',
 	host: '192.168.50.21',
 	port: 9100,
-	model: 'TM-T20IV',
-	active: true
+	model: 'TM-T20IV'
 })!;
 const grill = s.printers.save(null, {
 	name: 'Grill',
 	host: 'offline-grill.local',
 	port: 9100,
-	model: 'TM-T20III',
-	active: true
+	model: 'TM-T20III'
 })!;
 
 const menu: [string, number | null, [string, number, ('grill' | 'none')?][]][] = [

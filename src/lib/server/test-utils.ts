@@ -51,15 +51,13 @@ export async function seedBasics(runtime: Runtime) {
 		name: 'Küche',
 		host: '10.0.0.10',
 		port: 9100,
-		model: 'TM-T20IV',
-		active: true
+		model: 'TM-T20IV'
 	})!;
 	const grill = s.printers.save(null, {
 		name: 'Grill',
 		host: '10.0.0.11',
 		port: 9100,
-		model: 'TM-T20III',
-		active: true
+		model: 'TM-T20III'
 	})!;
 	const food = s.menu.saveCategory(null, {
 		name: 'Warme Küche',

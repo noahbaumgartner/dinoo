@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import AdminPage from '$lib/components/AdminPage.svelte';
-	import { notify } from '$lib/components/notify';
+	import { inPlace, notify } from '$lib/components/notify';
 	import {
 		AlertDialog,
 		Badge,
@@ -12,10 +12,18 @@
 		FieldDescription,
 		Input,
 		Label,
-		Select,
-		Switch
+		Select
 	} from '@noahbaumgartner/svelte-ui';
-	import { CircleAlert, CircleCheck, Pencil, Plus, Printer, Trash2 } from '@lucide/svelte';
+	import {
+		CircleAlert,
+		CircleCheck,
+		Eye,
+		EyeOff,
+		Pencil,
+		Plus,
+		Printer,
+		Trash2
+	} from '@lucide/svelte';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -27,12 +35,10 @@
 	let editing = $state<PrinterRow | null>(null);
 	let deleting = $state<PrinterRow | null>(null);
 	let model = $state('TM-T20IV');
-	let active = $state(true);
 
 	function edit(printer: PrinterRow | null) {
 		editing = printer;
 		model = printer?.model ?? 'TM-T20IV';
-		active = printer?.active ?? true;
 		editOpen = true;
 	}
 </script>
@@ -56,7 +62,7 @@
 	{:else}
 		<ul class="printers">
 			{#each data.printers as printer (printer.id)}
-				<li class="printer">
+				<li class={['printer', { 'printer--inactive': !printer.active }]}>
 					<div class="info">
 						<span class="name">
 							<Printer size={18} aria-hidden="true" />
@@ -83,6 +89,19 @@
 							>
 						</form>
 						<span class="icon-actions">
+							<form method="POST" action="?/toggle" use:enhance={inPlace()} class="toggle">
+								<input type="hidden" name="id" value={printer.id} />
+								<input type="hidden" name="active" value={String(!printer.active)} />
+								<Button
+									type="submit"
+									variant="ghost"
+									size="sm"
+									icon={printer.active ? Eye : EyeOff}
+									label={printer.active
+										? `Drucker ${printer.name} deaktivieren`
+										: `Drucker ${printer.name} aktivieren`}
+								/>
+							</form>
 							<Button
 								variant="ghost"
 								size="sm"
@@ -163,10 +182,6 @@
 				]}
 			/>
 		</Field>
-		<Field orientation="horizontal">
-			<Switch id="printer-active" name="active" bind:checked={active} />
-			<Label for="printer-active">Aktiv</Label>
-		</Field>
 		<FieldDescription>
 			Tipp: Die IP-Adresse steht auf dem Statusblatt des Druckers (Feed-Taste beim Einschalten
 			gedrückt halten).
@@ -198,21 +213,37 @@
 		flex-direction: column;
 		margin: 0;
 		padding: 0;
-		border: 1px solid var(--color-border);
 		border-radius: var(--radius);
+		background-color: var(--color-fill);
 		list-style: none;
+		overflow: hidden;
 	}
 
 	.printer {
+		position: relative;
 		display: grid;
 		grid-template-columns: 1fr auto auto;
 		align-items: center;
 		gap: 12px;
-		padding: 14px 16px;
+		padding: 12px 14px;
 	}
 
-	.printer + .printer {
+	/* Inset divider like the order list. */
+	.printer + .printer::before {
+		content: '';
+		position: absolute;
+		top: 0;
+		right: 14px;
+		left: 14px;
 		border-top: 1px solid var(--color-border);
+	}
+
+	.printer--inactive .name {
+		color: var(--color-text-muted);
+	}
+
+	.toggle {
+		display: flex;
 	}
 
 	.info {

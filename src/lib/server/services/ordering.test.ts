@@ -191,9 +191,7 @@ describe('print queue', () => {
 	it('does not deactivate printers with waiting jobs', () => {
 		t.device.offlineHosts.add(seed.kitchen.host);
 		place();
-		expect(() =>
-			t.services().printers.save(seed.kitchen.id, { ...seed.kitchen, active: false })
-		).toThrow(/wartende/);
+		expect(() => t.services().printers.setActive(seed.kitchen.id, false)).toThrow(/wartende/);
 	});
 });
 

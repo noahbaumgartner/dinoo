@@ -14,10 +14,15 @@ export const actions: Actions = {
 				name: form.string('name'),
 				host: form.string('host'),
 				port: form.optionalInt('port') ?? 9100,
-				model: form.oneOf('model', ['TM-T20IV', 'TM-T20III'] as const),
-				active: form.bool('active')
+				model: form.oneOf('model', ['TM-T20IV', 'TM-T20III'] as const)
 			});
 			return { message: id === null ? 'Drucker erfasst' : 'Drucker gespeichert' };
+		}),
+	toggle: ({ request, locals }) =>
+		action(async () => {
+			const form = await Form.from(request);
+			locals.services.printers.setActive(form.int('id'), form.bool('active'));
+			return {};
 		}),
 	delete: ({ request, locals }) =>
 		action(async () => {
