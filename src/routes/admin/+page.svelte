@@ -133,6 +133,11 @@
 		gap: 12px;
 	}
 
+	/* White like the cards below instead of the off-white page background. */
+	.stats :global(.stat) {
+		background-color: var(--color-fill);
+	}
+
 	.card-head {
 		display: flex;
 		flex-wrap: wrap;
