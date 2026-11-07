@@ -140,3 +140,9 @@ h1 + p {
 	color: var(--color-destructive);
 	font-size: 14px;
 }
+
+/* Toasts float above the page like cards, so white instead of the off-white page background.
+   Unlayered, so it wins over svelte-ui's @layer styles. */
+.toaster .toast {
+	background-color: var(--color-fill);
+}
