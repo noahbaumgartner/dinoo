@@ -38,9 +38,7 @@ export class TicketService {
 		);
 		for (const item of items) {
 			lines.push({ type: 'text', text: `${item.quantity} x ${item.articleName}`, bold: true });
-		}
-		if (order.note) {
-			lines.push({ type: 'rule' }, { type: 'text', text: `Notiz: ${order.note}` });
+			if (item.note) lines.push({ type: 'text', text: `  > ${item.note}` });
 		}
 		lines.push(
 			{ type: 'rule' },

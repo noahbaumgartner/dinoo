@@ -98,7 +98,6 @@ Eine vom Service-Personal aufgenommene Bestellung für einen Tisch.
 | tableLabel      | string   | ✓       | Snapshot des Tisch-Labels für Zettel und Historie                                     |
 | createdByUserId | → User   | ✓       | Service-Mitarbeiter, der aufgenommen hat                                              |
 | createdAt       | datetime | ✓       |                                                                                       |
-| note            | string   | –       | Freitext für die Küche, falls nötig                                                   |
 | totalCents      | int      | ✓       | Summe der Positionen zum Bestellzeitpunkt                                             |
 
 Abgeleitet (nicht gespeichert): `paidCents = Σ Payment.amountCents`, `openCents = totalCents − paidCents`, Status `offen` / `teilbezahlt` / `bezahlt`.
@@ -119,7 +118,7 @@ Eine Datenbankdatei = genau ein Anlass. Für einen neuen Anlass wird eine neue D
 
 ### Bestellposition (`OrderItem`)
 
-Ein Artikel in einer bestimmten Menge innerhalb einer Bestellung. Name und Preis werden **kopiert**, damit spätere Preisänderungen alte Bestellungen nicht verändern.
+Ein Artikel in einer bestimmten Menge innerhalb einer Bestellung, optional mit einer Notiz für die Küche. Name und Preis werden **kopiert**, damit spätere Preisänderungen alte Bestellungen nicht verändern.
 
 | Feld        | Typ       | Pflicht | Beschreibung                                                              |
 | ----------- | --------- | ------- | ------------------------------------------------------------------------- |
@@ -129,6 +128,7 @@ Ein Artikel in einer bestimmten Menge innerhalb einer Bestellung. Name und Preis
 | articleName | string    | ✓       | Snapshot                                                                  |
 | priceCents  | int       | ✓       | Snapshot                                                                  |
 | quantity    | int       | ✓       | ≥ 1                                                                       |
+| note        | string    | –       | Freitext für die Küche zu dieser Position (z. B. «ohne Zwiebeln»), ≤ 200  |
 | printerId   | → Printer | –       | Effektiver Drucker zum Bestellzeitpunkt (Snapshot), leer = nicht gedruckt |
 
 ### Druckauftrag (`PrintJob`)
@@ -211,8 +211,7 @@ Pro effektivem Drucker ein Zettel mit:
 
 1. Bestellnummer (gross), Datum/Zeit
 2. Tisch (gross)
-3. Positionen, die **auf diesen Drucker** gehören: Menge × Artikelname
-4. Notiz (falls vorhanden)
-5. Aufgenommen von: `User.displayName`
+3. Positionen, die **auf diesen Drucker** gehören: Menge × Artikelname, darunter eingerückt die Notiz der Position (falls vorhanden)
+4. Aufgenommen von: `User.displayName`
 
 Positionen anderer Drucker erscheinen nicht und werden auch nicht erwähnt (Küche sieht nur, was sie zubereitet).

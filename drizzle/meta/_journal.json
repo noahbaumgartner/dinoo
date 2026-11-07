@@ -43,6 +43,13 @@
       "when": 1794074275259,
       "tag": "0005_payment_items",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1794080618438,
+      "tag": "0006_order_item_notes",
+      "breakpoints": true
     }
   ]
 }

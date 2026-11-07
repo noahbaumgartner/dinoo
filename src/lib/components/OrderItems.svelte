@@ -10,20 +10,22 @@
 		paidQuantity: number;
 		articleName: string;
 		priceCents: number;
+		note: string | null;
 	};
 
 	let {
 		items,
 		totalCents,
-		note,
 		selection
 	}: {
 		items: Item[];
 		totalCents: number;
-		note: string | null;
 		/** Quantities picked for a partial payment; without it the list is read-only. */
 		selection?: SvelteMap<number, number>;
 	} = $props();
+
+	/** As soon as one position is picked, the others step back. */
+	let selecting = $derived((selection?.size ?? 0) > 0);
 
 	function select(itemId: number, quantity: number) {
 		if (quantity <= 0) selection?.delete(itemId);
@@ -35,10 +37,22 @@
 	{#each items as item (item.id)}
 		{@const left = item.quantity - item.paidQuantity}
 		{@const selected = selection?.get(item.id) ?? 0}
-		<li class={['item', { 'item--paid': left <= 0, 'accent-bar': selected > 0 }]}>
+		<li
+			class={[
+				'item',
+				{
+					'item--paid': left <= 0,
+					'item--dimmed': left > 0 && selecting && selected === 0,
+					'accent-bar': selected > 0
+				}
+			]}
+		>
 			<span class="tabular">{item.quantity} ×</span>
 			<span class="item-name">
 				{item.articleName}
+				{#if item.note}
+					<span class="item-note small">{item.note}</span>
+				{/if}
 				{#if item.paidQuantity > 0}
 					<span class="muted small">
 						{left <= 0 ? 'bezahlt' : `${item.paidQuantity} von ${item.quantity} bezahlt`}
@@ -51,6 +65,7 @@
 					{#if left > 0 && selected === 0}
 						<Button
 							variant="secondary"
+							size="sm"
 							icon={Plus}
 							label="{item.articleName} für Teilzahlung wählen"
 							onclick={() => select(item.id, 1)}
@@ -63,6 +78,7 @@
 							label="Teilzahlung {item.articleName}"
 							decreaseLabel="Weniger"
 							increaseLabel="Mehr"
+							format={(value) => `${value} / ${left}`}
 							onchange={(value) => select(item.id, value)}
 						/>
 					{/if}
@@ -76,9 +92,6 @@
 		<span class="tabular">{formatChf(totalCents)}</span>
 	</li>
 </ul>
-{#if note}
-	<p class="note"><span class="muted">Notiz:</span> {note}</p>
-{/if}
 
 <style>
 	.items {
@@ -114,6 +127,19 @@
 		color: var(--color-text-muted);
 	}
 
+	.item--dimmed > :not(.item-select) {
+		opacity: 0.4;
+		transition: opacity 150ms ease;
+	}
+
+	/* Same touch target as the stepper's buttons, so «+» does not change size when picked. */
+	@media (pointer: coarse) {
+		.item-select :global(.button) {
+			min-width: 44px;
+			min-height: 44px;
+		}
+	}
+
 	.small {
 		font-size: 13px;
 	}
@@ -123,7 +149,8 @@
 		font-weight: 700;
 	}
 
-	.note {
-		margin-top: 8px;
+	.item-note {
+		color: var(--color-text-secondary);
+		font-style: italic;
 	}
 </style>

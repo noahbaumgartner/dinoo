@@ -22,7 +22,9 @@
 		ClipboardCheck,
 		LayoutGrid,
 		List,
+		Pencil,
 		Send,
+		Trash2,
 		UtensilsCrossed
 	} from '@lucide/svelte';
 	import { SvelteMap } from 'svelte/reactivity';
@@ -32,8 +34,13 @@
 
 	let step = $state(0);
 	let tableId = $state<number | null>(null);
-	let note = $state('');
 	let quantities = new SvelteMap<number, number>();
+	/** Note for the kitchen per article line, e.g. «ohne Zwiebeln». */
+	let notes = new SvelteMap<number, string>();
+	/** Article whose note is being edited in the drawer. */
+	let noteArticleId = $state<number | null>(null);
+	let noteDraft = $state('');
+	let noteOpen = $state(false);
 	let clientRequestId = $state(uid());
 	let submitting = $state(false);
 	let activeCategory = $state<number | null>(null);
@@ -79,7 +86,11 @@
 	let lines = $derived(
 		articles
 			.filter((article) => (quantities.get(article.id) ?? 0) > 0)
-			.map((article) => ({ ...article, quantity: quantities.get(article.id) ?? 0 }))
+			.map((article) => ({
+				...article,
+				quantity: quantities.get(article.id) ?? 0,
+				note: notes.get(article.id) ?? null
+			}))
 	);
 	let itemCount = $derived(lines.reduce((sum, line) => sum + line.quantity, 0));
 	let totalCents = $derived(lines.reduce((sum, line) => sum + line.quantity * line.priceCents, 0));
@@ -90,8 +101,25 @@
 	}
 
 	function setQuantity(articleId: number, quantity: number) {
-		if (quantity <= 0) quantities.delete(articleId);
-		else quantities.set(articleId, quantity);
+		if (quantity > 0) return quantities.set(articleId, quantity);
+		quantities.delete(articleId);
+		notes.delete(articleId);
+	}
+
+	let noteArticle = $derived(articles.find((article) => article.id === noteArticleId));
+
+	function editNote(articleId: number) {
+		noteArticleId = articleId;
+		noteDraft = notes.get(articleId) ?? '';
+		noteOpen = true;
+	}
+
+	function saveNote(text: string) {
+		if (noteArticleId === null) return;
+		const trimmed = text.trim();
+		if (trimmed) notes.set(noteArticleId, trimmed);
+		else notes.delete(noteArticleId);
+		noteOpen = false;
 	}
 
 	function jumpTo(categoryId: number) {
@@ -214,7 +242,19 @@
 								>
 									<span class="article-name">{article.name}</span>
 									<span class="article-price muted">{formatChf(article.priceCents)}</span>
+									{#if quantity > 0 && notes.get(article.id)}
+										<span class="article-note">{notes.get(article.id)}</span>
+									{/if}
 								</button>
+								{#if quantity > 0}
+									<Button
+										variant="ghost"
+										icon={Pencil}
+										label="Notiz für {article.name}"
+										aria-haspopup="dialog"
+										onclick={() => editNote(article.id)}
+									/>
+								{/if}
 								<NumberStepper
 									value={quantity}
 									min={0}
@@ -230,10 +270,6 @@
 					</ul>
 				</div>
 			{/each}
-			<Field>
-				<Label for="note">Notiz für die Küche (optional)</Label>
-				<Textarea id="note" bind:value={note} rows={2} placeholder="z. B. ohne Zwiebeln" />
-			</Field>
 		</section>
 		<ActionBar>
 			{#snippet summary()}
@@ -258,7 +294,10 @@
 				{#each lines as line (line.id)}
 					<li>
 						<span class="tabular">{line.quantity} ×</span>
-						<span>{line.name}</span>
+						<span class="review-name">
+							{line.name}
+							{#if line.note}<span class="article-note">{line.note}</span>{/if}
+						</span>
 						<span class="tabular">{formatChf(line.quantity * line.priceCents)}</span>
 					</li>
 				{/each}
@@ -268,9 +307,6 @@
 					<span class="tabular">{formatChf(totalCents)}</span>
 				</li>
 			</ul>
-			{#if note.trim()}
-				<p><span class="muted">Notiz:</span> {note.trim()}</p>
-			{/if}
 			{#if form?.error}
 				<p class="form-error" role="alert">{form.error}</p>
 			{/if}
@@ -293,16 +329,42 @@
 				>
 					<input type="hidden" name="clientRequestId" value={clientRequestId} />
 					<input type="hidden" name="tableId" value={tableId} />
-					<input type="hidden" name="note" value={note} />
 					<input
 						type="hidden"
 						name="items"
-						value={JSON.stringify(lines.map((l) => ({ articleId: l.id, quantity: l.quantity })))}
+						value={JSON.stringify(
+							lines.map((l) => ({ articleId: l.id, quantity: l.quantity, note: l.note }))
+						)}
 					/>
 					<Button type="submit" size="lg" icon={Send} loading={submitting}
 						>Bestellung abschicken · {formatChf(totalCents)}</Button
 					>
 				</form>
+			{/snippet}
+		</Drawer>
+		<Drawer
+			bind:open={noteOpen}
+			title="Notiz für die Küche"
+			description={noteArticle?.name}
+			closeLabel="Schliessen"
+		>
+			<Field>
+				<Label for="item-note">Notiz</Label>
+				<Textarea
+					id="item-note"
+					bind:value={noteDraft}
+					rows={3}
+					maxlength={200}
+					placeholder="z. B. ohne Zwiebeln"
+				/>
+			</Field>
+			{#snippet actions()}
+				{#if noteArticleId !== null && notes.has(noteArticleId)}
+					<Button variant="secondary" size="lg" icon={Trash2} onclick={() => saveNote('')}
+						>Notiz entfernen</Button
+					>
+				{/if}
+				<Button size="lg" onclick={() => saveNote(noteDraft)}>Speichern</Button>
 			{/snippet}
 		</Drawer>
 	{/if}
@@ -472,6 +534,18 @@
 
 	.article-name {
 		font-weight: 500;
+	}
+
+	.article-note {
+		color: var(--color-text-secondary);
+		font-size: 14px;
+		font-style: italic;
+		overflow-wrap: anywhere;
+	}
+
+	.review-name {
+		display: flex;
+		flex-direction: column;
 	}
 
 	.article-price {

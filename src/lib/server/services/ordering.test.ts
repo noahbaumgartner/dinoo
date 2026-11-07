@@ -16,10 +16,9 @@ function place(clientRequestId = crypto.randomUUID()) {
 		{
 			clientRequestId,
 			tableId: seed.tables[1].id,
-			note: 'ohne Senf',
 			items: [
 				{ articleId: seed.fries.id, quantity: 2 },
-				{ articleId: seed.sausage.id, quantity: 1 },
+				{ articleId: seed.sausage.id, quantity: 1, note: ' ohne Senf ' },
 				{ articleId: seed.beer.id, quantity: 3 }
 			]
 		},
@@ -42,6 +41,38 @@ describe('placing an order', () => {
 			['Bratwurst', seed.grill.id],
 			['Bier', null]
 		]);
+	});
+
+	it('keeps the note per item and splits items with different notes', () => {
+		const order = t.services().orders.place(
+			{
+				clientRequestId: 'notes',
+				tableId: seed.tables[0].id,
+				items: [
+					{ articleId: seed.fries.id, quantity: 1, note: 'ohne Salz' },
+					{ articleId: seed.fries.id, quantity: 2 },
+					{ articleId: seed.fries.id, quantity: 1, note: '  ' },
+					{ articleId: seed.fries.id, quantity: 1, note: 'ohne Salz' }
+				]
+			},
+			seed.service
+		);
+		const items = t.services().orders.detail(order.id).items;
+		expect(items.map((item) => [item.quantity, item.note])).toEqual([
+			[2, 'ohne Salz'],
+			[3, null]
+		]);
+		expect(order.totalCents).toBe(5 * 600);
+		expect(() =>
+			t.services().orders.place(
+				{
+					clientRequestId: 'long',
+					tableId: seed.tables[0].id,
+					items: [{ articleId: seed.fries.id, quantity: 1, note: 'x'.repeat(201) }]
+				},
+				seed.service
+			)
+		).toThrow(/höchstens 200 Zeichen/);
 	});
 
 	it('is idempotent for the same client request id', () => {
@@ -85,6 +116,9 @@ describe('print queue', () => {
 		expect(kitchen.preview).toContain('Tisch 102'.toUpperCase());
 		expect(kitchen.preview).not.toContain('Name:');
 		expect(kitchen.preview).toContain('Aufgenommen von: Anna');
+		const grill = jobs.find((job) => job.printerName === 'Grill')!;
+		expect(grill.preview).toMatch(/1 x Bratwurst\n\s*> ohne Senf/);
+		expect(kitchen.preview).not.toContain('ohne Senf');
 
 		await t.runtime.worker.tick();
 		expect(t.device.printed).toHaveLength(2);

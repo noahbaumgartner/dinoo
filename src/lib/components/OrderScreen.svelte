@@ -10,7 +10,6 @@
 		order: {
 			orderNumber: number;
 			tableLabel: string;
-			note: string | null;
 			totalCents: number;
 			createdAt: Date;
 		};
@@ -20,6 +19,7 @@
 			paidQuantity: number;
 			articleName: string;
 			priceCents: number;
+			note: string | null;
 		}[];
 		paidCents: number;
 		openCents: number;
@@ -81,7 +81,6 @@
 		<div class="main">
 			<PaymentPanel
 				items={data.items}
-				note={data.order.note}
 				totalCents={data.order.totalCents}
 				paidCents={data.paidCents}
 				openCents={data.openCents}

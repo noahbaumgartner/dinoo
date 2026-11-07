@@ -15,7 +15,7 @@ Service-Personal nimmt am Tisch eine Bestellung in vier Schritten auf: Tisch wä
 ## Ablauf (verbindlich)
 
 1. **Tisch auswählen** – als Liste nach Reihen (Standard) oder als Saalplan-Raster, darunter die freien Tische (grosse Kacheln).
-2. **Artikel auswählen** – nach Kategorie gruppiert, Menge per +/–, laufende Zwischensumme, optionale Notiz.
+2. **Artikel auswählen** – nach Kategorie gruppiert, Menge per +/–, laufende Zwischensumme, optional eine Notiz pro Position.
 3. **Bestellung abschicken** – ein Button. Speichert, vergibt Bestellnummer, erzeugt PrintJobs (F03).
 4. **Bestellung abrechnen** – Bar (mit Rechnungshilfe) oder TWINT-Code anzeigen (F07). Kann übersprungen und später nachgeholt werden.
 
@@ -26,9 +26,10 @@ Service-Personal nimmt am Tisch eine Bestellung in vier Schritten auf: Tisch wä
 - [ ] «Liste»: pro Zeile des Saalplans ein Untertitel «Reihe A» (bzw. «Reihe 1» bei Zahlen-Nummerierung), darunter die aktiven Tische der Reihe in Spaltenreihenfolge als Kacheln in derselben Grösse wie im Saalplan; Reihen ohne aktive Tische entfallen. Die freien Tische folgen unter «Weitere Tische».
 - [ ] «Saalplan»: der Saalplan als Raster (Zeilen × Spalten wie in F06); inaktive Rastertische sind leere Stellen. Darunter die aktiven freien Tische, sortiert nach `sortOrder`. Ist der Plan breiter als der Bildschirm, scrollt er horizontal. **Pflichtfeld: Tisch.** Ein Name des Bestellers wird nicht erfasst.
 - [ ] Schritt 2 zeigt nur aktive Artikel in aktiven Kategorien; Menge per +/– (0 entfernt die Position); Zwischensumme laufend sichtbar; Zurück zu Schritt 1 ohne Datenverlust.
+- [ ] **Notiz pro Position:** Sobald ein Artikel eine Menge > 0 hat, erscheint in seiner Zeile ein Stift. Er öffnet einen Drawer «Notiz für die Küche» (Artikelname als Untertitel) mit einem Textfeld (höchstens 200 Zeichen) und «Speichern»; bei vorhandener Notiz zusätzlich «Notiz entfernen». Die Notiz steht kursiv unter dem Artikel. Eine leere Notiz gilt als keine. Wird die Menge auf 0 gesetzt, entfällt auch die Notiz. Eine Notiz für die ganze Bestellung gibt es nicht.
 - [ ] **Fokus-Modus** ab Schritt 2: Die Kopfzeile zeigt statt Navigation und Benutzermenü nur «Bestellung · Tisch X» und einen Button «Abbrechen»; ein Wechsel auf eine andere Seite ist über das Menü nicht möglich. «Abbrechen» führt zurück zu Schritt 1 und hebt den Fokus-Modus auf.
 - [ ] Gibt es bereits Positionen oder eine Notiz, fragt «Abbrechen» zuerst nach («Bestellung verwerfen?» mit «Verwerfen» / «Weiter bearbeiten»). Dieselbe Rückfrage kommt, wenn die Seite auf anderem Weg verlassen wird (z. B. Browser-Zurück). Beim Neuladen oder Schliessen des Tabs zeigt der Browser seine eigene Warnung. Nach dem Abschicken entfällt die Rückfrage.
-- [ ] Schritt 3 öffnet sich als Drawer über den Artikeln („Prüfen“): Positionen, Total, Notiz und ein einziger Button „Bestellung abschicken“, deaktiviert ohne Position. Doppelklick/Netzwerk-Retry erzeugt keine zweite Bestellung (Idempotenz-Token).
+- [ ] Schritt 3 öffnet sich als Drawer über den Artikeln („Prüfen“): Positionen mit ihren Notizen, Total und ein einziger Button „Bestellung abschicken“, deaktiviert ohne Position. Doppelklick/Netzwerk-Retry erzeugt keine zweite Bestellung (Idempotenz-Token).
 - [ ] Beim Abschicken: `orderNumber` fortlaufend; `tableLabel`, `articleName`, `priceCents`, effektiver `printerId` und `totalCents` als Snapshot gespeichert.
 - [ ] Bestellung wird gespeichert und die Zettel in die Druckwarteschlange gestellt (F03); auch bei nicht erreichbarem Drucker geht die Bestellung durch. Druckstatus pro Drucker sichtbar (wartet / gedruckt).
 - [ ] Nach Schritt 3 wechselt die Ansicht automatisch zu Schritt 4 (F07) mit Bestellnummer und Betrag.

@@ -149,7 +149,6 @@ export const orders = sqliteTable(
 			.notNull()
 			.references(() => tables.id),
 		tableLabel: text('table_label').notNull(),
-		note: text('note'),
 		totalCents: integer('total_cents').notNull(),
 		createdByUserId: text('created_by_user_id')
 			.notNull()
@@ -176,6 +175,8 @@ export const orderItems = sqliteTable(
 		articleName: text('article_name').notNull(),
 		priceCents: integer('price_cents').notNull(),
 		quantity: integer('quantity').notNull(),
+		/** Free text for the kitchen, e.g. «ohne Zwiebeln». */
+		note: text('note'),
 		printerId: integer('printer_id').references(() => printers.id, { onDelete: 'set null' })
 	},
 	(t) => [index('order_items_order_idx').on(t.orderId)]

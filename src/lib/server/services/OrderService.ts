@@ -22,8 +22,8 @@ import type { PrintJobView, PrintQueueService } from './PrintQueueService';
 export type PlaceOrderInput = {
 	clientRequestId: string;
 	tableId: number;
-	note?: string;
-	items: { articleId: number; quantity: number }[];
+	/** `note` is free text for the kitchen for this item, e.g. «ohne Zwiebeln». */
+	items: { articleId: number; quantity: number; note?: string | null }[];
 };
 
 export type OrderingData = {
@@ -42,6 +42,7 @@ export type OrderDetail = {
 };
 
 const MAX_QUANTITY = 99;
+const MAX_NOTE_LENGTH = 200;
 
 export class OrderService {
 	constructor(
@@ -80,16 +81,25 @@ export class OrderService {
 		const table = this.tables.get(input.tableId);
 		if (!table || !table.active) throw new DomainError('Bitte einen gültigen Tisch wählen.');
 
-		const quantities = new Map<number, number>();
+		// Same article with the same note is one item; a different note makes its own item.
+		const lines = new Map<string, { articleId: number; quantity: number; note: string | null }>();
 		for (const item of input.items) {
 			if (!Number.isInteger(item.quantity) || item.quantity <= 0) continue;
-			quantities.set(item.articleId, (quantities.get(item.articleId) ?? 0) + item.quantity);
+			const note = item.note?.trim() || null;
+			if (note && note.length > MAX_NOTE_LENGTH)
+				throw new DomainError(`Notizen sind höchstens ${MAX_NOTE_LENGTH} Zeichen lang.`);
+			const key = `${item.articleId}:${note ?? ''}`;
+			const line = lines.get(key);
+			if (line) line.quantity += item.quantity;
+			else lines.set(key, { articleId: item.articleId, quantity: item.quantity, note });
 		}
-		if (quantities.size === 0) throw new DomainError('Die Bestellung enthält keine Artikel.');
+		if (lines.size === 0) throw new DomainError('Die Bestellung enthält keine Artikel.');
 
-		const articles = this.menu.getArticles([...quantities.keys()]);
+		const articles = this.menu.getArticles([
+			...new Set([...lines.values()].map((l) => l.articleId))
+		]);
 		const categories = new Map(this.menu.listCategories().map((c) => [c.id, c]));
-		const items = [...quantities].map(([articleId, quantity]) => {
+		const items = [...lines.values()].map(({ articleId, quantity, note }) => {
 			const article = articles.find((a) => a.id === articleId);
 			if (!article || !article.active)
 				throw new DomainError(
@@ -103,6 +113,7 @@ export class OrderService {
 				articleName: article.name,
 				priceCents: article.priceCents,
 				quantity,
+				note,
 				printerId: effectivePrinterId(article, categories.get(article.categoryId))
 			};
 		});
@@ -112,7 +123,6 @@ export class OrderService {
 				clientRequestId: input.clientRequestId,
 				tableId: table.id,
 				tableLabel: table.label,
-				note: input.note?.trim() || null,
 				totalCents: items.reduce((sum, item) => sum + item.priceCents * item.quantity, 0),
 				createdByUserId: by.id,
 				createdAt: this.now()

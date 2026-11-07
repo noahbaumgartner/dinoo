@@ -22,11 +22,11 @@
 		paidQuantity: number;
 		articleName: string;
 		priceCents: number;
+		note: string | null;
 	};
 
 	let {
 		items,
-		note,
 		totalCents,
 		paidCents,
 		openCents,
@@ -34,7 +34,6 @@
 		twintQrContent
 	}: {
 		items: Item[];
-		note: string | null;
 		totalCents: number;
 		paidCents: number;
 		openCents: number;
@@ -130,7 +129,7 @@
 		</div>
 	{/if}
 
-	<OrderItems {items} {totalCents} {note} selection={openCents > 0 ? selection : undefined} />
+	<OrderItems {items} {totalCents} selection={openCents > 0 ? selection : undefined} />
 
 	{#if openCents === 0}
 		<!-- Paid: nothing left to choose. -->

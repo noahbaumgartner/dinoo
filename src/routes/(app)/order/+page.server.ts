@@ -28,7 +28,7 @@ export const actions: Actions = {
 		action(async () => {
 			const user = requireUser(locals);
 			const form = await Form.from(request);
-			let items: { articleId: number; quantity: number }[];
+			let items: { articleId: number; quantity: number; note?: unknown }[];
 			try {
 				items = JSON.parse(form.string('items'));
 				if (!Array.isArray(items)) throw new Error();
@@ -39,10 +39,10 @@ export const actions: Actions = {
 				{
 					clientRequestId: form.string('clientRequestId'),
 					tableId: form.int('tableId'),
-					note: form.string('note'),
 					items: items.map((item) => ({
 						articleId: Number(item.articleId),
-						quantity: Number(item.quantity)
+						quantity: Number(item.quantity),
+						note: typeof item.note === 'string' ? item.note : null
 					}))
 				},
 				user
