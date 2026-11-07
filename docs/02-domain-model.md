@@ -68,14 +68,23 @@ none    → kein Druck
 
 ### Tisch (`Table`)
 
-Vom Admin vorkonfigurierte Tische, aus denen der Service beim Bestellen auswählt.
+Vom Admin vorkonfigurierte Tische, aus denen der Service beim Bestellen auswählt. Die meisten Tische liegen im **Saalplan**, einem Raster aus Zeilen und Spalten; daneben gibt es **freie Tische** ohne Platz im Raster (z. B. „Bar“, „Terrasse“).
 
-| Feld      | Typ    | Pflicht | Beschreibung                      |
-| --------- | ------ | ------- | --------------------------------- |
-| id        | int    | ✓       |                                   |
-| label     | string | ✓       | Anzeige, z. B. „12“, „12a“, „Bar“ |
-| sortOrder | int    | ✓       |                                   |
-| active    | bool   | ✓       |                                   |
+| Feld       | Typ    | Pflicht | Beschreibung                                                          |
+| ---------- | ------ | ------- | --------------------------------------------------------------------- |
+| id         | int    | ✓       |                                                                       |
+| label      | string | ✓       | Anzeige, z. B. „A01“, „101“, „Bar“; im Raster vorbelegt, umbenennbar  |
+| gridRow    | int    | –       | Zeile im Saalplan (1 = oberste); leer = freier Tisch                  |
+| gridColumn | int    | –       | Spalte im Saalplan (1 = linke); zusammen mit `gridRow` eindeutig      |
+| sortOrder  | int    | ✓       | Reihenfolge der freien Tische (Rastertische: nach Zeile, dann Spalte) |
+| active     | bool   | ✓       | Inaktive Rastertische sind Lücken im Plan (Gang, Bühne)               |
+
+**Saalplan:** Die Grösse ergibt sich aus den Rastertischen (grösste Zeile × grösste Spalte); jede Zelle ist ein Tisch. Vorbelegte Bezeichnung je nach `Settings.tableNumbering`:
+
+```
+letter → Zeilenbuchstabe + zweistellige Spalte: A01, A02, …, B01   (max. 26 Zeilen)
+number → Zeile × 100 + Spalte:                  101, 102, …, 201
+```
 
 ### Bestellung (`Order`)
 
@@ -104,6 +113,7 @@ Einzelwerte für den Anlass, Key-Value.
 | Key            | Typ    | Beschreibung                                                                                                                                  |
 | -------------- | ------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
 | eventName      | string | Name des Anlasses (Zettelkopf)                                                                                                                |
+| tableNumbering | string | Nummerierung des Saalplans: `letter` (A01, Standard) oder `number` (101)                                                                      |
 | twintQrContent | string | **Inhalt** des statischen TWINT-QR-Codes des Vereins (beim Einrichten gescannt oder eingefügt). Der QR wird daraus zur Anzeige neu generiert. |
 
 Eine Datenbankdatei = genau ein Anlass. Für einen neuen Anlass wird eine neue Datei angelegt (F10).

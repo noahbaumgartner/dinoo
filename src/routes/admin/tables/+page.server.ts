@@ -1,11 +1,23 @@
 import { action, Form } from '$lib/server/forms';
+import { TABLE_NUMBERINGS } from '$lib/table-grid';
 import type { Actions, PageServerLoad } from './$types';
 
-export const load: PageServerLoad = ({ locals }) => ({
-	tables: locals.services.tables.list()
-});
+export const load: PageServerLoad = ({ locals }) => {
+	const tables = locals.services.tables.list();
+	return { tables, plan: locals.services.tables.plan(tables) };
+};
 
 export const actions: Actions = {
+	grid: ({ request, locals }) =>
+		action(async () => {
+			const form = await Form.from(request);
+			locals.services.tables.applyGrid({
+				rows: form.int('rows'),
+				columns: form.int('columns'),
+				numbering: form.oneOf('numbering', TABLE_NUMBERINGS)
+			});
+			return { message: 'Saalplan übernommen' };
+		}),
 	save: ({ request, locals }) =>
 		action(async () => {
 			const form = await Form.from(request);
@@ -17,19 +29,10 @@ export const actions: Actions = {
 			});
 			return { message: id === null ? 'Tisch erfasst' : 'Tisch gespeichert' };
 		}),
-	range: ({ request, locals }) =>
-		action(async () => {
-			const form = await Form.from(request);
-			const count = locals.services.tables.createRange(form.int('from'), form.int('to'));
-			return {
-				message: count === 0 ? 'Diese Tische existieren bereits' : `${count} Tische angelegt`
-			};
-		}),
 	toggle: ({ request, locals }) =>
 		action(async () => {
 			const form = await Form.from(request);
-			const table = locals.services.tables.list().find((t) => t.id === form.int('id'));
-			if (table) locals.services.tables.save(table.id, { ...table, active: !table.active });
+			locals.services.tables.setActive(form.int('id'), form.bool('active'));
 			return {};
 		}),
 	delete: ({ request, locals }) =>

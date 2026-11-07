@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import ActionBar from '$lib/components/ActionBar.svelte';
+	import SeatingPlan from '$lib/components/SeatingPlan.svelte';
 	import { formatChf } from '$lib/money';
 	import { uid } from '$lib/uid';
 	import {
@@ -36,6 +37,8 @@
 
 	let articles = $derived(data.categories.flatMap((category) => category.articles));
 	let table = $derived(data.tables.find((t) => t.id === tableId));
+	let planTables = $derived(data.tables.filter((t) => t.gridRow !== null));
+	let freeTables = $derived(data.tables.filter((t) => t.gridRow === null));
 	let lines = $derived(
 		articles
 			.filter((article) => (quantities.get(article.id) ?? 0) > 0)
@@ -61,6 +64,18 @@
 	}
 </script>
 
+{#snippet tile(t: (typeof data.tables)[number])}
+	<button
+		type="button"
+		role="radio"
+		aria-checked={tableId === t.id}
+		class={['table-tile', { 'table-tile--selected': tableId === t.id }]}
+		onclick={() => (tableId = t.id)}
+	>
+		{t.label}
+	</button>
+{/snippet}
+
 <svelte:head><title>Bestellen · dinoo</title></svelte:head>
 
 <div class="order stack">
@@ -81,18 +96,21 @@
 	{:else if step === 0}
 		<section class="stack" aria-labelledby="step-table">
 			<h1 id="step-table">Tisch wählen</h1>
-			<div class="tables" role="radiogroup" aria-label="Tisch">
-				{#each data.tables as t (t.id)}
-					<button
-						type="button"
-						role="radio"
-						aria-checked={tableId === t.id}
-						class={['table-tile', { 'table-tile--selected': tableId === t.id }]}
-						onclick={() => (tableId = t.id)}
-					>
-						{t.label}
-					</button>
-				{/each}
+			<div class="stack" role="radiogroup" aria-label="Tisch">
+				{#if planTables.length > 0}
+					<SeatingPlan rows={data.plan.rows} columns={data.plan.columns} tables={planTables}>
+						{#snippet cell(t)}
+							{@render tile(t)}
+						{/snippet}
+					</SeatingPlan>
+				{/if}
+				{#if freeTables.length > 0}
+					<div class="tables">
+						{#each freeTables as t (t.id)}
+							{@render tile(t)}
+						{/each}
+					</div>
+				{/if}
 			</div>
 		</section>
 		<ActionBar>
@@ -260,21 +278,27 @@
 		justify-content: space-between;
 	}
 
+	/* Same fixed tile size as the seating plan. */
 	.tables {
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(76px, 1fr));
-		gap: 8px;
+		grid-template-columns: repeat(auto-fill, 72px);
+		grid-auto-rows: 72px;
+		gap: 6px;
 	}
 
 	.table-tile {
-		aspect-ratio: 1;
+		min-width: 0;
+		padding: 4px;
+		overflow: hidden;
+		overflow-wrap: anywhere;
 		border: 1px solid var(--color-border);
 		border-radius: var(--radius);
 		background-color: var(--color-bg);
 		color: var(--color-text);
 		font: inherit;
-		font-size: 22px;
+		font-size: 20px;
 		font-weight: 600;
+		line-height: 1.1;
 		cursor: pointer;
 		touch-action: manipulation;
 	}

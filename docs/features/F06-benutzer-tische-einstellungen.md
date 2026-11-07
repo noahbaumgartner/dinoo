@@ -23,7 +23,13 @@ Der Admin legt Benutzer (Service, Admin), die Tische des Anlasses und allgemeine
 
 **Tische** (`/admin/tables`)
 
-- [ ] Anlegen/bearbeiten: `label`, `sortOrder`, `active`; Schnellerfassung „Tische 1–30 anlegen“.
+- [ ] **Saalplan:** Der Admin gibt Anzahl Zeilen und Spalten sowie die Nummerierung an (`A01, A02, …` oder `101, 102, …`). Jede Zelle des Rasters ist ein Tisch; fehlende Zellen werden mit vorbelegter Bezeichnung angelegt.
+- [ ] Grenzen: 1–26 Zeilen, 1–30 Spalten.
+- [ ] Wird das Raster verkleinert, fallen Tische ausserhalb weg: ohne Bestellungen werden sie gelöscht, mit Bestellungen deaktiviert und zu freien Tischen.
+- [ ] Wechselt die Nummerierung, erhalten Rastertische mit unveränderter Bezeichnung die neue; umbenannte Tische behalten ihren Namen.
+- [ ] Der Plan wird als Raster angezeigt. **Jeder Tisch** (im Raster und frei) kann aktiviert/deaktiviert und umbenannt werden. Ein deaktivierter Rastertisch ist eine Lücke im Plan (Gang, Bühne); die Bezeichnungen der anderen bleiben gleich.
+- [ ] Rastertische werden nicht einzeln gelöscht (nur deaktiviert oder per Verkleinern entfernt).
+- [ ] **Freie Tische** ausserhalb des Rasters (z. B. „Bar“): anlegen/bearbeiten mit `label`, `sortOrder`, `active`; löschen.
 - [ ] Tische mit Bestellungen werden deaktiviert statt gelöscht.
 
 **Einstellungen** (`/admin/settings`)

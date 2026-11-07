@@ -24,6 +24,7 @@ Ungeklärte Punkte, die vor oder während der Umsetzung entschieden werden müss
 - [x] Teilzahlungen / Splitting → **Ja, so einfach wie möglich**: Betrag pro Zahlung frei wählbar, mehrere `Payment`s pro Bestellung (F07).
 - [x] Mehrere Anlässe → **Genau ein Anlass pro Datenbank; Datenbank im Admin austauschbar** (F10).
 - [x] Auswertungen → **Ja, als Graph mit Verlauf** (F09).
+- [x] Tische erfassen → **Saalplan als Raster** (Zeilen × Spalten, Nummerierung `A01` oder `101`), zusätzlich freie Tische wie „Bar“; Lücken durch Deaktivieren, jeder Tisch umbenennbar (F06, 02-domain-model).
 
 ### Technisch
 

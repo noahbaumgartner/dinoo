@@ -5,8 +5,15 @@ import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = ({ locals }) => {
 	const { tables, categories } = locals.services.orders.orderingData();
+	const { rows, columns } = locals.services.tables.plan();
 	return {
-		tables: tables.map(({ id, label }) => ({ id, label })),
+		plan: { rows, columns },
+		tables: tables.map(({ id, label, gridRow, gridColumn }) => ({
+			id,
+			label,
+			gridRow,
+			gridColumn
+		})),
 		categories: categories.map((category) => ({
 			id: category.id,
 			name: category.name,

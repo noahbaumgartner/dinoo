@@ -146,9 +146,12 @@ menu.forEach(([name, printerId, items], categoryIndex) => {
 	});
 });
 
-s.tables.createRange(1, 24);
-s.tables.save(null, { label: 'Bar', sortOrder: 25, active: true });
-const tables = s.tables.list();
+s.tables.applyGrid({ rows: 4, columns: 6, numbering: 'letter' });
+// An aisle in the middle of the hall.
+for (const table of s.tables.list())
+	if (table.gridColumn === 4) s.tables.setActive(table.id, false);
+s.tables.save(null, { label: 'Bar', sortOrder: 1, active: true });
+const tables = s.tables.list().filter((table) => table.active);
 
 const users = [annaId, benId, adminId].map((id) => runtime.repositories.users.get(id)!);
 

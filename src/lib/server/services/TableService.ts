@@ -1,45 +1,123 @@
-import type { TableInput, TableRepository } from '../repositories/db/TableRepository';
+import {
+	gridLabel,
+	MAX_GRID_COLUMNS,
+	MAX_GRID_ROWS,
+	TABLE_NUMBERINGS,
+	type TableNumbering
+} from '../../table-grid';
+import type { SettingsRepository } from '../repositories/db/SettingsRepository';
+import type { TableChanges, TableInput, TableRepository } from '../repositories/db/TableRepository';
 import type { TableRecord } from '../repositories/db/types';
 import { DomainError, ensure } from './errors';
 
-const MAX_BULK = 200;
+export type SeatingPlan = {
+	rows: number;
+	columns: number;
+	numbering: TableNumbering;
+};
+
+export type GridInput = SeatingPlan;
+
+/** Label, order and active flag; the position in the seating plan is set via `applyGrid`. */
+export type TableEdit = Omit<TableInput, 'gridRow' | 'gridColumn'>;
 
 export class TableService {
-	constructor(private readonly tables: TableRepository) {}
+	constructor(
+		private readonly tables: TableRepository,
+		private readonly settings: SettingsRepository
+	) {}
 
 	list(): TableRecord[] {
 		return this.tables.list();
 	}
 
-	save(id: number | null, input: TableInput): TableRecord | undefined {
+	/** Size of the seating plan (derived from its tables) and its numbering. */
+	plan(tables = this.tables.list()): SeatingPlan {
+		const grid = tables.filter(isGridTable);
+		return {
+			rows: Math.max(0, ...grid.map((table) => table.gridRow)),
+			columns: Math.max(0, ...grid.map((table) => table.gridColumn)),
+			numbering: this.numbering()
+		};
+	}
+
+	/**
+	 * Resizes the seating plan: creates missing cells, removes cells outside (tables with orders
+	 * become inactive free tables) and relabels cells that still carry the old default label.
+	 */
+	applyGrid(input: GridInput) {
+		const { rows, columns, numbering } = input;
+		if (!TABLE_NUMBERINGS.includes(numbering)) throw new DomainError('Ungültige Nummerierung.');
+		if (!Number.isInteger(rows) || rows < 1 || rows > MAX_GRID_ROWS)
+			throw new DomainError(`Bitte 1 bis ${MAX_GRID_ROWS} Zeilen angeben.`);
+		if (!Number.isInteger(columns) || columns < 1 || columns > MAX_GRID_COLUMNS)
+			throw new DomainError(`Bitte 1 bis ${MAX_GRID_COLUMNS} Spalten angeben.`);
+
+		const previous = this.numbering();
+		const existing = this.tables.list();
+		let freeSortOrder = Math.max(
+			0,
+			...existing.filter((table) => !isGridTable(table)).map((table) => table.sortOrder)
+		);
+		const changes: TableChanges = { update: [], delete: [], create: [] };
+		const cells = new Set<string>();
+
+		for (const table of existing) {
+			if (!isGridTable(table)) continue;
+			const { gridRow: row, gridColumn: column } = table;
+			if (row > rows || column > columns) {
+				if (this.tables.hasOrders(table.id)) {
+					freeSortOrder += 1;
+					changes.update.push({
+						id: table.id,
+						input: { gridRow: null, gridColumn: null, active: false, sortOrder: freeSortOrder }
+					});
+				} else changes.delete.push(table.id);
+				continue;
+			}
+			cells.add(`${row}:${column}`);
+			const label = gridLabel(numbering, row, column);
+			if (table.label !== label && table.label === gridLabel(previous, row, column))
+				changes.update.push({ id: table.id, input: { label } });
+		}
+
+		for (let row = 1; row <= rows; row += 1)
+			for (let column = 1; column <= columns; column += 1)
+				if (!cells.has(`${row}:${column}`))
+					changes.create.push({
+						label: gridLabel(numbering, row, column),
+						gridRow: row,
+						gridColumn: column,
+						sortOrder: 0,
+						active: true
+					});
+
+		this.tables.apply(changes);
+		this.settings.set('tableNumbering', numbering);
+	}
+
+	/** Creates a free table (outside the seating plan) or edits any table. */
+	save(id: number | null, input: TableEdit): TableRecord | undefined {
 		const label = input.label.trim();
 		if (!label) throw new DomainError('Bitte eine Bezeichnung für den Tisch angeben.');
-		if (id === null) return this.tables.create({ ...input, label });
+		const values = { label, sortOrder: input.sortOrder, active: input.active };
+		if (id === null) return this.tables.create(values);
 		ensure(this.tables.get(id), 'Tisch');
-		this.tables.update(id, { ...input, label });
+		this.tables.update(id, values);
 	}
 
-	/** «Tische 1–30 anlegen»: skips labels that already exist. */
-	createRange(from: number, to: number): number {
-		if (!Number.isInteger(from) || !Number.isInteger(to) || from < 0 || to < from)
-			throw new DomainError('Bitte einen gültigen Bereich angeben, z. B. 1 bis 30.');
-		if (to - from + 1 > MAX_BULK) throw new DomainError(`Höchstens ${MAX_BULK} Tische auf einmal.`);
-		const existing = this.tables.list();
-		const labels = new Set(existing.map((table) => table.label));
-		let sortOrder = Math.max(0, ...existing.map((table) => table.sortOrder));
-		const inputs: TableInput[] = [];
-		for (let number = from; number <= to; number += 1) {
-			if (labels.has(String(number))) continue;
-			sortOrder += 1;
-			inputs.push({ label: String(number), sortOrder, active: true });
-		}
-		this.tables.createMany(inputs);
-		return inputs.length;
+	setActive(id: number, active: boolean) {
+		ensure(this.tables.get(id), 'Tisch');
+		this.tables.update(id, { active });
 	}
 
-	/** Tables with orders are only deactivated. */
+	/** Free tables with orders are only deactivated; seating plan cells are never deleted here. */
 	delete(id: number): 'deleted' | 'deactivated' {
-		ensure(this.tables.get(id), 'Tisch');
+		const table = ensure(this.tables.get(id), 'Tisch');
+		if (isGridTable(table))
+			throw new DomainError(
+				'Tische im Saalplan werden deaktiviert oder durch Verkleinern des Rasters entfernt.'
+			);
 		if (this.tables.hasOrders(id)) {
 			this.tables.update(id, { active: false });
 			return 'deactivated';
@@ -47,4 +125,14 @@ export class TableService {
 		this.tables.delete(id);
 		return 'deleted';
 	}
+
+	private numbering(): TableNumbering {
+		return this.settings.get('tableNumbering') === 'number' ? 'number' : 'letter';
+	}
+}
+
+export function isGridTable(
+	table: TableRecord
+): table is TableRecord & { gridRow: number; gridColumn: number } {
+	return table.gridRow !== null && table.gridColumn !== null;
 }

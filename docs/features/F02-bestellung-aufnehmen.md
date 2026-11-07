@@ -14,7 +14,7 @@ Service-Personal nimmt am Tisch eine Bestellung in vier Schritten auf: Tisch wä
 
 ## Ablauf (verbindlich)
 
-1. **Tisch auswählen** – Liste der aktiven Tische (grosse Kacheln).
+1. **Tisch auswählen** – Saalplan als Raster, darunter die freien Tische (grosse Kacheln).
 2. **Artikel auswählen** – nach Kategorie gruppiert, Menge per +/–, laufende Zwischensumme, optionale Notiz.
 3. **Bestellung abschicken** – ein Button. Speichert, vergibt Bestellnummer, erzeugt PrintJobs (F03).
 4. **Bestellung abrechnen** – Bar (mit Rechnungshilfe) oder TWINT-Code anzeigen (F07). Kann übersprungen und später nachgeholt werden.
@@ -22,7 +22,7 @@ Service-Personal nimmt am Tisch eine Bestellung in vier Schritten auf: Tisch wä
 ## Akzeptanzkriterien
 
 - [ ] Nur angemeldete Benutzer (`service` oder `admin`).
-- [ ] Schritt 1 zeigt nur aktive Tische (`Table.active`), sortiert nach `sortOrder`. **Pflichtfeld: Tisch.** Ein Name des Bestellers wird nicht erfasst.
+- [ ] Schritt 1 zeigt den Saalplan als Raster (Zeilen × Spalten wie in F06); inaktive Rastertische sind leere Stellen. Darunter die aktiven freien Tische, sortiert nach `sortOrder`. Ist der Plan breiter als der Bildschirm, scrollt er horizontal. **Pflichtfeld: Tisch.** Ein Name des Bestellers wird nicht erfasst.
 - [ ] Schritt 2 zeigt nur aktive Artikel in aktiven Kategorien; Menge per +/– (0 entfernt die Position); Zwischensumme laufend sichtbar; Zurück zu Schritt 1 ohne Datenverlust.
 - [ ] Schritt 3 ist ein einziger Button „Bestellung abschicken“, deaktiviert ohne Position. Doppelklick/Netzwerk-Retry erzeugt keine zweite Bestellung (Idempotenz-Token).
 - [ ] Beim Abschicken: `orderNumber` fortlaufend; `tableLabel`, `articleName`, `priceCents`, effektiver `printerId` und `totalCents` als Snapshot gespeichert.

@@ -33,7 +33,7 @@ describe('placing an order', () => {
 		const second = place();
 		expect(first.orderNumber).toBe(1);
 		expect(second.orderNumber).toBe(2);
-		expect(first.tableLabel).toBe('2');
+		expect(first.tableLabel).toBe('102');
 		expect(first.totalCents).toBe(2 * 600 + 750 + 3 * 550);
 
 		const detail = t.services().orders.detail(first.id);
@@ -82,7 +82,7 @@ describe('print queue', () => {
 		expect(kitchen.preview).toContain('2 x Pommes');
 		expect(kitchen.preview).not.toContain('Bratwurst');
 		expect(kitchen.preview).not.toContain('Bier');
-		expect(kitchen.preview).toContain('Tisch 2'.toUpperCase());
+		expect(kitchen.preview).toContain('Tisch 102'.toUpperCase());
 		expect(kitchen.preview).not.toContain('Name:');
 		expect(kitchen.preview).toContain('Aufgenommen von: Anna');
 
@@ -229,6 +229,52 @@ describe('users', () => {
 		await expect(
 			t.services().users.create({ username: 'Anna', name: 'X', role: 'service', password: 'abcd' })
 		).rejects.toThrow(/vergeben/);
+	});
+});
+
+describe('seating plan', () => {
+	const cells = () =>
+		t
+			.services()
+			.tables.list()
+			.filter((table) => table.gridRow !== null)
+			.map((table) => table.label);
+
+	it('creates a grid numbered by row and column', () => {
+		const s = t.services();
+		expect(cells()).toEqual(['101', '102', '103']);
+		s.tables.applyGrid({ rows: 2, columns: 2, numbering: 'letter' });
+		expect(cells()).toEqual(['A01', 'A02', 'B01', 'B02']);
+		expect(s.tables.plan()).toEqual({ rows: 2, columns: 2, numbering: 'letter' });
+	});
+
+	it('keeps renamed tables and turns removed tables with orders into inactive free tables', () => {
+		const s = t.services();
+		place(); // on 102
+		const first = s.tables.list()[0];
+		s.tables.save(first.id, { label: 'VIP', sortOrder: 0, active: true });
+		s.tables.applyGrid({ rows: 2, columns: 1, numbering: 'letter' });
+		expect(cells()).toEqual(['VIP', 'B01']);
+		const free = s.tables.list().filter((table) => table.gridRow === null);
+		expect(free).toMatchObject([{ label: '102', active: false }]);
+		expect(s.tables.plan()).toMatchObject({ rows: 2, columns: 1 });
+	});
+
+	it('deactivates but never deletes grid tables; free tables can be deleted', () => {
+		const s = t.services();
+		const cell = s.tables.list()[0];
+		s.tables.setActive(cell.id, false);
+		expect(s.tables.list()[0].active).toBe(false);
+		expect(() => s.tables.delete(cell.id)).toThrow(/Saalplan/);
+		const bar = s.tables.save(null, { label: 'Bar', sortOrder: 1, active: true })!;
+		expect(bar.gridRow).toBeNull();
+		expect(s.tables.delete(bar.id)).toBe('deleted');
+	});
+
+	it('rejects grids that are too large', () => {
+		expect(() =>
+			t.services().tables.applyGrid({ rows: 27, columns: 2, numbering: 'letter' })
+		).toThrow(/Zeilen/);
 	});
 });
 

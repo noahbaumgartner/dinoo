@@ -198,7 +198,7 @@ function createScope(file: string, name: string, deps: ScopeDeps): Scope {
 	const services: Services = {
 		users: new UserService(repositories.users, auth),
 		menu: new MenuService(repositories.menu, repositories.printers),
-		tables: new TableService(repositories.tables),
+		tables: new TableService(repositories.tables, repositories.settings),
 		settings: new SettingsService(repositories.settings),
 		printers: new PrinterService(repositories.printers, repositories.printJobs),
 		printQueue,

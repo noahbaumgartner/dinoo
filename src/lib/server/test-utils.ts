@@ -98,7 +98,7 @@ export async function seedBasics(runtime: Runtime) {
 		sortOrder: 1,
 		active: true
 	})!;
-	s.tables.createRange(1, 3);
+	s.tables.applyGrid({ rows: 1, columns: 3, numbering: 'number' });
 	const admin = runtime.repositories.users.get(adminId)!;
 	const service = runtime.repositories.users.get(serviceId)!;
 	const tables = s.tables.list();
