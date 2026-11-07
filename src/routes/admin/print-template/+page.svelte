@@ -163,7 +163,7 @@
 				</div>
 			{/if}
 
-			<Card>
+			<Card class="block-card">
 				<CardContent>
 					<SortableList
 						class="block-list"
@@ -403,6 +403,12 @@
 
 	.small {
 		font-size: 13px;
+	}
+
+	/* The rows bring their own height; card padding above the first and below the last row would
+	   make those look taller than the rest. */
+	:global(.card.block-card) {
+		padding-block: 0;
 	}
 
 	:global(.block-list) {
