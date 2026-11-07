@@ -397,6 +397,13 @@
 		gap: 6px;
 	}
 
+	/* White like the seating plan, so list and plan look the same on the off-white page. */
+	.table-group {
+		padding: 12px;
+		border-radius: 14px;
+		background-color: var(--color-fill);
+	}
+
 	.table-group h2 {
 		margin-bottom: 8px;
 	}
