@@ -127,6 +127,10 @@
 		color: var(--color-text-muted);
 	}
 
+	.item-select :global(.number-stepper) {
+		font-size: 15px;
+	}
+
 	.item--dimmed > :not(.item-select) {
 		opacity: 0.4;
 		transition: opacity 150ms ease;
