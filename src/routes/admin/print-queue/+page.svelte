@@ -226,18 +226,22 @@
 		overflow-x: auto;
 	}
 
-	/* Inset divider like the order list, also below the header. */
-	.table-wrap :global(tbody tr) {
-		position: relative;
+	/* Inset divider like the order list, also below the header. Drawn on the cells: a pseudo-element
+	   on the row would become an extra table cell and shift the columns. */
+	.table-wrap :global(tbody td) {
+		background-image: linear-gradient(var(--color-border), var(--color-border));
+		background-position: left top;
+		background-size: 100% 1px;
+		background-repeat: no-repeat;
 	}
 
-	.table-wrap :global(tbody tr::before) {
-		content: '';
-		position: absolute;
-		top: 0;
-		right: 14px;
-		left: 14px;
-		border-top: 1px solid var(--color-border);
+	.table-wrap :global(tbody td:first-child) {
+		background-position: 14px top;
+		background-size: calc(100% - 14px) 1px;
+	}
+
+	.table-wrap :global(tbody td:last-child) {
+		background-size: calc(100% - 14px) 1px;
 	}
 
 	.status {
