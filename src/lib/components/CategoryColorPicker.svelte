@@ -41,7 +41,7 @@
 </script>
 
 <input type="hidden" {name} {value} />
-<Popover bind:open side="bottom" align="start" aria-label="Farbe wählen">
+<Popover bind:open side="bottom" align="start" class="color-popover" aria-label="Farbe wählen">
 	{#snippet trigger(props)}
 		<button {...props} {id} type="button" class="trigger">
 			<span class="swatch" style:background-color={current.value}></span>
@@ -75,6 +75,11 @@
 </Popover>
 
 <style>
+	/* The popover defaults to a fixed width; hug the 5-column grid instead. */
+	:global(.color-popover) {
+		width: fit-content;
+	}
+
 	.trigger {
 		display: flex;
 		align-items: center;
