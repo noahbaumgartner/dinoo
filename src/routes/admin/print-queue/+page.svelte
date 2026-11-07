@@ -219,7 +219,10 @@
 		min-width: 180px;
 	}
 
+	/* White like the cards instead of the off-white page background. */
 	.table-wrap {
+		border-radius: var(--radius);
+		background-color: var(--color-fill);
 		overflow-x: auto;
 	}
 
