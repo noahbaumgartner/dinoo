@@ -73,7 +73,6 @@
 		flex-direction: column;
 		margin: 0;
 		padding: 0;
-		border: 1px solid var(--color-border);
 		border-radius: var(--radius);
 		background-color: var(--color-fill);
 		list-style: none;
