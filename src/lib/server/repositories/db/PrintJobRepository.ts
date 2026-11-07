@@ -45,7 +45,7 @@ export class PrintJobRepository {
 			.get();
 	}
 
-	/** Atomically claims a queued job; false if it changed in the meantime (cancelled, rerouted). */
+	/** Atomically claims a queued job; false if it changed in the meantime (e.g. cancelled). */
 	claim(id: number, printerId: number, at: Date): boolean {
 		const result = this.db
 			.update(printJobs)
@@ -95,24 +95,6 @@ export class PrintJobRepository {
 				.where(and(eq(printJobs.id, id), eq(printJobs.status, 'queued')))
 				.run().changes === 1
 		);
-	}
-
-	reroute(id: number, printerId: number): boolean {
-		return (
-			this.db
-				.update(printJobs)
-				.set({ printerId })
-				.where(and(eq(printJobs.id, id), eq(printJobs.status, 'queued')))
-				.run().changes === 1
-		);
-	}
-
-	rerouteAll(fromPrinterId: number, toPrinterId: number): number {
-		return this.db
-			.update(printJobs)
-			.set({ printerId: toPrinterId })
-			.where(and(eq(printJobs.printerId, fromPrinterId), eq(printJobs.status, 'queued')))
-			.run().changes;
 	}
 
 	countPendingByPrinter(): Map<number, number> {

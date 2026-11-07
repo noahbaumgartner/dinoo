@@ -59,7 +59,7 @@ export class PrintWorker {
 	kick(printerId?: number) {
 		if (printerId !== undefined) {
 			const state = this.states.get(printerId);
-			// An explicit kick (new job, reroute, test print) retries a failing printer immediately.
+			// An explicit kick (new job, reprint, test print) retries a failing printer immediately.
 			if (state) state.nextAttemptAt = 0;
 		}
 		void this.tick();

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import { Badge, Button, Card, CardContent, Select, toast } from '@noahbaumgartner/svelte-ui';
-	import { ArrowRightLeft, CircleAlert, CircleCheck, CircleHelp, Printer } from '@lucide/svelte';
+	import { Badge, Button, Card, CardContent, toast } from '@noahbaumgartner/svelte-ui';
+	import { CircleAlert, CircleCheck, CircleHelp, Printer } from '@lucide/svelte';
 	import type { SubmitFunction } from '@sveltejs/kit';
 
 	type PrinterStatus = {
@@ -17,20 +17,9 @@
 		lastSuccessAt: Date | null;
 	};
 
-	let {
-		printer,
-		others,
-		compact = false
-	}: {
-		printer: PrinterStatus;
-		others: { id: number; name: string }[];
-		compact?: boolean;
-	} = $props();
+	let { printer, compact = false }: { printer: PrinterStatus; compact?: boolean } = $props();
 
 	const time = new Intl.DateTimeFormat('de-CH', { hour: '2-digit', minute: '2-digit' });
-
-	// svelte-ignore state_referenced_locally
-	let target = $state(others[0] ? String(others[0].id) : '');
 
 	const notify: SubmitFunction =
 		() =>
@@ -75,20 +64,6 @@
 					<input type="hidden" name="printerId" value={printer.id} />
 					<Button type="submit" variant="secondary" disabled={!printer.active}>Testdruck</Button>
 				</form>
-				{#if printer.pendingJobs > 0 && others.length > 0}
-					<form method="POST" action="?/rerouteAll" class="reroute" use:enhance={notify}>
-						<input type="hidden" name="from" value={printer.id} />
-						<div class="target">
-							<Select
-								name="to"
-								bind:value={target}
-								aria-label="Zieldrucker"
-								options={others.map((o) => ({ value: String(o.id), label: o.name }))}
-							/>
-						</div>
-						<Button type="submit" icon={ArrowRightLeft}>Alle umleiten</Button>
-					</form>
-				{/if}
 			</div>
 		{/if}
 	</CardContent>
@@ -137,15 +112,5 @@
 		align-items: center;
 		gap: 8px;
 		margin-top: 14px;
-	}
-
-	.reroute {
-		display: flex;
-		align-items: center;
-		gap: 6px;
-	}
-
-	.target {
-		min-width: 120px;
 	}
 </style>

@@ -33,18 +33,6 @@ export const actions: Actions = {
 			locals.services.printQueue.cancel(form.int('jobId'));
 			return { message: 'Druckauftrag abgebrochen' };
 		}),
-	reroute: ({ request, locals }) =>
-		action(async () => {
-			const form = await Form.from(request);
-			locals.services.printQueue.reroute(form.int('jobId'), form.int('printerId'));
-			return { message: 'Druckauftrag umgeleitet' };
-		}),
-	rerouteAll: ({ request, locals }) =>
-		action(async () => {
-			const form = await Form.from(request);
-			const count = locals.services.printQueue.rerouteAll(form.int('from'), form.int('to'));
-			return { message: `${count} Druckaufträge umgeleitet` };
-		}),
 	reprint: ({ request, locals }) =>
 		action(async () => {
 			const form = await Form.from(request);

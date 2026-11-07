@@ -119,22 +119,6 @@ export class PrintQueueService {
 			throw new DomainError('Nur wartende Druckaufträge können abgebrochen werden.', 409);
 	}
 
-	reroute(jobId: number, printerId: number) {
-		this.activePrinter(printerId);
-		if (!this.printJobs.reroute(jobId, printerId))
-			throw new DomainError('Nur wartende Druckaufträge können umgeleitet werden.', 409);
-		this.worker.kick(printerId);
-	}
-
-	rerouteAll(fromPrinterId: number, toPrinterId: number): number {
-		if (fromPrinterId === toPrinterId)
-			throw new DomainError('Quelle und Ziel müssen verschiedene Drucker sein.');
-		this.activePrinter(toPrinterId);
-		const count = this.printJobs.rerouteAll(fromPrinterId, toPrinterId);
-		this.worker.kick(toPrinterId);
-		return count;
-	}
-
 	/** Puts a copy of any job back into the queue, e.g. when a ticket got lost in the kitchen. */
 	reprint(jobId: number, printerId?: number) {
 		const job = this.printJobs.get(jobId) ?? notFound('Druckauftrag');

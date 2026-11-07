@@ -10,7 +10,7 @@ Der Admin erfasst die Drucker (Name, IP, Modell), prüft sie per Testdruck und s
 ## User Stories
 
 - Als Admin möchte ich vor dem Anlass beide Drucker erfassen und einen Testzettel drucken, damit ich weiss, dass alles verbunden ist.
-- Als Admin möchte ich bei einem Druckerausfall sehen, wie viele Zettel warten, und sie bei Bedarf auf den anderen Drucker umleiten.
+- Als Admin möchte ich bei einem Druckerausfall sehen, wie viele Zettel warten.
 
 ## Akzeptanzkriterien
 
@@ -19,14 +19,13 @@ Der Admin erfasst die Drucker (Name, IP, Modell), prüft sie per Testdruck und s
 - [ ] Anlegen/bearbeiten: `name`, `host`, `port` (Default 9100), `model`. Neue Drucker sind aktiv; `active` wird in der Liste pro Zeile ein-/ausgeschaltet, nicht im Dialog.
 - [ ] Testdruck pro Drucker (als `PrintJob` `kind = test` über die Warteschlange); Ergebnis sichtbar. Der Testzettel enthält nur den Titel „Testdruck“ (gross) und einen zufälligen Witz aus einer festen Liste von 100 Witzen, umgebrochen an Wortgrenzen. Er verwendet **nicht** die Druckvorlage (dafür gibt es den Testdruck in F11).
 - [ ] Statusanzeige pro Drucker: erreichbar/nicht erreichbar (letzter Erfolg, letzter Fehler), Anzahl wartender Jobs.
-- [ ] Drucker mit Zuordnungen (Kategorie/Artikel) oder wartenden Jobs können nicht gelöscht, nur deaktiviert werden. Deaktivieren mit wartenden Jobs verlangt vorher Umleiten oder Abbrechen.
+- [ ] Drucker mit Zuordnungen (Kategorie/Artikel) oder wartenden Jobs können nicht gelöscht, nur deaktiviert werden. Deaktivieren mit wartenden Jobs verlangt vorher Abbrechen.
 
 **Warteschlange** (`/admin/print-queue`)
 
 - [ ] Liste aller Jobs mit Filter nach Drucker und Status; Standardfilter: nicht gedruckt.
 - [ ] Pro Job: Bestellnummer/Tisch (bei `order`), Zieldrucker, Status, Versuche, letzter Fehler, Zeitpunkte; Vorschau des `payload` als Text.
-- [ ] Aktionen pro Job: „Abbrechen“, „Umleiten auf …“, „Erneut drucken“ (Kopie).
-- [ ] Sammelaktion: alle wartenden Jobs eines Druckers auf einen anderen umleiten.
+- [ ] Aktionen pro Job: „Abbrechen“, „Erneut drucken“ (Kopie).
 - [ ] Ansicht aktualisiert sich automatisch (Polling), damit der Admin das Nachdrucken live sieht.
 
 ## Daten / API

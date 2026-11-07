@@ -154,17 +154,14 @@ describe('print queue', () => {
 		expect(kitchenTickets.map((p) => p.text.match(/BESTELLUNG (\d+)/)?.[1])).toEqual(['1', '2']);
 	});
 
-	it('reroutes, cancels and reprints jobs', async () => {
-		t.device.offlineHosts.add(seed.kitchen.host);
+	it('cancels and reprints jobs', async () => {
 		const order = place();
 		await t.runtime.worker.tick();
 		const s = t.services().printQueue;
-
-		expect(s.rerouteAll(seed.kitchen.id, seed.grill.id)).toBe(1);
-		await t.runtime.worker.tick();
 		expect(s.countPending()).toBe(0);
 
 		const printed = s.listByOrder(order.id)[0];
+		t.device.offlineHosts.add(seed.kitchen.host);
 		t.device.offlineHosts.add(seed.grill.host);
 		s.reprint(printed.id);
 		await t.runtime.worker.tick();

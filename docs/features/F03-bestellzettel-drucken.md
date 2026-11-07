@@ -33,7 +33,7 @@ Jede Bestellung wird automatisch auf die zuständigen Küchendrucker verteilt; p
 **Einsehen und eingreifen** (UI in F05)
 
 - [ ] Warteschlange ist einsehbar: pro Drucker Anzahl wartender Jobs, ältester Job, letzter Fehler.
-- [ ] Admin kann einen Job abbrechen (`cancelled`), auf einen anderen Drucker umleiten (`printerId` ändern, bleibt `queued`) oder einen gedruckten Job erneut einreihen (Kopie als neuer Job).
+- [ ] Admin kann einen Job abbrechen (`cancelled`) oder einen gedruckten Job erneut einreihen (Kopie als neuer Job).
 
 **Entwicklung/Test**
 
@@ -53,7 +53,7 @@ Jede Bestellung wird automatisch auf die zuständigen Küchendrucker verteilt; p
 
 - Bildschirm-Küchenansicht: **bewusst nicht** (Entscheid).
 - Hinweis auf Positionen anderer Drucker: **nicht nötig** (Entscheid).
-- Automatische Umleitung bei langem Ausfall: **nein**, Jobs bleiben in der Warteschlange, Umleiten ist manuell (Entscheid).
+- Umleiten auf einen anderen Drucker: **nein**, weder automatisch noch manuell. Jobs bleiben in der Warteschlange, bis der Drucker wieder erreichbar ist, oder werden abgebrochen (Entscheid).
 - Quittung für den Gast.
 
 ## Abhängigkeiten

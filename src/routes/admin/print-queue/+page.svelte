@@ -109,21 +109,6 @@
 			onclick={() => ((preview = job), (previewOpen = true))}
 		/>
 		{#if job.status === 'queued'}
-			{@const others = data.printers.filter((p) => p.id !== job.printerId && p.active)}
-			{#if others.length > 0}
-				<form method="POST" action="?/reroute" class="row" use:enhance={notify}>
-					<input type="hidden" name="jobId" value={job.id} />
-					<div class="target">
-						<Select
-							name="printerId"
-							value={String(others[0].id)}
-							aria-label="Umleiten auf"
-							options={others.map((p) => ({ value: String(p.id), label: p.name }))}
-						/>
-					</div>
-					<Button type="submit" variant="secondary" size="sm">Umleiten</Button>
-				</form>
-			{/if}
 			<form method="POST" action="?/cancel" use:enhance={notify}>
 				<input type="hidden" name="jobId" value={job.id} />
 				<Button type="submit" variant="ghost" size="sm" icon={X} label="Abbrechen" />
@@ -143,10 +128,7 @@
 >
 	<div class="printers">
 		{#each data.printers as printer (printer.id)}
-			<PrinterStatusCard
-				{printer}
-				others={data.printers.filter((p) => p.id !== printer.id && p.active)}
-			/>
+			<PrinterStatusCard {printer} />
 		{/each}
 	</div>
 
@@ -263,10 +245,6 @@
 	.actions {
 		flex-wrap: nowrap;
 		justify-content: flex-end;
-	}
-
-	.target {
-		min-width: 110px;
 	}
 
 	.ticket {

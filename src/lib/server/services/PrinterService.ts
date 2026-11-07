@@ -35,7 +35,7 @@ export class PrinterService {
 		const printer = this.printers.get(id) ?? notFound('Drucker');
 		if (printer.active && !active && this.printJobs.countPending(id) > 0)
 			throw new DomainError(
-				'Der Drucker hat noch wartende Druckaufträge. Bitte zuerst umleiten oder abbrechen.',
+				'Der Drucker hat noch wartende Druckaufträge. Bitte zuerst abbrechen.',
 				409
 			);
 		this.printers.update(id, { ...printer, active });
@@ -46,7 +46,7 @@ export class PrinterService {
 		const printer = this.printers.get(id) ?? notFound('Drucker');
 		if (this.printJobs.countPending(id) > 0)
 			throw new DomainError(
-				'Der Drucker hat noch wartende Druckaufträge. Bitte zuerst umleiten oder abbrechen.',
+				'Der Drucker hat noch wartende Druckaufträge. Bitte zuerst abbrechen.',
 				409
 			);
 		if (this.printers.isAssigned(id) || this.hasHistory(id)) {
