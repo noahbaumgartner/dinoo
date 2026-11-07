@@ -11,7 +11,6 @@
 		order: {
 			orderNumber: number;
 			tableLabel: string;
-			customerName: string;
 			note: string | null;
 			totalCents: number;
 			createdAt: Date;
@@ -68,9 +67,7 @@
 		<div class="title">
 			<h1>Bestellung {data.order.orderNumber}</h1>
 			<p class="muted">
-				Tisch {data.order.tableLabel} · {data.order.customerName} · {dateTime.format(
-					data.order.createdAt
-				)} · {data.createdByName}
+				Tisch {data.order.tableLabel} · {dateTime.format(data.order.createdAt)} · {data.createdByName}
 			</p>
 		</div>
 	</div>

@@ -142,7 +142,6 @@ export const orders = sqliteTable(
 			.notNull()
 			.references(() => tables.id),
 		tableLabel: text('table_label').notNull(),
-		customerName: text('customer_name').notNull(),
 		note: text('note'),
 		totalCents: integer('total_cents').notNull(),
 		createdByUserId: text('created_by_user_id')

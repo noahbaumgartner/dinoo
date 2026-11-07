@@ -22,7 +22,6 @@ import type { PrintJobView, PrintQueueService } from './PrintQueueService';
 export type PlaceOrderInput = {
 	clientRequestId: string;
 	tableId: number;
-	customerName: string;
 	note?: string;
 	items: { articleId: number; quantity: number }[];
 };
@@ -78,8 +77,6 @@ export class OrderService {
 		const existing = this.orders.findByClientRequestId(input.clientRequestId);
 		if (existing) return existing;
 
-		const customerName = input.customerName.trim();
-		if (!customerName) throw new DomainError('Bitte den Namen des Bestellers angeben.');
 		const table = this.tables.get(input.tableId);
 		if (!table || !table.active) throw new DomainError('Bitte einen gültigen Tisch wählen.');
 
@@ -115,7 +112,6 @@ export class OrderService {
 				clientRequestId: input.clientRequestId,
 				tableId: table.id,
 				tableLabel: table.label,
-				customerName,
 				note: input.note?.trim() || null,
 				totalCents: items.reduce((sum, item) => sum + item.priceCents * item.quantity, 0),
 				createdByUserId: by.id,

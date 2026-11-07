@@ -34,8 +34,6 @@ export class TicketService {
 				bold: true
 			},
 			{ type: 'text', text: dateTime.format(order.createdAt), align: 'center' },
-			{ type: 'rule' },
-			{ type: 'text', text: `Name: ${order.customerName}`, bold: true },
 			{ type: 'rule' }
 		);
 		for (const item of items) {

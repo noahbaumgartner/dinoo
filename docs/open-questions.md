@@ -14,10 +14,10 @@ Ungeklärte Punkte, die vor oder während der Umsetzung entschieden werden müss
 - [x] Service eigene Bestellungen suchen → **Ja, reduziert** (nur eigene, Filter Tisch/Nummer/Zahlungsstatus, einzige Aktion: kassieren) (F08).
 - [x] Zieldrucker beim Bestellen anzeigen → **Nein** (F02).
 - [x] Besteller anmelden? → **Service-Personal meldet sich an, Gäste bestellen über den Service** (01-roles, F01).
-- [x] Zettelinhalt? → **Bestellnummer, Tisch, Name des Bestellers, Positionen** (02-domain-model).
+- [x] Zettelinhalt? → **Bestellnummer, Tisch, Positionen** (Name des Bestellers wieder entfernt, siehe unten) (02-domain-model).
 - [x] Druckzuordnung? → **Default pro Kategorie, Override pro Artikel** (F04).
 - [x] Bezahlung? → **Bar mit Rückgeldhilfe oder statischer TWINT-QR, Schritt 4 des Bestellablaufs** (F07).
-- [x] Name des Bestellers → **Pflicht** (F02).
+- [x] Name des Bestellers → ~~Pflicht~~ **wird nicht erfasst** (Entscheid 2026-11-07; F02).
 - [x] Küchenansicht am Bildschirm → **Nein** (F03).
 - [x] Storno / Änderung → **Nicht möglich**, Bestellung ist unveränderlich (02-domain-model, F02).
 - [x] Zettel-Hinweis auf andere Drucker → **Nicht nötig** (F03).

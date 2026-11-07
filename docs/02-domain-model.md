@@ -88,7 +88,6 @@ Eine vom Service-Personal aufgenommene Bestellung für einen Tisch.
 | clientRequestId | string   | ✓       | Vom Gerät erzeugte Kennung, macht das Abschicken idempotent (Doppeltap, Wiederholung) |
 | tableId         | → Table  | ✓       |                                                                                       |
 | tableLabel      | string   | ✓       | Snapshot des Tisch-Labels für Zettel und Historie                                     |
-| customerName    | string   | ✓       | Name des Bestellers (Gast)                                                            |
 | createdByUserId | → User   | ✓       | Service-Mitarbeiter, der aufgenommen hat                                              |
 | createdAt       | datetime | ✓       |                                                                                       |
 | note            | string   | –       | Freitext für die Küche, falls nötig                                                   |
@@ -191,9 +190,8 @@ Pro effektivem Drucker ein Zettel mit:
 
 1. Bestellnummer (gross), Datum/Zeit
 2. Tisch (gross)
-3. Name des Bestellers
-4. Positionen, die **auf diesen Drucker** gehören: Menge × Artikelname
-5. Notiz (falls vorhanden)
-6. Aufgenommen von: `User.displayName`
+3. Positionen, die **auf diesen Drucker** gehören: Menge × Artikelname
+4. Notiz (falls vorhanden)
+5. Aufgenommen von: `User.displayName`
 
 Positionen anderer Drucker erscheinen nicht und werden auch nicht erwähnt (Küche sieht nur, was sie zubereitet).

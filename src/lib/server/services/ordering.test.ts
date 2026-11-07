@@ -16,7 +16,6 @@ function place(clientRequestId = crypto.randomUUID()) {
 		{
 			clientRequestId,
 			tableId: seed.tables[1].id,
-			customerName: ' Meier ',
 			note: 'ohne Senf',
 			items: [
 				{ articleId: seed.fries.id, quantity: 2 },
@@ -34,7 +33,6 @@ describe('placing an order', () => {
 		const second = place();
 		expect(first.orderNumber).toBe(1);
 		expect(second.orderNumber).toBe(2);
-		expect(first.customerName).toBe('Meier');
 		expect(first.tableLabel).toBe('2');
 		expect(first.totalCents).toBe(2 * 600 + 750 + 3 * 550);
 
@@ -52,15 +50,13 @@ describe('placing an order', () => {
 		expect(t.services().orders.search({})).toHaveLength(1);
 	});
 
-	it('requires a customer name, a table and at least one item', () => {
+	it('requires a table and at least one item', () => {
 		const s = t.services();
 		const base = {
 			clientRequestId: 'x',
 			tableId: seed.tables[0].id,
-			customerName: 'A',
 			items: [{ articleId: seed.fries.id, quantity: 1 }]
 		};
-		expect(() => s.orders.place({ ...base, customerName: '  ' }, seed.service)).toThrow(/Namen/);
 		expect(() => s.orders.place({ ...base, tableId: 999 }, seed.service)).toThrow(/Tisch/);
 		expect(() => s.orders.place({ ...base, items: [] }, seed.service)).toThrow(/keine Artikel/);
 	});
@@ -87,7 +83,7 @@ describe('print queue', () => {
 		expect(kitchen.preview).not.toContain('Bratwurst');
 		expect(kitchen.preview).not.toContain('Bier');
 		expect(kitchen.preview).toContain('Tisch 2'.toUpperCase());
-		expect(kitchen.preview).toContain('Name: Meier');
+		expect(kitchen.preview).not.toContain('Name:');
 		expect(kitchen.preview).toContain('Aufgenommen von: Anna');
 
 		await t.runtime.worker.tick();
@@ -203,8 +199,6 @@ describe('search and dashboard', () => {
 		expect(s.orders.search({ tableId: seed.tables[0].id })).toHaveLength(0);
 		expect(s.orders.search({ createdByUserId: seed.admin.id })).toHaveLength(0);
 		expect(s.orders.search({ orderNumber: order.orderNumber })).toHaveLength(1);
-		expect(s.orders.search({ text: 'mei' })).toHaveLength(1);
-		expect(s.orders.search({ text: '1' })).toHaveLength(1);
 	});
 
 	it('aggregates revenue over time and articles sold', () => {

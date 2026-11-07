@@ -151,17 +151,6 @@ s.tables.save(null, { label: 'Bar', sortOrder: 25, active: true });
 const tables = s.tables.list();
 
 const users = [annaId, benId, adminId].map((id) => runtime.repositories.users.get(id)!);
-const names = [
-	'Meier',
-	'Müller',
-	'Schmid',
-	'Keller',
-	'Weber',
-	'Huber',
-	'Frei',
-	'Brunner',
-	'Gerber'
-];
 
 // Pseudo-random but stable, so screenshots look the same every time.
 let seed = 7;
@@ -183,7 +172,6 @@ for (const count of perHalfHour) {
 			{
 				clientRequestId: `seed-${orderCount++}`,
 				tableId: pick(tables).id,
-				customerName: pick(names),
 				items
 			},
 			by

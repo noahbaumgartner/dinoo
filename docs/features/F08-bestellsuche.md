@@ -17,16 +17,16 @@ Der Admin findet jede Bestellung schnell wieder: nach Tisch, nach Service-Mitarb
 
 **Admin** (`/admin/orders`)
 
-- [ ] Ein Suchfeld plus Filter: **Tisch** (Auswahl), **Personal** (Auswahl), **Bestellnummer** (exakt). Freitext im Suchfeld trifft Bestellnummer und Name des Bestellers.
+- [ ] Filter: **Tisch** (Auswahl), **Personal** (Auswahl), **Bestellnummer** (exakt).
 - [ ] Zusatzfilter: Zahlungsstatus (offen / teilbezahlt / bezahlt), Zeitraum.
-- [ ] Ergebnisliste, neueste zuerst: Bestellnummer, Zeit, Tisch, Besteller, Personal, Betrag, Zahlungsstatus, Druckstatus (alle Zettel gedruckt / wartend).
+- [ ] Ergebnisliste, neueste zuerst: Bestellnummer, Zeit, Tisch, Personal, Betrag, Zahlungsstatus, Druckstatus (alle Zettel gedruckt / wartend).
 - [ ] Detailansicht: Positionen, Zahlungen, PrintJobs mit Status; von dort: Zahlung erfassen/löschen (F07), Zettel erneut drucken (F05).
 - [ ] Ergebnis wird paginiert oder begrenzt (z. B. 100), Suche antwortet unter 500 ms bei 5000 Bestellungen.
 
 **Service, reduziert** (`/orders`, „Meine Bestellungen“)
 
 - [ ] Zeigt ausschliesslich Bestellungen mit `createdByUserId = aktueller Benutzer`; kein Personal-Filter.
-- [ ] Filter: Tisch, Bestellnummer, Zahlungsstatus. Liste: Bestellnummer, Zeit, Tisch, Besteller, Betrag, Zahlungsstatus.
+- [ ] Filter: Tisch, Bestellnummer, Zahlungsstatus. Liste: Bestellnummer, Zeit, Tisch, Betrag, Zahlungsstatus.
 - [ ] Detailansicht: Positionen und Zahlungen; einzige Aktion: Zahlung erfassen (F07). Keine PrintJob-Aktionen, kein Löschen von Zahlungen.
 - [ ] Ersetzt die bisherige Ansicht „Offene Bestellungen“ aus F07 (dort als Standardfilter „offen“).
 

@@ -16,7 +16,6 @@ export function orderFilterFromUrl(url: URL, defaults: Partial<OrderFilter> = {}
 		tableId: int(params.get('table')),
 		orderNumber: int(params.get('number')),
 		createdByUserId: params.get('staff') || undefined,
-		text: params.get('q')?.trim() || undefined,
 		paymentStatus: params.has('status')
 			? STATUSES.includes(status as PaymentStatus)
 				? (status as PaymentStatus)
@@ -30,7 +29,6 @@ export function orderFilterFromUrl(url: URL, defaults: Partial<OrderFilter> = {}
 			table: params.get('table') ?? '',
 			number: params.get('number') ?? '',
 			staff: params.get('staff') ?? '',
-			q: params.get('q') ?? '',
 			status: params.has('status') ? (status ?? '') : (defaults.paymentStatus ?? '')
 		}
 	};

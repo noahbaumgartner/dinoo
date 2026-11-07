@@ -9,8 +9,7 @@ export const load: PageServerLoad = ({ locals, url }) => {
 	return {
 		orders: locals.services.orders.search({
 			...filter,
-			createdByUserId: user.id,
-			text: undefined
+			createdByUserId: user.id
 		}),
 		tables: locals.services.tables.list().map(({ id, label }) => ({ id, label })),
 		values

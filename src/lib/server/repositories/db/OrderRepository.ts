@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gte, like, lte, or, sql, type SQL } from 'drizzle-orm';
+import { and, asc, desc, eq, gte, lte, sql, type SQL } from 'drizzle-orm';
 import type { Db } from './client';
 import { orderItems, orders, payments, printJobs, user } from './schema';
 import type { OrderItemRecord, OrderRecord } from './types';
@@ -13,8 +13,6 @@ export type OrderFilter = {
 	tableId?: number;
 	createdByUserId?: string;
 	orderNumber?: number;
-	/** Matches the order number or the customer name. */
-	text?: string;
 	paymentStatus?: PaymentStatus;
 	from?: Date;
 	to?: Date;
@@ -81,14 +79,6 @@ export class OrderRepository {
 			conditions.push(eq(orders.orderNumber, filter.orderNumber));
 		if (filter.from) conditions.push(gte(orders.createdAt, filter.from));
 		if (filter.to) conditions.push(lte(orders.createdAt, filter.to));
-		if (filter.text) {
-			const text = filter.text.trim();
-			const number = Number.parseInt(text, 10);
-			const byName = like(orders.customerName, `%${text}%`);
-			conditions.push(
-				Number.isNaN(number) ? byName : (or(byName, eq(orders.orderNumber, number)) as SQL)
-			);
-		}
 		if (filter.paymentStatus === 'open') conditions.push(sql`${paidCents} = 0`);
 		if (filter.paymentStatus === 'partial')
 			conditions.push(sql`${paidCents} > 0 and ${paidCents} < ${orders.totalCents}`);

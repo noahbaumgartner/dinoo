@@ -28,7 +28,6 @@
 
 	let step = $state(0);
 	let tableId = $state<number | null>(null);
-	let customerName = $state('');
 	let note = $state('');
 	let quantities = new SvelteMap<number, number>();
 	let clientRequestId = $state(uid());
@@ -44,7 +43,7 @@
 	);
 	let itemCount = $derived(lines.reduce((sum, line) => sum + line.quantity, 0));
 	let totalCents = $derived(lines.reduce((sum, line) => sum + line.quantity * line.priceCents, 0));
-	let canContinue = $derived(tableId !== null && customerName.trim().length > 0);
+	let canContinue = $derived(tableId !== null);
 
 	function go(next: number) {
 		step = next;
@@ -82,17 +81,6 @@
 	{:else if step === 0}
 		<section class="stack" aria-labelledby="step-table">
 			<h1 id="step-table">Tisch wählen</h1>
-			<Field>
-				<Label for="customerName">Name des Bestellers</Label>
-				<Input
-					id="customerName"
-					bind:value={customerName}
-					autocomplete="off"
-					enterkeyhint="done"
-					placeholder="z. B. Meier"
-					required
-				/>
-			</Field>
 			<div class="tables" role="radiogroup" aria-label="Tisch">
 				{#each data.tables as t (t.id)}
 					<button
@@ -111,9 +99,8 @@
 			{#snippet summary()}
 				{#if table}
 					<strong>Tisch {table.label}</strong>
-					{#if customerName.trim()}<span class="muted"> · {customerName.trim()}</span>{/if}
 				{:else}
-					<span class="muted">Tisch und Namen wählen</span>
+					<span class="muted">Tisch wählen</span>
 				{/if}
 			{/snippet}
 			<Button size="lg" icon={ArrowRight} disabled={!canContinue} onclick={() => go(1)}
@@ -124,7 +111,7 @@
 		<section class="stack" aria-labelledby="step-articles">
 			<div class="row heading-row">
 				<h1 id="step-articles">Artikel</h1>
-				<span class="muted">Tisch {table?.label} · {customerName.trim()}</span>
+				<span class="muted">Tisch {table?.label}</span>
 			</div>
 			{#if data.categories.length > 1}
 				<nav class="category-nav" aria-label="Kategorien">
@@ -191,10 +178,6 @@
 					<dt>Tisch</dt>
 					<dd>{table?.label}</dd>
 				</div>
-				<div>
-					<dt>Name</dt>
-					<dd>{customerName.trim()}</dd>
-				</div>
 			</dl>
 			<ul class="review">
 				{#each lines as line (line.id)}
@@ -232,7 +215,6 @@
 		>
 			<input type="hidden" name="clientRequestId" value={clientRequestId} />
 			<input type="hidden" name="tableId" value={tableId} />
-			<input type="hidden" name="customerName" value={customerName} />
 			<input type="hidden" name="note" value={note} />
 			<input
 				type="hidden"

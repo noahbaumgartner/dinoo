@@ -3,7 +3,7 @@
 	import { Button, Input, Label, Select } from '@noahbaumgartner/svelte-ui';
 	import { RotateCcw, Search } from '@lucide/svelte';
 
-	type Values = { table: string; number: string; staff: string; q: string; status: string };
+	type Values = { table: string; number: string; staff: string; status: string };
 
 	let {
 		values,
@@ -20,7 +20,6 @@
 	let table = $derived(values.table);
 	let number = $derived(values.number);
 	let person = $derived(values.staff);
-	let q = $derived(values.q);
 	let status = $derived(values.status);
 
 	const statusOptions = [
@@ -40,7 +39,6 @@
 				table: optional(table),
 				number: optional(number),
 				staff: optional(person),
-				q: optional(q),
 				status
 			},
 			true
@@ -53,12 +51,6 @@
 </script>
 
 <form class="filters" role="search" onsubmit={apply}>
-	{#if staff}
-		<div class="filter filter--wide">
-			<Label for="filter-q">Suche</Label>
-			<Input id="filter-q" type="search" bind:value={q} placeholder="Bestellnummer oder Name" />
-		</div>
-	{/if}
 	<div class="filter">
 		<Label for="filter-number">Bestellnummer</Label>
 		<Input id="filter-number" bind:value={number} inputmode="numeric" placeholder="z. B. 42" />
@@ -120,18 +112,8 @@
 		gap: 6px;
 	}
 
-	.filter--wide {
-		grid-column: span 2;
-	}
-
 	.filter-actions {
 		display: flex;
 		gap: 4px;
-	}
-
-	@media (max-width: 480px) {
-		.filter--wide {
-			grid-column: 1 / -1;
-		}
 	}
 </style>

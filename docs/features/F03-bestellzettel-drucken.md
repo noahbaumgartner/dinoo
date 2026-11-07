@@ -9,7 +9,7 @@ Jede Bestellung wird automatisch auf die zuständigen Küchendrucker verteilt; p
 
 ## User Stories
 
-- Als Küche möchte ich pro Bestellung einen Zettel mit Bestellnummer, Tisch, Name und meinen Positionen, damit ich ohne Bildschirm arbeiten kann.
+- Als Küche möchte ich pro Bestellung einen Zettel mit Bestellnummer, Tisch und meinen Positionen, damit ich ohne Bildschirm arbeiten kann.
 - Als Admin möchte ich sehen, was in der Warteschlange hängt, und nach einem Druckerausfall sicher sein, dass nichts verloren ging.
 
 ## Akzeptanzkriterien

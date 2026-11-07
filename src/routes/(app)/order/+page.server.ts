@@ -31,7 +31,6 @@ export const actions: Actions = {
 				{
 					clientRequestId: form.string('clientRequestId'),
 					tableId: form.int('tableId'),
-					customerName: form.string('customerName'),
 					note: form.string('note'),
 					items: items.map((item) => ({
 						articleId: Number(item.articleId),

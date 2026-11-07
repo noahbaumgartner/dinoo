@@ -7,7 +7,6 @@
 		id: number;
 		orderNumber: number;
 		tableLabel: string;
-		customerName: string;
 		createdByName: string;
 		createdAt: Date;
 		totalCents: number;
@@ -38,7 +37,7 @@
 				<a href={hrefFor(order.id)} class="order">
 					<span class="number tabular">#{order.orderNumber}</span>
 					<span class="info">
-						<strong>Tisch {order.tableLabel} · {order.customerName}</strong>
+						<strong>Tisch {order.tableLabel}</strong>
 						<span class="muted small">
 							{time.format(order.createdAt)}{showStaff ? ` · ${order.createdByName}` : ''}
 						</span>
