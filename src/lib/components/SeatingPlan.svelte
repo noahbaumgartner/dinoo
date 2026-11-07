@@ -17,6 +17,8 @@
 		rowHandle?: Snippet<[row: number]>;
 		label?: string;
 		role?: string;
+		/** Take the remaining height of a flex column and scroll both ways inside. */
+		fill?: boolean;
 	};
 
 	let {
@@ -27,7 +29,8 @@
 		columnHandle,
 		rowHandle,
 		label = 'Saalplan',
-		role
+		role,
+		fill = false
 	}: Props = $props();
 
 	let byCell = $derived(
@@ -38,7 +41,7 @@
 	let handles = $derived(Boolean(columnHandle || rowHandle));
 </script>
 
-<div class="scroller">
+<div class={['scroller', { 'scroller--fill': fill }]}>
 	<div
 		class={['plan', { 'plan--handles': handles }]}
 		style:--columns={columns}
@@ -74,6 +77,12 @@
 		overflow-x: auto;
 		border-radius: 14px;
 		background-color: var(--color-fill);
+	}
+
+	.scroller--fill {
+		flex: 1;
+		min-height: 160px;
+		overflow: auto;
 	}
 
 	.plan {

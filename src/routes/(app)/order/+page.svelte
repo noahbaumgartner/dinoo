@@ -153,7 +153,13 @@
 			description="Es sind noch keine Tische oder Artikel erfasst. Ein Admin muss das Angebot und die Tische zuerst einrichten."
 		/>
 	{:else if step === 0}
-		<section class="stack" aria-labelledby="step-table">
+		<section
+			class={[
+				'stack',
+				{ 'plan-mode fill-viewport': planTables.length > 0 && tableView === 'plan' }
+			]}
+			aria-labelledby="step-table"
+		>
 			<div class="row heading-row">
 				<h1 id="step-table">Tisch wählen</h1>
 				{#if planTables.length > 0}
@@ -169,10 +175,10 @@
 					/>
 				{/if}
 			</div>
-			<div class="stack" role="radiogroup" aria-label="Tisch">
+			<div class="stack table-choice" role="radiogroup" aria-label="Tisch">
 				{#if planTables.length > 0}
 					{#if tableView === 'plan'}
-						<SeatingPlan rows={data.plan.rows} columns={data.plan.columns} tables={planTables}>
+						<SeatingPlan rows={data.plan.rows} columns={data.plan.columns} tables={planTables} fill>
 							{#snippet cell(t)}
 								{@render tile(t)}
 							{/snippet}
@@ -192,8 +198,10 @@
 				{/if}
 				{#if freeTables.length > 0}
 					<div class="table-group">
-						{#if planTables.length > 0 && tableView === 'list'}<h2>Weitere Tische</h2>{/if}
-						<div class="tables">
+						{#if planTables.length > 0}
+							<h2>{tableView === 'plan' ? 'Weitere' : 'Weitere Tische'}</h2>
+						{/if}
+						<div class={['tables', { 'tables--strip': tableView === 'plan' }]}>
 							{#each freeTables as t (t.id)}
 								{@render tile(t)}
 							{/each}
@@ -402,6 +410,26 @@
 
 	.table-group h2 {
 		margin-bottom: 8px;
+	}
+
+	/* Plan mode: the page does not scroll, the plan takes the remaining height. */
+	.order:has(.plan-mode),
+	.plan-mode,
+	.plan-mode .table-choice {
+		flex: 1;
+		min-height: 0;
+	}
+
+	.plan-mode .table-group {
+		flex-shrink: 0;
+	}
+
+	/* The other tables in one row that scrolls sideways. */
+	.tables--strip {
+		grid-template-columns: none;
+		grid-auto-columns: 72px;
+		grid-auto-flow: column;
+		overflow-x: auto;
 	}
 
 	.table-tile {
