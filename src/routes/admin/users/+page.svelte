@@ -13,7 +13,7 @@
 		Select,
 		Switch
 	} from '@noahbaumgartner/svelte-ui';
-	import { Pencil, Plus, ShieldCheck, User } from '@lucide/svelte';
+	import { ChevronRight, Plus, ShieldCheck, User } from '@lucide/svelte';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -43,27 +43,28 @@
 
 	<ul class="users">
 		{#each data.users as user (user.id)}
-			<li class={['user', { 'user--inactive': !user.active }]}>
-				<span class="avatar" aria-hidden="true">
-					{#if user.role === 'admin'}<ShieldCheck size={18} />{:else}<User size={18} />{/if}
-				</span>
-				<span class="info">
-					<strong>{user.name}{user.id === data.currentUserId ? ' (du)' : ''}</strong>
-					<span class="muted small">{user.username}</span>
-				</span>
-				<span class="row">
-					<Badge variant={user.role === 'admin' ? 'primary' : 'secondary'}
-						>{user.role === 'admin' ? 'Admin' : 'Service'}</Badge
-					>
-					{#if !user.active}<Badge>Deaktiviert</Badge>{/if}
-				</span>
-				<Button
-					variant="ghost"
-					size="sm"
-					icon={Pencil}
-					label="{user.name} bearbeiten"
+			<li>
+				<button
+					type="button"
+					class={['user', { 'user--inactive': !user.active }]}
+					aria-label="{user.name} bearbeiten"
 					onclick={() => edit(user)}
-				/>
+				>
+					<span class="avatar" aria-hidden="true">
+						{#if user.role === 'admin'}<ShieldCheck size={18} />{:else}<User size={18} />{/if}
+					</span>
+					<span class="info">
+						<strong>{user.name}{user.id === data.currentUserId ? ' (du)' : ''}</strong>
+						<span class="muted small">{user.username}</span>
+					</span>
+					<span class="badges">
+						<Badge variant={user.role === 'admin' ? 'primary' : 'secondary'}
+							>{user.role === 'admin' ? 'Admin' : 'Service'}</Badge
+						>
+						{#if !user.active}<Badge>Deaktiviert</Badge>{/if}
+					</span>
+					<ChevronRight size={18} class="chevron" aria-hidden="true" />
+				</button>
 			</li>
 		{/each}
 	</ul>
@@ -145,28 +146,60 @@
 		flex-direction: column;
 		margin: 0;
 		padding: 0;
-		border: 1px solid var(--color-border);
 		border-radius: var(--radius);
+		background-color: var(--color-fill);
 		list-style: none;
+		overflow: hidden;
+	}
+
+	/* Inset divider like the orders list; the row button keeps its full-width hover. */
+	li {
+		position: relative;
+	}
+
+	li + li::before {
+		content: '';
+		position: absolute;
+		top: 0;
+		right: 14px;
+		left: 14px;
+		border-top: 1px solid var(--color-border);
 	}
 
 	.user {
 		display: grid;
-		grid-template-columns: 36px 1fr auto auto;
+		grid-template-columns: 36px 1fr 18px;
+		grid-template-areas:
+			'avatar info chevron'
+			'avatar badges chevron';
 		align-items: center;
-		gap: 12px;
+		gap: 4px 12px;
+		width: 100%;
 		padding: 12px 14px;
+		border: 0;
+		background: none;
+		color: inherit;
+		font: inherit;
+		text-align: left;
+		cursor: pointer;
 	}
 
-	.user + .user {
-		border-top: 1px solid var(--color-border);
+	.user:hover {
+		background-color: var(--color-surface);
 	}
 
-	.user--inactive .info {
+	.user:focus-visible {
+		outline: 2px solid var(--color-accent);
+		outline-offset: -2px;
+	}
+
+	.user--inactive .info,
+	.user--inactive .avatar {
 		opacity: 0.6;
 	}
 
 	.avatar {
+		grid-area: avatar;
 		display: grid;
 		place-items: center;
 		width: 36px;
@@ -175,13 +208,44 @@
 		background-color: var(--color-surface);
 	}
 
+	/* Keep the avatar distinct from the row while hovered. */
+	.user:hover .avatar {
+		background-color: var(--color-fill);
+	}
+
 	.info {
+		grid-area: info;
 		display: flex;
 		flex-direction: column;
 		min-width: 0;
 	}
 
+	.info strong {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.badges {
+		grid-area: badges;
+		display: flex;
+		flex-wrap: wrap;
+		gap: 4px;
+	}
+
 	.small {
 		font-size: 13px;
+	}
+
+	.user :global(.chevron) {
+		grid-area: chevron;
+		color: var(--color-text-faint);
+	}
+
+	@media (min-width: 720px) {
+		.user {
+			grid-template-columns: 36px 1fr auto 18px;
+			grid-template-areas: 'avatar info badges chevron';
+		}
 	}
 </style>
