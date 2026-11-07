@@ -73,9 +73,7 @@
 			<div class="actions">
 				<form method="POST" action="?/test" use:enhance={notify}>
 					<input type="hidden" name="printerId" value={printer.id} />
-					<Button type="submit" variant="secondary" size="sm" disabled={!printer.active}
-						>Testdruck</Button
-					>
+					<Button type="submit" variant="secondary" disabled={!printer.active}>Testdruck</Button>
 				</form>
 				{#if printer.pendingJobs > 0 && others.length > 0}
 					<form method="POST" action="?/rerouteAll" class="reroute" use:enhance={notify}>
@@ -88,7 +86,7 @@
 								options={others.map((o) => ({ value: String(o.id), label: o.name }))}
 							/>
 						</div>
-						<Button type="submit" size="sm" icon={ArrowRightLeft}>Alle umleiten</Button>
+						<Button type="submit" icon={ArrowRightLeft}>Alle umleiten</Button>
 					</form>
 				{/if}
 			</div>
@@ -136,12 +134,14 @@
 	.actions {
 		display: flex;
 		flex-wrap: wrap;
+		align-items: center;
 		gap: 8px;
 		margin-top: 14px;
 	}
 
 	.reroute {
 		display: flex;
+		align-items: center;
 		gap: 6px;
 	}
 
