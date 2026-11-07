@@ -17,7 +17,7 @@ Der Admin erfasst die Drucker (Name, IP, Modell), prüft sie per Testdruck und s
 **Drucker** (`/admin/printers`)
 
 - [ ] Anlegen/bearbeiten: `name`, `host`, `port` (Default 9100), `model`, `active`.
-- [ ] Testdruck pro Drucker (als `PrintJob` `kind = test` über die Warteschlange); Ergebnis sichtbar.
+- [ ] Testdruck pro Drucker (als `PrintJob` `kind = test` über die Warteschlange); Ergebnis sichtbar. Der Testzettel enthält nur den Titel „Testdruck“ (gross) und einen zufälligen Witz aus einer festen Liste von 100 Witzen, umgebrochen an Wortgrenzen. Er verwendet **nicht** die Druckvorlage (dafür gibt es den Testdruck in F11).
 - [ ] Statusanzeige pro Drucker: erreichbar/nicht erreichbar (letzter Erfolg, letzter Fehler), Anzahl wartender Jobs.
 - [ ] Drucker mit Zuordnungen (Kategorie/Artikel) oder wartenden Jobs können nicht gelöscht, nur deaktiviert werden. Deaktivieren mit wartenden Jobs verlangt vorher Umleiten oder Abbrechen.
 

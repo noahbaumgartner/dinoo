@@ -16,7 +16,9 @@ export type TicketLine =
 
 export type Ticket = { lines: TicketLine[] };
 
-const PREVIEW_WIDTH = 42;
+/** Characters per line in the normal font (Epson TM-T20, 80 mm, as configured in the driver). */
+export const TICKET_WIDTH = 42;
+const PREVIEW_WIDTH = TICKET_WIDTH;
 
 /** Plain-text rendering, used for the queue preview and by the fake printer. */
 export function ticketToText(ticket: Ticket): string {

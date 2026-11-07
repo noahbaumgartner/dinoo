@@ -1,0 +1,124 @@
+/**
+ * Jokes for the printer test ticket (F05). Lines are separated by `\n` and word-wrapped when the
+ * ticket is built. Only characters of code page PC858 (no typographic quotes or dashes).
+ */
+export const JOKES: readonly string[] = [
+	'Was ist orange und läuft durch den Wald?\nEine Wanderine.',
+	'Was ist grün und klopft an die Tür?\nKlopfsalat.',
+	'Was sitzt auf dem Baum und schreit "Aha"?\nEin Uhu mit Sprachfehler.',
+	'Warum können Geister so schlecht lügen?\nWeil man durch sie hindurchsieht.',
+	'Was macht ein Pirat am Computer?\nEr drückt die Enter-Taste.',
+	'Was ist ein Keks unter einem Baum?\nEin schattiges Plätzchen.',
+	'Was ist rot und schlecht für die Zähne?\nEin Ziegelstein.',
+	'Treffen sich zwei Magnete.\nSagt der eine: "Was soll ich bloss anziehen?"',
+	'Was ist weiss und springt im Wald herum?\nEin Jogurt.',
+	'Warum haben Bienen klebrige Haare?\nWeil sie Honigkämme benutzen.',
+	'Was macht ein Clown im Büro?\nFaxen.',
+	'Wie nennt man einen Bumerang, der nicht zurückkommt?\nStock.',
+	'Was ist das Lieblingsessen von Drucker-Technikern?\nPapierstau-Pizza.',
+	'Der Drucker sagt zum Papier:\n"Ich hab dich zum Fressen gern."',
+	'Was sagt der grosse Stift zum kleinen Stift?\n"Wachs-mal-Stift!"',
+	'Wie nennt man ein verschwundenes Rentier?\nRentier-weg.',
+	'Was ist braun, klebrig und läuft durch die Wüste?\nEin Karamel.',
+	'Warum gehen Ameisen nicht in die Kirche?\nWeil sie in Sekten sind.',
+	'Was liegt am Strand und spricht undeutlich?\nEine Nuschel.',
+	'Was ist schwarz-weiss und kommt nicht vom Fleck?\nEin Zebra im Stau.',
+	'Welcher Bus kann über den Ozean fahren?\nDer Kolumbus.',
+	'Was macht eine Wolke mit Juckreiz?\nSie fliegt zum Wolkenkratzer.',
+	'Warum ist das Mathebuch traurig?\nEs hat zu viele Probleme.',
+	'Was ist gelb und kann schiessen?\nEine Banone.',
+	'Wie heisst der Bruder von Elvis?\nElzwo.',
+	'Was ist ein Cowboy ohne Pferd?\nEin Sattelschlepper.',
+	'Was macht ein Mathematiker im Garten?\nWurzeln ziehen.',
+	'Treffen sich zwei Kerzen.\nSagt die eine: "Ist Wachs schlimmes passiert?"',
+	'Warum trinken Mäuse keinen Alkohol?\nWeil sie Angst vor dem Kater haben.',
+	'Wie nennt man einen dicken Vegetarier?\nBiotonne.',
+	'Was ist grün und rennt durch den Wald?\nEin Rudel Gurken.',
+	'Was steht im Wald und hat Hunger?\nEin Fressbaum.',
+	'Wie nennt man einen Hasen im Weltall?\nSatellit... äh, Satelhase.',
+	'Was ist ein Schneemann mit Sonnenbrand?\nEine Pfütze.',
+	'Warum schwimmen Lachse flussaufwärts?\nWeil flussabwärts zu viel los ist.',
+	'Was ist das Gegenteil von Reformhaus?\nReh hinterm Haus.',
+	'Was macht ein Huhn in der Kirche?\nEs hört die Hühnermesse.',
+	'Was ist der Unterschied zwischen einem Fisch?\nEr kann nicht Velo fahren.',
+	'Sagt der Kellner: "Was darf es sein?"\nGast: "Ein Bier, aber lauwarm."\nKellner: "Gerne, haben wir immer."',
+	'Gast: "Herr Ober, in meiner Suppe schwimmt eine Fliege!"\nOber: "Keine Sorge, die Spinne holt sie gleich."',
+	'Gast: "Herr Ober, das Schnitzel ist zäh!"\nOber: "Dafür ist es ehrlich, es sagt nichts."',
+	'Gast: "Ist der Fisch frisch?"\nOber: "Gestern hat er noch geschwommen - im Gefrierfach."',
+	'Gast: "Herr Ober, ich hätte gerne die Rechnung."\nOber: "Die hätte ich auch gerne, mit Trinkgeld."',
+	'Gast: "Herr Ober, was macht die Fliege in meiner Suppe?"\nOber: "Rückenschwimmen."',
+	'Gast: "Herr Ober, der Kaffee ist kalt!"\nOber: "Gut so, dann verbrennen Sie sich nicht."',
+	'Koch: "Ich habe heute mit Liebe gekocht."\nGast: "Das schmeckt man, versalzen."',
+	'Wie nennt man einen Koch, der ständig lügt?\nEinen Märchen-Brätler.',
+	'Warum ging die Tomate rot an?\nWeil sie den Salat nackt gesehen hat.',
+	'Was sagt die Pommes zum Ketchup?\n"Ohne dich bin ich nur halb so frittiert."',
+	'Was ist rot und sitzt auf dem WC?\nEine Klomate.',
+	'Was ist ein Schwein mit drei Augen?\nEin Schwiiin.',
+	'Was macht ein Brot im Fitnesscenter?\nEs geht auf.',
+	'Was trinkt ein Vampir zum Zmorge?\nBlutorangensaft.',
+	'Was ist grau und kann nicht schwimmen?\nEin Parkhaus.',
+	'Was macht ein Würstchen auf der Bühne?\nEs gibt seinen Senf dazu.',
+	'Was trinken Geister am liebsten?\nBuuuh-illon.',
+	'Wie nennt man ein Raclette ohne Käse?\nEin trauriges Kartoffelessen.',
+	'Was sagt die Fondue-Gabel zum Brot?\n"Ich lass dich nicht im Käse hängen."',
+	'Warum gehen Zwiebeln nie an Partys?\nSie bringen alle zum Weinen.',
+	'Welches Gemüse spielt am liebsten Karten?\nDer Jass-Kohl.',
+	'Wo wohnen Katzen?\nIm Miezhaus.',
+	'Warum können Seeräuber keinen Kreis berechnen?\nWeil sie Pi raten.',
+	'Warum war der Kuchen beim Arzt?\nEr fühlte sich krümelig.',
+	'Was sagt der Teller zum Messer?\n"Schneid nicht so auf!"',
+	'Warum legen Hühner Eier?\nWürden sie sie werfen, gingen sie kaputt.',
+	'Was macht eine Gurke beim Coiffeur?\nSie lässt sich die Spitzen schneiden.',
+	'Warum spielen Ameisen kein Fussball?\nWeil sie keinen Platz haben.',
+	'Was ist ein Fussballer ohne Ball?\nEin Läufer mit Ausreden.',
+	'Was ist braun und sitzt im Gefängnis?\nEine Knastanie.',
+	'Was ist schneller als ein Velo?\nZwei Velos.',
+	'Warum gewinnt das Skelett nie Rennen?\nEs hat keinen Mumm in den Knochen.',
+	'Wie nennt man einen Schwinger, der nie verliert?\nSägemehl-Millionär.',
+	'Was sagt der Berg zum Tal?\n"Du bist mir zu tief."',
+	'Was ist ein Murmeltier im Winter?\nIm Homeoffice.',
+	'Wer hat beim Versteckspiel 1998 gewonnen?\nDas Skelett im Schrank.',
+	'Was sagt die Kuh beim Abschied?\n"Muuuss jetzt gehen."',
+	'Was ist ein Alphorn ohne Luft?\nEin sehr langes Rohr.',
+	'Was macht ein Uhrmacher im Urlaub?\nEr nimmt sich Zeit.',
+	'Warum fährt der Zug nie zu spät?\nIn der Schweiz? Eben.',
+	'Was ist ein Käse, der nicht Ihnen gehört?\nNacho-Käse.',
+	'Mein WLAN heisst "Polizei Überwachung".\nSeitdem sind die Nachbarn sehr ruhig.',
+	'Der Router sagt zum Laptop:\n"Wir haben eine echte Verbindung."',
+	'Warum ging der Computer zum Arzt?\nEr hatte einen Virus.',
+	'Wie viele Programmierer braucht es für eine Glühbirne?\nKeinen, das ist ein Hardwareproblem.',
+	'Was ist ein Drucker mit guter Laune?\nEin Gut-Drucker.',
+	'Warum ist der Bondrucker so ehrlich?\nEr gibt alles schwarz auf weiss.',
+	'Der Drucker hat gekündigt.\nEr hatte keinen Toner-Lust mehr.',
+	'Was macht der Drucker in den Ferien?\nEr lässt mal richtig die Rolle laufen.',
+	'Warum ist dieser Zettel so kurz?\nEr wollte nur kurz Hallo sagen.',
+	'Was sagt die Papierrolle zum Drucker?\n"Du rollst mich ständig auf."',
+	'Lehrer: "Nenne drei Getränke mit B."\nSchüler: "Bier, Bier und Bier."',
+	'Lehrer: "Wer kann mir sagen, was Faulheit ist?"\nSchüler: "Ich sag es nächste Woche."',
+	'Mama: "Warum isst du die Rüebli nicht?"\nKind: "Ich bin kein Hase."',
+	'"Papa, wo liegen die Alpen?"\n"Frag Mama, die räumt immer alles weg."',
+	'Arzt: "Sie müssen mehr Obst essen."\nPatient: "Zählt Apfelkuchen?"',
+	'"Herr Doktor, ich sehe überall Punkte!"\n"Waren Sie beim Augenarzt?"\n"Nein, nur Punkte."',
+	'Zwei Fische im Aquarium.\nSagt der eine: "Weisst du, wie man das hier fährt?"',
+	'Zwei Kühe auf der Weide.\nDie eine: "Muh."\nDie andere: "Das wollte ich gerade sagen."',
+	'Was ist das Lieblingslied der Küchencrew?\n"Highway to Grill."',
+	'Was ist der Lieblingstanz eines Grillmeisters?\nDer Wurst-Walzer.'
+];
+
+/** Splits a joke into lines and word-wraps each line to `width` characters. */
+export function wrapText(text: string, width: number): string[] {
+	const lines: string[] = [];
+	for (const paragraph of text.split('\n')) {
+		let current = '';
+		for (const word of paragraph.split(' ').filter(Boolean)) {
+			if (!current) current = word;
+			else if (current.length + 1 + word.length <= width) current += ` ${word}`;
+			else {
+				lines.push(current);
+				current = word;
+			}
+		}
+		lines.push(current);
+	}
+	return lines;
+}

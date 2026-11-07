@@ -56,12 +56,8 @@ export class PrintQueueService {
 	}
 
 	enqueueTest(printerId: number) {
-		const printer = this.printers.get(printerId) ?? notFound('Drucker');
-		const ticket = this.tickets.testTicket({
-			eventName: this.settings.get('eventName'),
-			printer,
-			at: this.now()
-		});
+		if (!this.printers.get(printerId)) notFound('Drucker');
+		const ticket = this.tickets.testTicket();
 		this.printJobs.enqueue(
 			[{ kind: 'test', orderId: null, printerId, payload: JSON.stringify(ticket) }],
 			this.now()

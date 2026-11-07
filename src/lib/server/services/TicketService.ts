@@ -1,5 +1,6 @@
-import type { OrderItemRecord, OrderRecord, PrinterRecord } from '../repositories/db/types';
-import type { Ticket, TicketLine } from '../repositories/printer/ticket';
+import type { OrderItemRecord, OrderRecord } from '../repositories/db/types';
+import { TICKET_WIDTH, type Ticket, type TicketLine } from '../repositories/printer/ticket';
+import { JOKES, wrapText } from './jokes';
 
 const dateTime = new Intl.DateTimeFormat('de-CH', {
 	day: '2-digit',
@@ -11,6 +12,8 @@ const dateTime = new Intl.DateTimeFormat('de-CH', {
 
 /** Builds the tickets that go into the print queue. */
 export class TicketService {
+	constructor(private readonly random: () => number = Math.random) {}
+
 	/**
 	 * Kitchen ticket for one printer: only the items that are prepared there, no hint about items on
 	 * other printers (decision in F03).
@@ -48,20 +51,14 @@ export class TicketService {
 		return { lines };
 	}
 
-	testTicket(input: { eventName: string | null; printer: PrinterRecord; at: Date }): Ticket {
+	/** Printer test (F05): the title and a random joke, nothing else. */
+	testTicket(): Ticket {
+		const joke = JOKES[Math.floor(this.random() * JOKES.length)];
 		return {
 			lines: [
 				{ type: 'text', text: 'Testdruck', size: 'large', align: 'center' },
-				...(input.eventName
-					? [{ type: 'text' as const, text: input.eventName, align: 'center' as const }]
-					: []),
 				{ type: 'rule' },
-				{ type: 'pair', left: 'Drucker', right: input.printer.name },
-				{ type: 'pair', left: 'Adresse', right: `${input.printer.host}:${input.printer.port}` },
-				{ type: 'pair', left: 'Modell', right: input.printer.model },
-				{ type: 'pair', left: 'Zeit', right: dateTime.format(input.at) },
-				{ type: 'rule' },
-				{ type: 'text', text: 'Umlaute: ä ö ü Ä Ö Ü é è à', align: 'center' },
+				...wrapText(joke, TICKET_WIDTH).map((text) => ({ type: 'text' as const, text })),
 				{ type: 'feed' }
 			]
 		};
