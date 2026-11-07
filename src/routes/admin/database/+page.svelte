@@ -226,8 +226,9 @@
 		border-top: 1px solid var(--color-border);
 	}
 
+	/* Accent bar instead of a fill: buttons and icons inside share the surface colour. */
 	.db--active {
-		background-color: var(--color-surface);
+		box-shadow: inset 3px 0 0 var(--color-accent);
 	}
 
 	.icon {
@@ -237,10 +238,6 @@
 		height: 36px;
 		border-radius: 999px;
 		background-color: var(--color-surface);
-	}
-
-	.db--active .icon {
-		background-color: var(--color-bg);
 	}
 
 	.info {
@@ -263,10 +260,11 @@
 		gap: 16px;
 	}
 
+	/* Bordered, not filled: the checkbox inside has the surface colour. */
 	.warning {
 		padding: 12px;
+		border: 1px solid var(--color-border);
 		border-radius: 8px;
-		background-color: var(--color-surface);
 	}
 
 	@media (max-width: 640px) {

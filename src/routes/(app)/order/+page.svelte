@@ -377,8 +377,9 @@
 		border-top: 1px solid var(--color-border);
 	}
 
+	/* Accent bar instead of a fill: the stepper buttons share the surface colour. */
 	.article--selected {
-		background-color: var(--color-surface);
+		box-shadow: inset 3px 0 0 var(--color-accent);
 	}
 
 	.article-add {

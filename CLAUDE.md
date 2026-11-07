@@ -50,6 +50,7 @@ Environment: `DATA_DIR` (default `./data`), `PRINTER_DRIVER=fake`, `PORT`/`HOST`
 
 - A missing **generic** component (no domain terms, usable in any project) goes into `../svelte-ui`, exported from `src/lib/index.ts`, with a story, and built (`npm run build` there) so the link picks it up.
 - Anything with domain meaning (order, article, printer, TWINT) stays in dinoo under `src/lib/components/`.
+- **Contrast:** a container must never have the same background as the controls inside it. Inputs, selects, checkboxes, secondary buttons and steppers use `--color-surface`, so never put them on a `--color-surface` background (`Card variant="secondary"`, highlighted rows, info boxes). Use the default `Card`, a border, or an accent bar (`box-shadow: inset 3px 0 0 var(--color-accent)`) instead.
 
 ## Conventions
 
