@@ -16,6 +16,7 @@
 	import {
 		ChartLine,
 		LayoutGrid,
+		Menu,
 		Printer,
 		ReceiptText,
 		ScrollText,
@@ -93,8 +94,8 @@
 </script>
 
 <SidebarProvider>
-	<Sidebar collapsible="offcanvas" labels={{ close: 'Navigation schliessen' }}>
-		<SidebarHeader>
+	<Sidebar collapsible="offcanvas" labels={{ close: 'Menü schliessen' }}>
+		<SidebarHeader class="admin-sidebar-header" labels={{ close: 'Menü schliessen' }}>
 			<a class="brand" href={resolve('/admin')}>
 				<span class="brand-name">dinoo</span>
 				<span class="brand-event">{data.eventName ?? data.database}</span>
@@ -144,10 +145,16 @@
 	</Sidebar>
 	<SidebarInset>
 		<header class="topbar">
-			<SidebarTrigger label="Navigation umschalten" variant="ghost" size="md" />
+			<span class="trigger-desktop">
+				<SidebarTrigger label="Navigation umschalten" variant="ghost" size="md" />
+			</span>
 			<span class="topbar-title">Admin</span>
 			<span class="topbar-spacer"></span>
 			<UserMenu name={data.user.name} role={data.user.role} />
+			<!-- On phones the menu button sits top right, as in the ordering view -->
+			<span class="trigger-mobile">
+				<SidebarTrigger label="Menü öffnen" variant="secondary" size="md" icon={Menu} />
+			</span>
 		</header>
 		<main class="admin-main">
 			{@render children()}
@@ -191,6 +198,51 @@
 		padding: 12px;
 		border-bottom: 1px solid var(--color-border);
 		background-color: var(--color-bg);
+	}
+
+	.trigger-desktop,
+	.trigger-mobile {
+		display: contents;
+	}
+
+	/* Same breakpoint as the sidebar's mobile drawer */
+	@media (max-width: 767px) {
+		.trigger-desktop {
+			display: none;
+		}
+
+		/* Without the left trigger the title lines up with the content, as the ordering logo does */
+		.topbar {
+			padding-inline-start: var(--gutter);
+		}
+	}
+
+	@media (min-width: 768px) {
+		.trigger-mobile {
+			display: none;
+		}
+	}
+
+	/* The drawer's close button takes the place and size of the menu button that opened it.
+	   The drawer spans the viewport, so its edges are the top bar's edges. */
+	@media (max-width: 767px) {
+		:global(.admin-sidebar-header) {
+			padding-inline-end: 56px;
+		}
+
+		:global(.admin-sidebar-header > .button) {
+			position: absolute;
+			top: 12px;
+			right: 12px;
+			width: 32px;
+			height: 32px;
+			border-radius: 10px;
+		}
+
+		:global(.admin-sidebar-header > .button .button-icon) {
+			width: 16px;
+			height: 16px;
+		}
 	}
 
 	.topbar-title {
