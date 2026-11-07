@@ -2,7 +2,6 @@
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import {
-		Button,
 		Sidebar,
 		SidebarContent,
 		SidebarFooter,
@@ -12,14 +11,12 @@
 		SidebarMenu,
 		SidebarMenuItem,
 		SidebarProvider,
-		SidebarTrigger,
-		ThemeToggle
+		SidebarTrigger
 	} from '@noahbaumgartner/svelte-ui';
 	import {
 		ChartLine,
 		Database,
 		LayoutGrid,
-		LogOut,
 		Printer,
 		ReceiptText,
 		ScrollText,
@@ -28,6 +25,7 @@
 		Users,
 		UtensilsCrossed
 	} from '@lucide/svelte';
+	import UserMenu from '$lib/components/UserMenu.svelte';
 	import type { LayoutProps } from './$types';
 
 	let { data, children }: LayoutProps = $props();
@@ -93,15 +91,10 @@
 	</Sidebar>
 	<SidebarInset>
 		<header class="topbar">
-			<SidebarTrigger label="Navigation umschalten" variant="ghost" />
+			<SidebarTrigger label="Navigation umschalten" variant="ghost" size="md" />
 			<span class="topbar-title">Admin</span>
 			<span class="topbar-spacer"></span>
-			<ThemeToggle labels={{ light: 'Design: Hell', dark: 'Design: Dunkel' }} />
-			<form method="POST" action={resolve('/logout')}>
-				<Button type="submit" variant="ghost" icon={LogOut} label="Abmelden ({data.user.name})">
-					<span class="user-name">{data.user.name}</span>
-				</Button>
-			</form>
+			<UserMenu name={data.user.name} role={data.user.role} />
 		</header>
 		<main class="admin-main">
 			{@render children()}
@@ -141,8 +134,8 @@
 		display: flex;
 		align-items: center;
 		gap: 8px;
-		height: 56px;
-		padding: 0 var(--gutter);
+		/* Same inset on every side: 32px controls (trigger, avatar) in a 56px bar */
+		padding: 12px;
 		border-bottom: 1px solid var(--color-border);
 		background-color: var(--color-bg);
 	}
@@ -160,11 +153,5 @@
 		max-width: calc(var(--content-max-width) + 2 * var(--gutter));
 		margin: 0 auto;
 		padding: 24px var(--gutter) 80px;
-	}
-
-	@media (max-width: 640px) {
-		.user-name {
-			display: none;
-		}
 	}
 </style>

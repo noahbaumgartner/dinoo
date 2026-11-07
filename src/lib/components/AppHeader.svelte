@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
-	import { Button, Navbar, NavigationMenuItem, ThemeToggle } from '@noahbaumgartner/svelte-ui';
-	import { LogOut, Menu, X } from '@lucide/svelte';
+	import { Button, Navbar, NavigationMenuItem } from '@noahbaumgartner/svelte-ui';
+	import { Menu, X } from '@lucide/svelte';
+	import UserMenu from './UserMenu.svelte';
 	import type { Snippet } from 'svelte';
 
 	type NavItem = { href: string; label: string; exact?: boolean };
@@ -10,13 +11,15 @@
 	let {
 		items,
 		userName,
+		userRole,
 		subtitle,
 		extra
 	}: {
 		items: NavItem[];
 		userName: string;
+		userRole?: 'service' | 'admin';
 		subtitle?: string;
-		/** Extra buttons before the theme toggle. */
+		/** Extra buttons before the user menu. */
 		extra?: Snippet;
 	} = $props();
 
@@ -35,12 +38,7 @@
 	{/snippet}
 	{#snippet actions()}
 		{@render extra?.()}
-		<ThemeToggle labels={{ light: 'Design: Hell', dark: 'Design: Dunkel' }} />
-		<form method="POST" action={resolve('/logout')}>
-			<Button type="submit" variant="ghost" icon={LogOut} label="Abmelden ({userName})">
-				<span class="user-name">{userName}</span>
-			</Button>
-		</form>
+		<UserMenu name={userName} role={userRole} />
 	{/snippet}
 	{#snippet trigger(props, open)}
 		<Button
@@ -64,6 +62,8 @@
 		box-sizing: content-box;
 		max-width: var(--content-max-width);
 		margin-inline: auto;
+		/* The rightmost control sits as far from the edge as from the top and bottom */
+		padding-inline-end: 14px;
 	}
 
 	.logo {
@@ -82,11 +82,5 @@
 		font-size: 13px;
 		font-weight: 500;
 		letter-spacing: 0;
-	}
-
-	@media (max-width: 640px) {
-		.user-name {
-			display: none;
-		}
 	}
 </style>

@@ -11,7 +11,12 @@
 	]);
 </script>
 
-<AppHeader {items} userName={data.user.name} subtitle={data.eventName ?? undefined} />
+<AppHeader
+	{items}
+	userName={data.user.name}
+	userRole={data.user.role}
+	subtitle={data.eventName ?? undefined}
+/>
 
 <main class="app-main">
 	{@render children()}
