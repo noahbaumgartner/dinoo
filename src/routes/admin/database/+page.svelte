@@ -212,6 +212,8 @@
 		border: 1px solid var(--color-border);
 		border-radius: var(--radius);
 		list-style: none;
+		/* Clips the active row's accent bar to the rounded corners. */
+		overflow: hidden;
 	}
 
 	.db {

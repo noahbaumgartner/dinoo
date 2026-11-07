@@ -17,7 +17,7 @@
 		place-items: center;
 		min-height: 100dvh;
 		padding: var(--gutter);
-		background-color: var(--color-surface);
+		background-color: var(--color-bg);
 	}
 
 	.public-card {
@@ -29,7 +29,7 @@
 		padding: 28px;
 		border: 1px solid var(--color-border);
 		border-radius: 16px;
-		background-color: var(--color-bg);
+		background-color: var(--color-fill);
 	}
 
 	.brand {

@@ -38,6 +38,8 @@
 		"vite-plus": "1.4.0"
 	},
 	"dependencies": {
+		"@fontsource-variable/bricolage-grotesque": "^5.3.0",
+		"@fontsource-variable/space-grotesk": "^5.3.0",
 		"@lucide/svelte": "^1.70.0",
 		"@noahbaumgartner/svelte-ui": "^0.0.10",
 		"better-auth": "^1.7.18",
