@@ -1,4 +1,5 @@
 import { CharacterSet, PrinterTypes, ThermalPrinter } from 'node-thermal-printer';
+import { assertReady, EscPosConnection } from './escPosConnection';
 import type { PrinterDeviceRepository, PrinterTarget } from './PrinterDeviceRepository';
 import { textScale, type Ticket } from './ticket';
 
@@ -6,15 +7,17 @@ const TIMEOUT_MS = 4000;
 
 /** Epson TM-T20III / TM-T20IV over the network (ESC/POS on TCP, usually port 9100). */
 export class EscPosPrinterDeviceRepository implements PrinterDeviceRepository {
+	constructor(private readonly timeoutMs = TIMEOUT_MS) {}
+
 	async print(target: PrinterTarget, ticket: Ticket): Promise<void> {
+		// The library only builds the bytes; the connection is our own so we can read the status.
 		const printer = new ThermalPrinter({
 			type: PrinterTypes.EPSON,
 			interface: `tcp://${target.host}:${target.port}`,
 			// PC858 covers German umlauts and the euro sign on both models.
 			characterSet: CharacterSet.PC858_EURO,
 			removeSpecialCharacters: false,
-			width: 42,
-			options: { timeout: TIMEOUT_MS }
+			width: 42
 		});
 
 		for (const line of ticket.lines) {
@@ -47,9 +50,19 @@ export class EscPosPrinterDeviceRepository implements PrinterDeviceRepository {
 		resetStyle(printer);
 		printer.cut();
 
-		// `execute` resolves once the socket was written and closed, and rejects on connection
-		// errors and timeouts, so a resolved promise means the printer accepted the data.
-		await printer.execute();
+		const connection = await EscPosConnection.open(target.host, target.port, this.timeoutMs);
+		try {
+			// Before: refuse to send into a printer that is offline or answers nothing at all.
+			await assertReady(connection);
+			await connection.write(printer.getBuffer());
+			// After: the printer still answers, so it read the ticket, and no error (paper out,
+			// cover opened) stopped it.
+			await assertReady(connection);
+			await connection.close();
+		} catch (error) {
+			connection.destroy();
+			throw error;
+		}
 	}
 }
 
