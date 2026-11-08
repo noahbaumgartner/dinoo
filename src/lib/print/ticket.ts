@@ -30,8 +30,8 @@ export type TicketLine =
 
 export type Ticket = { lines: TicketLine[] };
 
-/** Characters per line in the normal font (Epson TM-T20, 80 mm, as configured in the driver). */
-export const TICKET_WIDTH = 42;
+/** Characters per line in font A on 80 mm paper (Epson TM-T20III / TM-T20IV default). */
+export const TICKET_WIDTH = 48;
 
 export const MAX_SCALE = 4;
 

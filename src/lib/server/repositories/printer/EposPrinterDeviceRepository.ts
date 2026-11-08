@@ -2,7 +2,7 @@ import { request as httpRequest } from 'node:http';
 import { request as httpsRequest } from 'node:https';
 import { CharacterSet, PrinterTypes, ThermalPrinter } from 'node-thermal-printer';
 import type { PrinterDeviceRepository, PrinterTarget } from './PrinterDeviceRepository';
-import { textScale, type Ticket } from './ticket';
+import { textScale, TICKET_WIDTH, type Ticket } from './ticket';
 
 /** How long the printer itself may take to print before it reports `EX_TIMEOUT`. */
 const PRINTER_TIMEOUT_MS = 10000;
@@ -120,7 +120,7 @@ export function renderEscPos(ticket: Ticket): Buffer {
 		// PC858 covers German umlauts and the euro sign on both models.
 		characterSet: CharacterSet.PC858_EURO,
 		removeSpecialCharacters: false,
-		width: 42
+		width: TICKET_WIDTH
 	});
 
 	for (const line of ticket.lines) {

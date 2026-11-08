@@ -85,7 +85,7 @@ feed  1
 
 - [ ] Beim Einreihen einer Bestellung (F03) wird der Zettel mit der **aktuell gespeicherten** Vorlage gerendert und als `payload` gespeichert. Spätere Änderungen an der Vorlage ändern wartende oder gedruckte Jobs nicht.
 - [ ] Platzhalter werden durch ihre Werte ersetzt. Ergibt ein `text`-Block nach dem Ersetzen nur Leerzeichen (z. B. `{anlass}` ohne Anlassname), wird die Zeile weggelassen.
-- [ ] Jede Zeile wird an Wortgrenzen auf die nutzbare Breite umgebrochen: `floor(42 / width)` Zeichen. Ein einzelnes Wort, das länger ist, wird hart getrennt. Fortsetzungszeilen behalten den Stil.
+- [ ] Jede Zeile wird an Wortgrenzen auf die nutzbare Breite umgebrochen: `floor(48 / width)` Zeichen. Ein einzelnes Wort, das länger ist, wird hart getrennt. Fortsetzungszeilen behalten den Stil.
 - [ ] Positionen erscheinen in derselben Reihenfolge wie heute (F03).
 - [ ] Jeder Zettel endet mit einem Schnitt; Umlaute werden korrekt gedruckt.
 - [ ] Das Drucker-Repository setzt Ausrichtung, Breite/Höhe, Fett, Unterstrichen und Invertiert in ESC/POS um; die Textvorschau der Warteschlange (F05) zeigt den Inhalt lesbar an (Stil nur angedeutet).
@@ -94,7 +94,7 @@ feed  1
 
 - [ ] Blöcke hinzufügen, löschen und per Drag-Handle umsortieren.
 - [ ] Pro Block die Einstellungen aus „Aufbau der Vorlage“ bearbeiten; Platzhalter lassen sich über Chips an der Cursorposition einfügen.
-- [ ] Eine **Live-Vorschau** zeigt den Zettel mit Beispieldaten (siehe unten) als Papierstreifen mit 42 Zeichen Breite; Grössen, Ausrichtung, Fett, Unterstrichen und Invertiert werden nachgebildet. Sie aktualisiert sich bei jeder Änderung, auch vor dem Speichern.
+- [ ] Eine **Live-Vorschau** zeigt den Zettel mit Beispieldaten (siehe unten) als Papierstreifen mit 48 Zeichen Breite (Schrift A, 80 mm); Grössen, Ausrichtung, Fett, Unterstrichen und Invertiert werden nachgebildet. Sie aktualisiert sich bei jeder Änderung, auch vor dem Speichern.
 - [ ] Zeilen, die in der Vorschau umbrechen, werden markiert (Hinweis „bricht um“), damit der Admin die Grösse anpassen kann.
 - [ ] Ungespeicherte Änderungen sind erkennbar; beim Verlassen der Seite wird gewarnt.
 

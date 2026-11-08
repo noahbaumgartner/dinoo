@@ -119,7 +119,7 @@ describe('template rendering', () => {
 		const template = withBlocks({
 			type: 'text',
 			text: 'Tisch {tisch} bitte sofort servieren',
-			style: lineStyle({ width: 2, invert: true })
+			style: lineStyle({ width: 3, invert: true })
 		}) as TicketTemplate;
 		const { ticket, wrapped } = renderTemplate(template, data);
 		const lines = ticket.lines.filter((line) => line.type === 'text' && line.invert);

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { textScale, TICKET_WIDTH, type Ticket } from '$lib/print/ticket';
 
-	/** A ticket as it comes out of the receipt printer: 42 columns, enlarged characters scaled. */
+	/** A ticket as it comes out of the receipt printer: 48 columns, enlarged characters scaled. */
 	let { ticket, label = 'Vorschau des Bestellzettels' }: { ticket: Ticket; label?: string } =
 		$props();
 
@@ -42,7 +42,7 @@
 <style>
 	/* Thermal paper stays white in dark mode too. */
 	.paper {
-		width: calc(42ch + 32px);
+		width: calc(48ch + 32px);
 		max-width: 100%;
 		padding: 20px 16px 28px;
 		overflow: hidden;
