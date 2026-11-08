@@ -26,7 +26,7 @@ Ein per Ethernet erreichbarer Thermodrucker.
 | id                          | int                            | ✓       |                                                                                                                             |
 | name                        | string                         | ✓       | Anzeigename, z. B. „Küche“, „Grill“                                                                                         |
 | host                        | string                         | ✓       | IP-Adresse oder Hostname                                                                                                    |
-| port                        | int                            | ✓       | Default 9100                                                                                                                |
+| port                        | int                            | ✓       | Default 443 (HTTPS-Port von ePOS-Print)                                                                                     |
 | model                       | enum `TM-T20IV` \| `TM-T20III` | ✓       | Für modellspezifische Eigenheiten                                                                                           |
 | active                      | bool                           | ✓       | Inaktive Drucker erhalten keine Aufträge                                                                                    |
 | lastSuccessAt / lastErrorAt | datetime                       | –       | Letzter erfolgreicher bzw. fehlgeschlagener Druck                                                                           |

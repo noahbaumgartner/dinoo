@@ -1,7 +1,7 @@
 import { getRequestEvent } from '$app/server';
 import { env } from '$env/dynamic/private';
 import path from 'node:path';
-import { EscPosPrinterDeviceRepository } from './repositories/printer/EscPosPrinterDeviceRepository';
+import { EposPrinterDeviceRepository } from './repositories/printer/EposPrinterDeviceRepository';
 import { FakePrinterDeviceRepository } from './repositories/printer/FakePrinterDeviceRepository';
 import { Runtime } from './runtime';
 
@@ -18,7 +18,7 @@ export function app(): Runtime {
 			device:
 				env.PRINTER_DRIVER === 'fake'
 					? new FakePrinterDeviceRepository(true)
-					: new EscPosPrinterDeviceRepository(),
+					: new EposPrinterDeviceRepository(),
 			getRequestEvent
 		});
 		runtime.worker.start();

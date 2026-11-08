@@ -50,6 +50,13 @@
       "when": 1794080618438,
       "tag": "0006_order_item_notes",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1794167698898,
+      "tag": "0007_printer_epos_port",
+      "breakpoints": true
     }
   ]
 }

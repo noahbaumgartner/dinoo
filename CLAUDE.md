@@ -2,7 +2,7 @@
 
 ## Project
 
-Offline ordering system: a laptop on site is the server (Wi-Fi, web app, SQLite) and prints kitchen tickets on Epson receipt printers (TM-T20IV/TM-T20III) in the same network (ESC/POS over TCP/9100). Every device in the network uses the same web interface; the admin area is part of it and only for the `admin` role. Details: `docs/00-overview.md`.
+Offline ordering system: a laptop on site is the server (Wi-Fi, web app, SQLite) and prints kitchen tickets on Epson receipt printers (TM-T20IV/TM-T20III) in the same network (ESC/POS sent through the printers' ePOS-Print web service over HTTPS, see ADR-009). Every device in the network uses the same web interface; the admin area is part of it and only for the `admin` role. Details: `docs/00-overview.md`.
 
 ## Specification
 

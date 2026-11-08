@@ -73,13 +73,13 @@ const benId = await s.users.create({
 const kitchen = s.printers.save(null, {
 	name: 'Küche',
 	host: '192.168.50.21',
-	port: 9100,
+	port: 443,
 	model: 'TM-T20IV'
 })!;
 const grill = s.printers.save(null, {
 	name: 'Grill',
 	host: 'offline-grill.local',
-	port: 9100,
+	port: 443,
 	model: 'TM-T20III'
 })!;
 

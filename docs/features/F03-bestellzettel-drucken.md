@@ -26,7 +26,7 @@ Jede Bestellung wird automatisch auf die zuständigen Küchendrucker verteilt; p
 - [ ] Ein Worker pro Drucker arbeitet die Jobs streng nach `createdAt` ab (FIFO); nur ein Job pro Drucker ist gleichzeitig `printing`.
 - [ ] Bei Fehler (nicht erreichbar, Timeout, Verbindungsabbruch): `attempts` +1, `lastError`, `lastAttemptAt`; Job **bleibt `queued`**. Der Worker versucht es weiter, mit wachsendem Abstand (z. B. 2 s → 5 s → 15 s → max. 30 s), unbegrenzt.
 - [ ] Sobald der Drucker wieder erreichbar ist, werden **alle** wartenden Jobs in Reihenfolge nachgedruckt, ohne manuelles Eingreifen.
-- [ ] Ein Druck gilt nur als `printed`, wenn der Drucker die Daten vollständig angenommen hat.
+- [ ] Ein Druck gilt nur als `printed`, wenn der Drucker den Druck bestätigt hat (ePOS-Print `success="true"`); Fehlercodes wie Deckel offen oder Papier leer erscheinen als `lastError`.
 - [ ] Beim Start der Anwendung werden `printing`-Jobs auf `queued` zurückgesetzt (Absturz während des Drucks), und die Warteschlange läuft weiter.
 - [ ] Die Antwort an den Service wartet nicht auf den Drucker; Druckstatus wird per Polling auf der Bestätigung angezeigt.
 
@@ -43,7 +43,7 @@ Jede Bestellung wird automatisch auf die zuständigen Küchendrucker verteilt; p
 
 - Liest: `Order`, `OrderItem`, `Printer`, `Settings.eventName`, `Settings.ticketTemplate`
 - Schreibt: `PrintJob`
-- `PrintQueueService` (Einreihen, Worker-Schleife, Admin-Aktionen) nutzt `PrintJobRepository` (DB) und `PrinterRepository` (ESC/POS über TCP/9100, → ADR-005).
+- `PrintQueueService` (Einreihen, Worker-Schleife, Admin-Aktionen) nutzt `PrintJobRepository` (DB) und `PrinterRepository` (ESC/POS via ePOS-Print über HTTPS, → ADR-005, ADR-009).
 
 ## UI
 

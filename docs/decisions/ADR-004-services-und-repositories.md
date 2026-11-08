@@ -13,7 +13,7 @@ Der serverseitige Code unter `src/lib/server/` hat zwei Schichten:
 
 - **Repositories** kapseln jeglichen Zugriff auf die Aussenwelt. Dazu zählen **die Datenbank und die Drucker** gleichermassen. Ein Repository bietet eine fachlich benannte Schnittstelle (z. B. `OrderRepository.create(order, items)`, `PrinterDeviceRepository.print(target, ticket)`) und enthält keine Geschäftsregeln.
 - **Services** enthalten die Fachlogik und orchestrieren Repositories (z. B. `OrderService.place()` validiert, speichert über `OrderRepository` und stellt die Zettel über den `PrintQueueService` in die Warteschlange; der `PrintWorker` druckt sie über das `PrinterDeviceRepository`).
-- **Benennung:** `PrinterRepository` ist die Drucker-Konfiguration in der Datenbank, `PrinterDeviceRepository` der Drucker selbst (ESC/POS über TCP, oder ein Fake in Entwicklung und Tests).
+- **Benennung:** `PrinterRepository` ist die Drucker-Konfiguration in der Datenbank, `PrinterDeviceRepository` der Drucker selbst (ESC/POS über ePOS-Print, oder ein Fake in Entwicklung und Tests).
 - **Zusammensetzung:** `src/lib/server/runtime.ts` erzeugt Verbindung, Repositories und Services für die aktive Anlass-Datenbank und baut sie beim Datenbankwechsel neu auf.
 - **Routes** (`+page.server.ts`, `+server.ts`, Form Actions) rufen nur Services auf. Sie enthalten keine Fachlogik und keinen direkten Repository-Zugriff.
 

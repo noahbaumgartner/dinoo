@@ -82,7 +82,7 @@ export const printers = sqliteTable('printers', {
 	id: integer('id').primaryKey({ autoIncrement: true }),
 	name: text('name').notNull(),
 	host: text('host').notNull(),
-	port: integer('port').notNull().default(9100),
+	port: integer('port').notNull().default(443),
 	model: text('model', { enum: ['TM-T20IV', 'TM-T20III'] })
 		.notNull()
 		.default('TM-T20IV'),

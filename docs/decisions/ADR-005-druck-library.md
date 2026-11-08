@@ -1,7 +1,7 @@
 # ADR-005 – Druckanbindung mit node-thermal-printer
 
 **Datum:** 2026-11-06
-**Status:** Angenommen
+**Status:** Angenommen; Übertragung ersetzt durch ADR-009 (die Library baut nur noch die ESC/POS-Bytes)
 
 ## Kontext
 

@@ -20,7 +20,7 @@ dinoo ist ein Essensbestellsystem für Vereinsanlässe (Feste, Turniere, Beizli)
 │   Tablet ──────┼── http://<dns-name> ──►  Server-Laptop (fixe IP, DNS-Eintrag)                       │
 │   Laptop ──────┘                             SvelteKit-Monolith + SQLite                             │
 │                                                   │                                                  │
-│                                                   │ TCP/9100 (ESC/POS)                               │
+│                                                   │ HTTPS/443 (ePOS-Print, ESC/POS)                  │
 │                                   ┌───────────────┴───────────────┐                                  │
 │                            Epson TM-T20IV                   Epson TM-T20III                          │
 │                            (Küchenzettel)                   (Küchenzettel)                           │
@@ -28,7 +28,7 @@ dinoo ist ein Essensbestellsystem für Vereinsanlässe (Feste, Turniere, Beizli)
 ```
 
 - Ein **Laptop ist der Server**: Er baut das WLAN auf, hat eine fixe IP und einen DNS-Eintrag, so dass die Oberfläche unter einem lesbaren Namen erreichbar ist.
-- Die **Drucker** (Epson TM-T20IV und TM-T20III) hängen als normale Netzwerkteilnehmer im selben Netz wie Server und Clients, per Kabel oder WLAN. Der Server spricht sie über ihre IP-Adresse an (ESC/POS über TCP, Port 9100).
+- Die **Drucker** (Epson TM-T20IV und TM-T20III) hängen als normale Netzwerkteilnehmer im selben Netz wie Server und Clients, per Kabel oder WLAN. Der Server spricht sie über ihre IP-Adresse an (ePOS-Print-Webdienst des Druckers über HTTPS, Port 443; der Zettel selbst ist ESC/POS, → ADR-009).
 - **Alle Clients** im WLAN greifen auf dieselbe Web-Oberfläche zu. Es gibt keine separate App, keinen Internetzugang und keinen Cloud-Dienst.
 - Das **Admin-Interface** ist Teil derselben Web-Oberfläche und nur mit der Rolle _Admin_ nutzbar, egal ob direkt am Server-Laptop oder von einem anderen Gerät im WLAN.
 

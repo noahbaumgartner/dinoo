@@ -45,7 +45,7 @@
 
 <AdminPage
 	title="Drucker"
-	description="Die Epson-Bondrucker im selben Netz wie der Server, per Kabel oder WLAN. Sie werden über ihre IP-Adresse angesprochen (ESC/POS, Port 9100)."
+	description="Die Epson-Bondrucker im selben Netz wie der Server, per Kabel oder WLAN. Sie werden über ihre IP-Adresse angesprochen (ePOS-Print über HTTPS, Port 443)."
 >
 	{#snippet actions()}
 		<Button icon={Plus} onclick={() => edit(null)}>Drucker erfassen</Button>
@@ -166,7 +166,7 @@
 					id="printer-port"
 					name="port"
 					inputmode="numeric"
-					value={String(editing?.port ?? 9100)}
+					value={String(editing?.port ?? 443)}
 				/>
 			</Field>
 		</div>

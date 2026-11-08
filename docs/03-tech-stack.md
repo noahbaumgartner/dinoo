@@ -6,7 +6,7 @@
 | UI-Komponenten | **`@noahbaumgartner/svelte-ui`** (lokal via `npm link`)                                                                 | Eigene, wiederverwendbare Komponentenbibliothek. → [ADR-002](decisions/ADR-002-svelte-ui-via-npm-link.md)                        |
 | Icons          | `@lucide/svelte`                                                                                                        | Peer-Dependency von svelte-ui                                                                                                    |
 | Datenbank      | **SQLite** (`better-sqlite3`) mit **Drizzle ORM**, eine Datei pro Anlass                                                | → [ADR-003](decisions/ADR-003-sqlite-drizzle.md), [ADR-006](decisions/ADR-006-sqlite-treiber.md)                                 |
-| Drucker        | Epson TM-T20IV, TM-T20III im lokalen Netz, ESC/POS über TCP/9100 via `node-thermal-printer`                             | → [ADR-005](decisions/ADR-005-druck-library.md)                                                                                  |
+| Drucker        | Epson TM-T20IV, TM-T20III im lokalen Netz, ESC/POS (gebaut mit `node-thermal-printer`), gesendet über ePOS-Print/HTTPS  | → [ADR-005](decisions/ADR-005-druck-library.md)                                                                                  |
 | Auth           | **Better Auth** (Drizzle-Adapter, username-Plugin)                                                                      | → [ADR-007](decisions/ADR-007-auth-library.md)                                                                                   |
 | QR             | Lesen im Browser mit `jsqr` (Kamera auf localhost, sonst Foto), Anzeige mit `qrcode`                                    | Statischer TWINT-QR, Inhalt wird gespeichert (F06)                                                                               |
 | Diagramme      | `LineChart`, `BarChart`, `Stat` aus svelte-ui (eigenes SVG/CSS, keine Abhängigkeit)                                     | F09                                                                                                                              |
@@ -24,7 +24,7 @@ src/lib/server/
 ├── app.ts            # Die eine Runtime des Prozesses (DATA_DIR, PRINTER_DRIVER)
 ├── repositories/     # Zugriff auf Aussenwelt: DB, Drucker, Anmeldung
 │   ├── db/           # Drizzle-Schema, ein Repository pro Aggregat, Datenbankdateien
-│   ├── printer/      # PrinterDeviceRepository: ESC/POS über TCP oder Fake
+│   ├── printer/      # PrinterDeviceRepository: ePOS-Print über HTTPS oder Fake
 │   └── auth/         # Better Auth (Sitzungen, Passwörter)
 └── services/         # Fachlogik inkl. Druck-Worker, orchestriert Repositories
 drizzle/              # SQL-Migrationen (drizzle-kit generate)

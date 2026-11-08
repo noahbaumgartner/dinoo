@@ -13,7 +13,7 @@ export const actions: Actions = {
 			locals.services.printers.save(id, {
 				name: form.string('name'),
 				host: form.string('host'),
-				port: form.optionalInt('port') ?? 9100,
+				port: form.optionalInt('port') ?? 443,
 				model: form.oneOf('model', ['TM-T20IV', 'TM-T20III'] as const)
 			});
 			return { message: id === null ? 'Drucker erfasst' : 'Drucker gespeichert' };
