@@ -19,7 +19,7 @@ Gäste haben keinen eigenen Zugang; sie bestellen über das Service-Personal.
 | Bestellung aufnehmen und abschicken                                      | ✓       | ✓     |
 | Bestellung abrechnen (Bar / TWINT)                                       | ✓       | ✓     |
 | Eigene Bestellungen suchen (reduziert)                                   | ✓       | ✓     |
-| Druckstatus der eigenen Bestellung sehen                                 | ✓       | ✓     |
+| Druckstatus der eigenen Bestellung sehen (Bestellliste)                  | ✓       | ✓     |
 | Eigene letzte Zahlung rückgängig machen (5 min)                          | ✓       | ✓     |
 | Beliebige Zahlung löschen                                                | –       | ✓     |
 | Angebot pflegen (Kategorien, Artikel, Druckzuordnung)                    | –       | ✓     |

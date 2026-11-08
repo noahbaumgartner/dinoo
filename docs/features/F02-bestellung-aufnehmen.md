@@ -31,7 +31,7 @@ Service-Personal nimmt am Tisch eine Bestellung in vier Schritten auf: Tisch wä
 - [ ] Gibt es bereits Positionen oder eine Notiz, fragt «Abbrechen» zuerst nach («Bestellung verwerfen?» mit «Verwerfen» / «Weiter bearbeiten»). Dieselbe Rückfrage kommt, wenn die Seite auf anderem Weg verlassen wird (z. B. Browser-Zurück). Beim Neuladen oder Schliessen des Tabs zeigt der Browser seine eigene Warnung. Nach dem Abschicken entfällt die Rückfrage.
 - [ ] Schritt 3 öffnet sich als Drawer über den Artikeln („Prüfen“): Positionen mit ihren Notizen, Total und ein einziger Button „Bestellung abschicken“, deaktiviert ohne Position. Doppelklick/Netzwerk-Retry erzeugt keine zweite Bestellung (Idempotenz-Token).
 - [ ] Beim Abschicken: `orderNumber` fortlaufend; `tableLabel`, `articleName`, `priceCents`, effektiver `printerId` und `totalCents` als Snapshot gespeichert.
-- [ ] Bestellung wird gespeichert und die Zettel in die Druckwarteschlange gestellt (F03); auch bei nicht erreichbarem Drucker geht die Bestellung durch. Druckstatus pro Drucker sichtbar (wartet / gedruckt).
+- [ ] Bestellung wird gespeichert und die Zettel in die Druckwarteschlange gestellt (F03); auch bei nicht erreichbarem Drucker geht die Bestellung durch. Die Bestellansicht zeigt keinen Druckstatus; wartende Zettel sind in der Bestellliste (F08) und im Admin (F05) sichtbar.
 - [ ] Nach Schritt 3 wechselt die Ansicht automatisch zu Schritt 4 (F07) mit Bestellnummer und Betrag.
 - [ ] „Neue Bestellung“ startet wieder bei Schritt 1.
 

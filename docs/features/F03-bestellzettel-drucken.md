@@ -28,7 +28,7 @@ Jede Bestellung wird automatisch auf die zuständigen Küchendrucker verteilt; p
 - [ ] Sobald der Drucker wieder erreichbar ist, werden **alle** wartenden Jobs in Reihenfolge nachgedruckt, ohne manuelles Eingreifen.
 - [ ] Ein Druck gilt nur als `printed`, wenn der Drucker den Druck bestätigt hat (ePOS-Print `success="true"`); Fehlercodes wie Deckel offen oder Papier leer erscheinen als `lastError`.
 - [ ] Beim Start der Anwendung werden `printing`-Jobs auf `queued` zurückgesetzt (Absturz während des Drucks), und die Warteschlange läuft weiter.
-- [ ] Die Antwort an den Service wartet nicht auf den Drucker; Druckstatus wird per Polling auf der Bestätigung angezeigt.
+- [ ] Die Antwort an den Service wartet nicht auf den Drucker.
 
 **Einsehen und eingreifen** (UI in F05)
 
@@ -47,7 +47,7 @@ Jede Bestellung wird automatisch auf die zuständigen Küchendrucker verteilt; p
 
 ## UI
 
-- Kein eigenes UI im Normalfall. Druckstatus auf der Bestätigung (F02); Warteschlange und Aktionen im Admin (F05).
+- Kein eigenes UI im Normalfall. Kein Druckstatus in der Bestellansicht; «Druck wartet» in der Bestellliste (F08); Warteschlange und Aktionen im Admin (F05).
 
 ## Nicht im Scope
 
