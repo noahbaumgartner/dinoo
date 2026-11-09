@@ -523,7 +523,6 @@
 		flex-direction: column;
 		margin: 0;
 		padding: 0;
-		border: 1px solid var(--color-border);
 		border-radius: var(--radius);
 		background-color: var(--color-fill);
 		list-style: none;
@@ -531,13 +530,20 @@
 	}
 
 	.article {
+		position: relative;
 		display: flex;
 		align-items: center;
 		gap: 12px;
 		padding-right: 12px;
 	}
 
-	.article + .article {
+	/* Inset divider like the admin lists; ::after because ::before is the accent bar. */
+	.article + .article::after {
+		content: '';
+		position: absolute;
+		top: 0;
+		right: 12px;
+		left: 12px;
 		border-top: 1px solid var(--color-border);
 	}
 
