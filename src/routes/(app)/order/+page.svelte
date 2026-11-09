@@ -1,12 +1,15 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { beforeNavigate, goto } from '$app/navigation';
 	import ActionBar from '$lib/components/ActionBar.svelte';
 	import SeatingPlan from '$lib/components/SeatingPlan.svelte';
 	import { categoryColor } from '$lib/category-colors';
 	import { rowLabel } from '$lib/table-grid';
 	import { formatChf } from '$lib/money';
 	import { uid } from '$lib/uid';
+	import { useFocusMode } from '$lib/focus-mode.svelte';
 	import {
+		AlertDialog,
 		Button,
 		Drawer,
 		EmptyState,
@@ -94,6 +97,58 @@
 	);
 	let itemCount = $derived(lines.reduce((sum, line) => sum + line.quantity, 0));
 	let totalCents = $derived(lines.reduce((sum, line) => sum + line.quantity * line.priceCents, 0));
+
+	/** Something would get lost when leaving. */
+	let dirty = $derived(itemCount > 0);
+	let discardOpen = $state(false);
+	/** Where to go after discarding; null stays on this page. */
+	let pendingUrl = $state<URL | null>(null);
+	/** Set once the order is placed, so its redirect is not held up. */
+	let leaving = false;
+
+	const focusMode = useFocusMode();
+
+	// While choosing articles the header offers only «Abbrechen», no navigation.
+	$effect(() => {
+		focusMode.current =
+			step === 1 ? { title: `Bestellung · Tisch ${table?.label ?? ''}`, onexit: exit } : null;
+		return () => (focusMode.current = null);
+	});
+
+	beforeNavigate(({ type, to, cancel }) => {
+		if (!dirty || leaving) return;
+		cancel();
+		// Reload or closing the tab: the browser asks itself; no dialog of ours can show.
+		if (type === 'leave') return;
+		pendingUrl = to?.url ?? null;
+		discardOpen = true;
+	});
+
+	function reset() {
+		quantities.clear();
+		notes.clear();
+		tableId = null;
+		activeCategory = null;
+		reviewOpen = false;
+		go(0);
+	}
+
+	function exit() {
+		if (!dirty) return reset();
+		pendingUrl = null;
+		discardOpen = true;
+	}
+
+	function discard() {
+		discardOpen = false;
+		reset();
+		if (pendingUrl) {
+			leaving = true;
+			// The target comes from the navigation that was held up, so it is already resolved.
+			// eslint-disable-next-line svelte/no-navigation-without-resolve
+			goto(pendingUrl);
+		}
+	}
 
 	function go(next: number) {
 		step = next;
@@ -329,7 +384,10 @@
 						submitting = true;
 						return async ({ result, update }) => {
 							// A new id only after a definite answer; retries of the same submit keep it.
-							if (result.type === 'redirect') clientRequestId = uid();
+							if (result.type === 'redirect') {
+								clientRequestId = uid();
+								leaving = true;
+							}
 							await update();
 							submitting = false;
 						};
@@ -377,6 +435,17 @@
 		</Drawer>
 	{/if}
 </div>
+
+<AlertDialog
+	bind:open={discardOpen}
+	title="Bestellung verwerfen?"
+	description="Die gewählten Artikel und Notizen für Tisch {table?.label} gehen verloren."
+>
+	{#snippet actions(close)}
+		<Button variant="secondary" icon={Trash2} onclick={discard}>Verwerfen</Button>
+		<Button onclick={close}>Weiter bearbeiten</Button>
+	{/snippet}
+</AlertDialog>
 
 <style>
 	.order {
