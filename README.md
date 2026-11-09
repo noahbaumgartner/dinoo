@@ -14,37 +14,26 @@ The specification (in German) is in [`docs/`](docs/README.md).
 - Admin: menu, printers and queue, tables, users, TWINT QR code, order search, dashboard
 - One SQLite database per event; create, switch, download and upload in the admin area
 
-## Requirements
+## Quick start
 
-- Node.js 24 or newer
-- [Vite+](https://viteplus.dev) (`vp`)
-- The component library `@noahbaumgartner/svelte-ui`
-
-## Setup for development
+Requires [Node.js](https://nodejs.org) 24 or newer.
 
 ```bash
-# once, in ../svelte-ui
-npm install && npm run build && npm link
-
-# in this repository
 npm install
-npm link @noahbaumgartner/svelte-ui
-npm run seed       # optional demo data
+npm run seed       # demo data (optional)
 npm run dev:fake   # http://localhost:5173, printers are simulated
 ```
 
-Demo logins created by `npm run seed` (development only): `admin` / `admin1234`, `anna` / `anna1234`, `ben` / `ben1234`. The seeded printer «Grill» is offline on purpose, so the print queue has waiting tickets.
-
-Without seed data, the first visit opens a setup page that creates the first admin.
+Demo logins: `admin` / `admin1234`, `anna` / `anna1234`, `ben` / `ben1234`. Without seed data, the first visit opens a setup page that creates the first admin.
 
 ## Running at an event
 
-1. Connect the laptop and the printers to the same network (cable or Wi-Fi) and give the laptop a fixed IP and a DNS name.
-2. Start the server: `npm run dev` (Vite+, port 5173), or `npm run build && npm start` (production build via `server.js`, port 3000, all interfaces; set `PORT`/`HOST` to change). Both accept requests by IP address and by DNS name. For a production build, install the published library with `npm i @noahbaumgartner/svelte-ui`.
-3. In the admin area: add the printers by IP address and print a test ticket, add tables, menu and users, scan the TWINT QR code.
-4. Staff open `http://<dns-name>:<port>` on their phones and sign in.
+1. Connect the laptop and the printers to the same network and give the laptop a fixed IP.
+2. `npm install && npm run build && npm start` (port 3000, set `PORT` to change).
+3. In the admin area: add the printers by IP address, print a test ticket, add tables, menu and users, scan the TWINT QR code.
+4. Staff open `http://<laptop-ip>:3000` on their phones and sign in.
 
-Event databases live in `./data` (`DATA_DIR`). Download a backup after every event under _Admin → Datenbank_.
+Event databases live in `./data`. Download a backup after every event under _Admin → Datenbank_.
 
 ## Development
 
