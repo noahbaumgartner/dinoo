@@ -168,8 +168,6 @@
 					detail: formatChf(article.revenueCents)
 				}))}
 				label="Verkaufte Artikel nach Stückzahl"
-				orientation="vertical"
-				height={220}
 				format={(value) => `${count.format(value)}×`}
 				labels={{ empty: 'Noch nichts verkauft' }}
 			/>
