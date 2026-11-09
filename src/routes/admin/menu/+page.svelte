@@ -29,6 +29,7 @@
 		Label,
 		Select,
 		SortableList,
+		Textarea,
 		toast
 	} from '@noahbaumgartner/svelte-ui';
 	import {
@@ -381,10 +382,11 @@
 		</Field>
 		<Field>
 			<Label for="article-description">Beschreibung (optional)</Label>
-			<Input
+			<Textarea
 				id="article-description"
 				name="description"
 				value={article?.description ?? ''}
+				rows={2}
 				maxlength={200}
 				placeholder="z. B. mit Pommes und Salat"
 			/>
@@ -397,15 +399,19 @@
 				bind:value={articleMinAge}
 				options={[
 					{ value: '0', label: 'Keines' },
-					{ value: '16', label: '16 Jahre (Hinweis «16+»)' },
-					{ value: '18', label: '18 Jahre (Hinweis «18+»)' }
+					{ value: '16', label: '16 Jahre' },
+					{ value: '18', label: '18 Jahre' }
 				]}
 			/>
+			<FieldDescription>Erscheint beim Bestellen als Hinweis «16+» bzw. «18+».</FieldDescription>
 		</Field>
 		<!-- Not a Field: its disabled buttons would grey out the label. -->
 		<section class="article-options" aria-labelledby="article-options-title">
 			<h3 id="article-options-title">Optionen</h3>
-			<p class="muted">Pro Position wählbar, Aufpreise kommen zum Preis dazu.</p>
+			<p class="muted">
+				Werden beim Bestellen pro Position gewählt und auf dem Zettel gedruckt. Aufpreise kommen zum
+				Artikelpreis dazu.
+			</p>
 			{#key articleKey}
 				<ArticleOptionsEditor options={article?.options ?? []} />
 			{/key}
