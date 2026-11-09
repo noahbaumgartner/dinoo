@@ -1,9 +1,11 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { beforeNavigate } from '$app/navigation';
+	import { untrack } from 'svelte';
 	import AdminPage from '$lib/components/AdminPage.svelte';
 	import SeatingPlan from '$lib/components/SeatingPlan.svelte';
-	import { inPlace, notify } from '$lib/components/notify';
-	import { MAX_GRID_COLUMNS, MAX_GRID_ROWS, type TableNumbering } from '$lib/table-grid';
+	import { notify } from '$lib/components/notify';
+	import { gridLabel, MAX_GRID_COLUMNS, MAX_GRID_ROWS, type TableNumbering } from '$lib/table-grid';
 	import {
 		AlertDialog,
 		Button,
@@ -20,33 +22,139 @@
 		Select,
 		Tabs
 	} from '@noahbaumgartner/svelte-ui';
-	import { Check, Eye, EyeOff, LayoutGrid, Pencil, Plus, Power, Trash2 } from '@lucide/svelte';
+	import { Eye, EyeOff, LayoutGrid, Pencil, Plus, Power, RotateCcw, Trash2 } from '@lucide/svelte';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
 
 	type Table = (typeof data.tables)[number];
 
-	let gridTables = $derived(data.tables.filter((table) => table.gridRow !== null));
-	let freeTables = $derived(data.tables.filter((table) => table.gridRow === null));
+	/** A seating plan cell as edited; `label: null` follows the numbering. */
+	type DraftCell = { label: string | null; active: boolean };
+	type Draft = {
+		rows: string;
+		columns: string;
+		numbering: TableNumbering;
+		/** Edited cells by `row:column`, kept when the grid shrinks so growing it restores them. */
+		cells: Record<string, DraftCell>;
+		/** Active flag of free tables by id; missing ids keep the saved value. */
+		free: Record<number, boolean>;
+	};
 
-	// svelte-ignore state_referenced_locally
-	let numbering = $state<TableNumbering>(data.plan.numbering);
+	const key = (row: number, column: number) => `${row}:${column}`;
+
+	function draftFrom({ tables, plan }: typeof data): Draft {
+		const cells: Record<string, DraftCell> = {};
+		for (const { gridRow: row, gridColumn: column, label, active } of tables)
+			if (row !== null && column !== null)
+				cells[key(row, column)] = {
+					label: label === gridLabel(plan.numbering, row, column) ? null : label,
+					active
+				};
+		return {
+			rows: plan.rows > 0 ? String(plan.rows) : '',
+			columns: plan.columns > 0 ? String(plan.columns) : '',
+			numbering: plan.numbering,
+			cells,
+			free: {}
+		};
+	}
+
+	// Every change stays on this page until «Speichern»; «Verwerfen» goes back to the saved state.
+	let draft = $state<Draft>(untrack(() => draftFrom(data)));
+	const discard = () => (draft = draftFrom(data));
+
+	/** A whole number from 1 to `max`, otherwise null. */
+	function size(raw: string, max: number): number | null {
+		const value = Number(raw.trim());
+		return raw.trim() && Number.isInteger(value) && value >= 1 && value <= max ? value : null;
+	}
+
+	/** Seating plan with its tables, as it looks after saving; null while the size is invalid. */
+	function planOf(state: Draft) {
+		const rows = size(state.rows, MAX_GRID_ROWS);
+		const columns = size(state.columns, MAX_GRID_COLUMNS);
+		if (rows === null || columns === null) return null;
+		const tables = [];
+		for (let row = 1; row <= rows; row += 1)
+			for (let column = 1; column <= columns; column += 1) {
+				const cell = state.cells[key(row, column)];
+				tables.push({
+					id: row * 100 + column,
+					gridRow: row,
+					gridColumn: column,
+					label: cell?.label ?? gridLabel(state.numbering, row, column),
+					active: cell?.active ?? true
+				});
+			}
+		return { rows, columns, tables };
+	}
+
+	let plan = $derived(planOf(draft));
+	let gridTables = $derived(plan?.tables ?? []);
+	let freeTables = $derived(data.tables.filter((table) => table.gridRow === null));
+	let freeActive = (table: Table) => draft.free[table.id] ?? table.active;
+
+	const payload = (state: Draft) => {
+		const { rows = 0, columns = 0, tables = [] } = planOf(state) ?? {};
+		return JSON.stringify({
+			rows,
+			columns,
+			numbering: state.numbering,
+			cells: tables.map(({ gridRow, gridColumn, label, active }) => ({
+				row: gridRow,
+				column: gridColumn,
+				label,
+				active
+			})),
+			free: freeTables.map((table) => ({
+				id: table.id,
+				active: state.free[table.id] ?? table.active
+			}))
+		});
+	};
+	let json = $derived(payload(draft));
+	let dirty = $derived(json !== payload(draftFrom(data)));
+
+	beforeNavigate(({ cancel, type }) => {
+		if (!dirty) return;
+		// Leaving the site shows the browser's own dialog
+		if (type === 'leave') cancel();
+		else if (!confirm('Die Tische haben ungespeicherte Änderungen. Trotzdem verlassen?')) cancel();
+	});
 
 	/** «Ein/Aus»: a tap switches a table, handles switch rows and columns. «Umbenennen»: inline. */
 	let mode = $state<'toggle' | 'rename'>('toggle');
 
 	let rowName = (row: number) =>
-		data.plan.numbering === 'letter' ? String.fromCharCode(64 + row) : String(row);
+		draft.numbering === 'letter' ? String.fromCharCode(64 + row) : String(row);
 	let columnName = (column: number) => String(column).padStart(2, '0');
-	let lineActive = (line: { row: number } | { column: number }) =>
-		gridTables.some(
-			(table) =>
-				table.active &&
-				('row' in line ? table.gridRow === line.row : table.gridColumn === line.column)
+	type Line = { row: number } | { column: number };
+	const inLine = (line: Line) =>
+		gridTables.filter((table) =>
+			'row' in line ? table.gridRow === line.row : table.gridColumn === line.column
 		);
+	let lineActive = (line: Line) => inLine(line).some((table) => table.active);
 
-	/** Enter moves to the next name like Tab; leaving a changed field saves it. */
+	function cellAt(row: number, column: number): DraftCell {
+		return (draft.cells[key(row, column)] ??= { label: null, active: true });
+	}
+
+	/** Any active table in the line switches the whole line off, otherwise on. */
+	function toggleLine(line: Line) {
+		const active = !lineActive(line);
+		for (const table of inLine(line)) cellAt(table.gridRow, table.gridColumn).active = active;
+	}
+
+	function rename(row: number, column: number, input: HTMLInputElement) {
+		const label = input.value.trim();
+		const cell = cellAt(row, column);
+		// An empty name is not allowed; restore it instead of showing an error.
+		if (!label) input.value = cell.label ?? gridLabel(draft.numbering, row, column);
+		else cell.label = label === gridLabel(draft.numbering, row, column) ? null : label;
+	}
+
+	/** Enter moves to the next name like Tab. */
 	function nextOnEnter(event: KeyboardEvent & { currentTarget: HTMLInputElement }) {
 		if (event.key !== 'Enter') return;
 		event.preventDefault();
@@ -70,30 +178,33 @@
 	let deleting = $state<Table | null>(null);
 </script>
 
-{#snippet lineHandle(line: { row: number } | { column: number }, name: string, short: string)}
+{#snippet lineHandle(line: Line, name: string, short: string)}
 	{@const on = lineActive(line)}
-	<form method="POST" action="?/line" class="handle-form" use:enhance={inPlace()}>
-		{#if 'row' in line}
-			<input type="hidden" name="row" value={line.row} />
-		{:else}
-			<input type="hidden" name="column" value={line.column} />
-		{/if}
-		<button
-			type="submit"
-			class={['handle', { 'handle--off': !on }]}
-			disabled={mode !== 'toggle'}
-			aria-label="{name} {on ? 'ausschalten' : 'einschalten'}"
-			title="{name} {on ? 'ausschalten' : 'einschalten'}"
-		>
-			{short}
-		</button>
-	</form>
+	<button
+		type="button"
+		class={['handle', { 'handle--off': !on }]}
+		disabled={mode !== 'toggle'}
+		aria-label="{name} {on ? 'ausschalten' : 'einschalten'}"
+		title="{name} {on ? 'ausschalten' : 'einschalten'}"
+		onclick={() => toggleLine(line)}
+	>
+		{short}
+	</button>
 {/snippet}
 
 <AdminPage
 	title="Tische"
 	description="Der Service wählt beim Bestellen einen Tisch im Saalplan oder einen der weiteren Tische. Inaktive Tische erscheinen nicht."
 >
+	{#snippet actions()}
+		<Button variant="ghost" icon={RotateCcw} disabled={!dirty} onclick={discard}>Verwerfen</Button>
+		<!-- After saving, the draft starts again from the saved tables. -->
+		<form method="POST" action="?/plan" use:enhance={notify(discard)}>
+			<input type="hidden" name="plan" value={json} />
+			<Button type="submit" disabled={!dirty || !plan}>Speichern</Button>
+		</form>
+	{/snippet}
+
 	<Card>
 		<CardHeader>
 			<CardTitle>Saalplan</CardTitle>
@@ -103,14 +214,14 @@
 			>
 		</CardHeader>
 		<CardContent>
-			<form method="POST" action="?/grid" class="grid-form" use:enhance={notify()}>
+			<div class="grid-form">
 				<Field>
 					<Label for="grid-rows">Zeilen</Label>
 					<Input
 						id="grid-rows"
-						name="rows"
 						inputmode="numeric"
-						value={String(data.plan.rows || 4)}
+						placeholder="4"
+						bind:value={draft.rows}
 						aria-describedby="grid-limits"
 					/>
 				</Field>
@@ -118,9 +229,9 @@
 					<Label for="grid-columns">Spalten</Label>
 					<Input
 						id="grid-columns"
-						name="columns"
 						inputmode="numeric"
-						value={String(data.plan.columns || 6)}
+						placeholder="6"
+						bind:value={draft.columns}
 						aria-describedby="grid-limits"
 					/>
 				</Field>
@@ -128,28 +239,24 @@
 					<Label for="grid-numbering">Nummerierung</Label>
 					<Select
 						id="grid-numbering"
-						name="numbering"
-						bind:value={numbering}
+						bind:value={draft.numbering}
 						options={[
 							{ value: 'letter', label: 'A01, A02, …' },
 							{ value: 'number', label: '101, 102, …' }
 						]}
 					/>
 				</Field>
-				<Button type="submit" icon={Check}
-					>{data.plan.rows > 0 ? 'Übernehmen' : 'Saalplan anlegen'}</Button
-				>
-			</form>
+			</div>
 			<p id="grid-limits" class="hint">
-				Höchstens {MAX_GRID_ROWS} Zeilen und {MAX_GRID_COLUMNS} Spalten.
+				Höchstens {MAX_GRID_ROWS} Zeilen und {MAX_GRID_COLUMNS} Spalten. Änderungen gelten erst nach «Speichern».
 			</p>
 		</CardContent>
 	</Card>
 
-	{#if gridTables.length === 0}
+	{#if !plan}
 		<EmptyState
 			icon={LayoutGrid}
-			title="Noch kein Saalplan"
+			title={data.plan.rows > 0 ? 'Ungültige Grösse' : 'Noch kein Saalplan'}
 			description="Gib oben Zeilen und Spalten an. Danach kannst du Tische, ganze Zeilen und Spalten ausschalten (z. B. für einen Gang) und Tische umbenennen."
 		/>
 	{:else}
@@ -174,7 +281,7 @@
 					Namen direkt ändern; Enter springt zum nächsten Tisch.
 				{/if}
 			</p>
-			<SeatingPlan rows={data.plan.rows} columns={data.plan.columns} tables={gridTables}>
+			<SeatingPlan rows={plan.rows} columns={plan.columns} tables={gridTables}>
 				{#snippet columnHandle(column)}
 					{@render lineHandle({ column }, `Spalte ${columnName(column)}`, columnName(column))}
 				{/snippet}
@@ -183,40 +290,31 @@
 				{/snippet}
 				{#snippet cell(table)}
 					{#if mode === 'toggle'}
-						<form method="POST" action="?/toggle" class="cell-form" use:enhance={inPlace()}>
-							<input type="hidden" name="id" value={table.id} />
-							<input type="hidden" name="active" value={String(!table.active)} />
-							<button
-								type="submit"
-								class={['cell', { 'cell--inactive': !table.active }]}
-								aria-pressed={table.active}
-								aria-label="Tisch {table.label}"
-							>
-								{table.label}
-							</button>
-						</form>
+						<button
+							type="button"
+							class={['cell', { 'cell--inactive': !table.active }]}
+							aria-pressed={table.active}
+							aria-label="Tisch {table.label}"
+							onclick={() => {
+								const cell = cellAt(table.gridRow, table.gridColumn);
+								cell.active = !cell.active;
+							}}
+						>
+							{table.label}
+						</button>
 					{:else}
-						<form method="POST" action="?/rename" class="cell-form" use:enhance={inPlace()}>
-							<input type="hidden" name="id" value={table.id} />
-							<input
-								class={['cell', 'cell-input', { 'cell--inactive': !table.active }]}
-								name="label"
-								value={table.label}
-								aria-label="Name von Tisch in Zeile {rowName(table.gridRow!)}, Spalte {columnName(
-									table.gridColumn!
-								)}"
-								autocomplete="off"
-								spellcheck="false"
-								onfocus={(event) => event.currentTarget.select()}
-								onkeydown={nextOnEnter}
-								onchange={(event) => {
-									const input = event.currentTarget;
-									// An empty name is not allowed; restore it instead of showing an error.
-									if (!input.value.trim()) input.value = table.label;
-									else input.form?.requestSubmit();
-								}}
-							/>
-						</form>
+						<input
+							class={['cell', 'cell-input', { 'cell--inactive': !table.active }]}
+							value={table.label}
+							aria-label="Name von Tisch in Zeile {rowName(table.gridRow)}, Spalte {columnName(
+								table.gridColumn
+							)}"
+							autocomplete="off"
+							spellcheck="false"
+							onfocus={(event) => event.currentTarget.select()}
+							onkeydown={nextOnEnter}
+							onchange={(event) => rename(table.gridRow, table.gridColumn, event.currentTarget)}
+						/>
 					{/if}
 				{/snippet}
 			</SeatingPlan>
@@ -232,23 +330,20 @@
 		{#if freeTables.length > 0}
 			<ul class="tables">
 				{#each freeTables as table (table.id)}
-					<li class={['table', { 'table--inactive': !table.active }]}>
+					{@const active = freeActive(table)}
+					<li class={['table', { 'table--inactive': !active }]}>
 						<span class="table-label">{table.label}</span>
-						{#if !table.active}<span class="muted status">Inaktiv</span>{/if}
+						{#if !active}<span class="muted status">Inaktiv</span>{/if}
 						<span class="icon-actions">
-							<form method="POST" action="?/toggle" use:enhance={inPlace()} class="toggle">
-								<input type="hidden" name="id" value={table.id} />
-								<input type="hidden" name="active" value={String(!table.active)} />
-								<Button
-									type="submit"
-									variant="ghost"
-									size="sm"
-									icon={table.active ? Eye : EyeOff}
-									label={table.active
-										? `Tisch ${table.label} deaktivieren`
-										: `Tisch ${table.label} aktivieren`}
-								/>
-							</form>
+							<Button
+								variant="ghost"
+								size="sm"
+								icon={active ? Eye : EyeOff}
+								label={active
+									? `Tisch ${table.label} deaktivieren`
+									: `Tisch ${table.label} aktivieren`}
+								onclick={() => (draft.free[table.id] = !active)}
+							/>
 							<Button
 								variant="ghost"
 								size="sm"
@@ -381,11 +476,6 @@
 		touch-action: manipulation;
 	}
 
-	.cell-form,
-	.handle-form {
-		display: contents;
-	}
-
 	.cell-input {
 		width: 100%;
 		text-align: center;
@@ -482,9 +572,5 @@
 
 	.status {
 		font-size: 13px;
-	}
-
-	.toggle {
-		display: flex;
 	}
 </style>

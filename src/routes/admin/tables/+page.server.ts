@@ -1,4 +1,6 @@
 import { action, Form } from '$lib/server/forms';
+import { DomainError } from '$lib/server/services/errors';
+import type { GridInput } from '$lib/server/services/TableService';
 import { TABLE_NUMBERINGS } from '$lib/table-grid';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -7,16 +9,41 @@ export const load: PageServerLoad = ({ locals }) => {
 	return { tables, plan: locals.services.tables.plan(tables) };
 };
 
+/** The seating plan as edited on the page, sent as JSON in one field. */
+function planFrom(form: Form): GridInput {
+	const invalid = () => new DomainError('Der Saalplan ist ungültig.');
+	let plan: GridInput;
+	try {
+		plan = JSON.parse(form.string('plan'));
+	} catch {
+		throw invalid();
+	}
+	const int = (value: unknown) => Number.isInteger(value);
+	if (
+		!int(plan?.rows) ||
+		!int(plan.columns) ||
+		!TABLE_NUMBERINGS.includes(plan.numbering) ||
+		!Array.isArray(plan.cells) ||
+		!Array.isArray(plan.free) ||
+		!plan.cells.every(
+			(cell) =>
+				int(cell?.row) &&
+				int(cell.column) &&
+				typeof cell.label === 'string' &&
+				typeof cell.active === 'boolean'
+		) ||
+		!plan.free.every((table) => int(table?.id) && typeof table.active === 'boolean')
+	)
+		throw invalid();
+	return plan;
+}
+
 export const actions: Actions = {
-	grid: ({ request, locals }) =>
+	plan: ({ request, locals }) =>
 		action(async () => {
 			const form = await Form.from(request);
-			locals.services.tables.applyGrid({
-				rows: form.int('rows'),
-				columns: form.int('columns'),
-				numbering: form.oneOf('numbering', TABLE_NUMBERINGS)
-			});
-			return { message: 'Saalplan übernommen' };
+			locals.services.tables.applyGrid(planFrom(form));
+			return { message: 'Tische gespeichert' };
 		}),
 	save: ({ request, locals }) =>
 		action(async () => {
@@ -27,27 +54,6 @@ export const actions: Actions = {
 				sortOrder: form.optionalInt('sortOrder') ?? 0
 			});
 			return { message: id === null ? 'Tisch erfasst' : 'Tisch gespeichert' };
-		}),
-	toggle: ({ request, locals }) =>
-		action(async () => {
-			const form = await Form.from(request);
-			locals.services.tables.setActive(form.int('id'), form.bool('active'));
-			return {};
-		}),
-	rename: ({ request, locals }) =>
-		action(async () => {
-			const form = await Form.from(request);
-			locals.services.tables.rename(form.int('id'), form.string('label'));
-			return {};
-		}),
-	line: ({ request, locals }) =>
-		action(async () => {
-			const form = await Form.from(request);
-			const row = form.optionalInt('row');
-			locals.services.tables.toggleGridLine(
-				row === null ? { column: form.int('column') } : { row }
-			);
-			return {};
 		}),
 	delete: ({ request, locals }) =>
 		action(async () => {

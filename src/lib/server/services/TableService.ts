@@ -16,7 +16,17 @@ export type SeatingPlan = {
 	numbering: TableNumbering;
 };
 
-export type GridInput = SeatingPlan;
+/** Label and active flag of one seating plan cell, as edited in the plan. */
+export type CellEdit = { row: number; column: number; label: string; active: boolean };
+
+/**
+ * The whole seating plan as saved at once: size, numbering, the edited cells (cells without an
+ * edit keep their state or start active with the default label) and the active flag of free tables.
+ */
+export type GridInput = SeatingPlan & {
+	cells?: CellEdit[];
+	free?: { id: number; active: boolean }[];
+};
 
 /**
  * Label and order; the position in the seating plan is set via `applyGrid`, the active flag via
@@ -45,8 +55,9 @@ export class TableService {
 	}
 
 	/**
-	 * Resizes the seating plan: creates missing cells, removes cells outside (tables with orders
-	 * become inactive free tables) and relabels cells that still carry the old default label.
+	 * Saves the seating plan in one transaction: creates missing cells, removes cells outside (tables
+	 * with orders become inactive free tables), relabels cells that still carry the old default label
+	 * and applies the edited labels and active flags.
 	 */
 	applyGrid(input: GridInput) {
 		const { rows, columns, numbering } = input;
@@ -56,8 +67,18 @@ export class TableService {
 		if (!Number.isInteger(columns) || columns < 1 || columns > MAX_GRID_COLUMNS)
 			throw new DomainError(`Bitte 1 bis ${MAX_GRID_COLUMNS} Spalten angeben.`);
 
+		const edits = new Map<string, CellEdit>();
+		for (const edit of input.cells ?? []) {
+			if (edit.row < 1 || edit.row > rows || edit.column < 1 || edit.column > columns)
+				throw new DomainError('Diese Zeile oder Spalte gibt es nicht.');
+			const label = edit.label.trim();
+			if (!label) throw new DomainError('Bitte jedem Tisch im Saalplan eine Bezeichnung geben.');
+			edits.set(`${edit.row}:${edit.column}`, { ...edit, label });
+		}
+
 		const previous = this.numbering();
 		const existing = this.tables.list();
+		const byId = new Map(existing.map((table) => [table.id, table]));
 		let freeSortOrder = Math.max(
 			0,
 			...existing.filter((table) => !isGridTable(table)).map((table) => table.sortOrder)
@@ -79,21 +100,33 @@ export class TableService {
 				continue;
 			}
 			cells.add(`${row}:${column}`);
-			const label = gridLabel(numbering, row, column);
-			if (table.label !== label && table.label === gridLabel(previous, row, column))
-				changes.update.push({ id: table.id, input: { label } });
+			const edit = edits.get(`${row}:${column}`);
+			const followsNumbering = table.label === gridLabel(previous, row, column);
+			const label =
+				edit?.label ?? (followsNumbering ? gridLabel(numbering, row, column) : table.label);
+			const active = edit?.active ?? table.active;
+			if (label !== table.label || active !== table.active)
+				changes.update.push({ id: table.id, input: { label, active } });
 		}
 
 		for (let row = 1; row <= rows; row += 1)
 			for (let column = 1; column <= columns; column += 1)
-				if (!cells.has(`${row}:${column}`))
+				if (!cells.has(`${row}:${column}`)) {
+					const edit = edits.get(`${row}:${column}`);
 					changes.create.push({
-						label: gridLabel(numbering, row, column),
+						label: edit?.label ?? gridLabel(numbering, row, column),
 						gridRow: row,
 						gridColumn: column,
 						sortOrder: 0,
-						active: true
+						active: edit?.active ?? true
 					});
+				}
+
+		for (const { id, active } of input.free ?? []) {
+			const table = ensure(byId.get(id), 'Tisch');
+			if (isGridTable(table)) throw new DomainError('Dieser Tisch liegt im Saalplan.');
+			if (table.active !== active) changes.update.push({ id, input: { active } });
+		}
 
 		this.tables.apply(changes);
 		this.settings.set('tableNumbering', numbering);
@@ -112,29 +145,6 @@ export class TableService {
 	setActive(id: number, active: boolean) {
 		ensure(this.tables.get(id), 'Tisch');
 		this.tables.update(id, { active });
-	}
-
-	/** Rename only; used by the inline editing of the seating plan. */
-	rename(id: number, label: string) {
-		const table = ensure(this.tables.get(id), 'Tisch');
-		this.save(id, { label, sortOrder: table.sortOrder });
-	}
-
-	/**
-	 * Row or column handle: deactivates the whole line if any table in it is active, otherwise
-	 * activates it. Returns the new state.
-	 */
-	toggleGridLine(line: { row: number } | { column: number }): boolean {
-		const inLine = this.tables
-			.list()
-			.filter(isGridTable)
-			.filter((table) =>
-				'row' in line ? table.gridRow === line.row : table.gridColumn === line.column
-			);
-		if (inLine.length === 0) throw new DomainError('Diese Zeile oder Spalte gibt es nicht.');
-		const active = !inLine.some((table) => table.active);
-		this.tables.setGridLineActive(line, active);
-		return active;
 	}
 
 	/** Free tables with orders are only deactivated; seating plan cells are never deleted here. */

@@ -430,25 +430,41 @@ describe('seating plan', () => {
 		expect(s.tables.delete(bar.id)).toBe('deleted');
 	});
 
-	it('toggles whole rows and columns', () => {
+	it('saves edited cells and free tables together with the grid', () => {
 		const s = t.services();
-		s.tables.applyGrid({ rows: 2, columns: 3, numbering: 'letter' });
-		const active = () =>
-			s.tables
-				.list()
-				.filter((table) => table.active)
-				.map((table) => table.label);
-		expect(s.tables.toggleGridLine({ column: 2 })).toBe(false);
-		expect(active()).toEqual(['A01', 'A03', 'B01', 'B03']);
-		expect(s.tables.toggleGridLine({ row: 1 })).toBe(false);
-		expect(active()).toEqual(['B01', 'B03']);
-		// Partly active lines are switched off first, fully inactive lines on.
-		expect(s.tables.toggleGridLine({ column: 1 })).toBe(false);
-		expect(s.tables.toggleGridLine({ column: 1 })).toBe(true);
-		expect(active()).toEqual(['A01', 'B01', 'B03']);
-		s.tables.rename(s.tables.list()[0].id, 'VIP');
-		expect(s.tables.list()[0]).toMatchObject({ label: 'VIP', active: true });
-		expect(() => s.tables.toggleGridLine({ row: 9 })).toThrow(/gibt es nicht/);
+		const bar = s.tables.save(null, { label: 'Bar', sortOrder: 1 })!;
+		s.tables.applyGrid({
+			rows: 2,
+			columns: 2,
+			numbering: 'letter',
+			cells: [
+				{ row: 1, column: 1, label: ' VIP ', active: true },
+				{ row: 2, column: 2, label: 'B02', active: false }
+			],
+			free: [{ id: bar.id, active: false }]
+		});
+		expect(s.tables.list().map(({ label, active }) => ({ label, active }))).toEqual([
+			{ label: 'VIP', active: true },
+			{ label: 'A02', active: true },
+			{ label: 'B01', active: true },
+			{ label: 'B02', active: false },
+			{ label: 'Bar', active: false }
+		]);
+		// Renamed cells keep their name when the numbering changes.
+		s.tables.applyGrid({ rows: 2, columns: 2, numbering: 'number' });
+		expect(cells()).toEqual(['VIP', '102', '201', '202']);
+	});
+
+	it('rejects empty names and cells outside the grid', () => {
+		const s = t.services();
+		const grid = { rows: 1, columns: 3, numbering: 'number' } as const;
+		expect(() =>
+			s.tables.applyGrid({ ...grid, cells: [{ row: 1, column: 1, label: ' ', active: true }] })
+		).toThrow(/Bezeichnung/);
+		expect(() =>
+			s.tables.applyGrid({ ...grid, cells: [{ row: 2, column: 1, label: 'X', active: true }] })
+		).toThrow(/gibt es nicht/);
+		expect(cells()).toEqual(['101', '102', '103']);
 	});
 
 	it('rejects grids that are too large', () => {

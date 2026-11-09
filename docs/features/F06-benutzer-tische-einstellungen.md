@@ -34,9 +34,10 @@ Der Admin legt Benutzer (Service, Admin), die Tische des Anlasses und allgemeine
 - [ ] Wird das Raster verkleinert, fallen Tische ausserhalb weg: ohne Bestellungen werden sie gelöscht, mit Bestellungen deaktiviert und zu freien Tischen.
 - [ ] Wechselt die Nummerierung, erhalten Rastertische mit unveränderter Bezeichnung die neue; umbenannte Tische behalten ihren Namen.
 - [ ] Der Plan wird als Raster angezeigt. **Jeder Tisch** (im Raster und frei) kann aktiviert/deaktiviert und umbenannt werden. Ein deaktivierter Rastertisch ist eine Lücke im Plan (Gang, Bühne); die Bezeichnungen der anderen bleiben gleich.
+- [ ] **Entwurf:** Alle Änderungen an den Tischen (Rastergrösse, Nummerierung, Ein/Aus, Umbenennen, Ein/Aus der freien Tische) wirken zuerst nur als Vorschau auf der Seite. Erst **Speichern** übernimmt alles auf einmal; **Verwerfen** stellt den gespeicherten Stand wieder her. Beim Verlassen mit ungespeicherten Änderungen wird nachgefragt.
 - [ ] Bearbeitung des Plans ohne Dialog, umschaltbar zwischen zwei Modi:
-  - **Ein/Aus** (Standard): Antippen eines Tisches schaltet ihn sofort ein oder aus. **Griffe** am oberen Rand (je Spalte) und am linken Rand (je Zeile, beschriftet mit A/B/… bzw. 1/2/…) schalten die ganze Spalte oder Zeile: ist darin mindestens ein Tisch aktiv, wird alles ausgeschaltet, sonst alles eingeschaltet.
-  - **Umbenennen**: Jeder Tisch ist direkt ein Eingabefeld; Verlassen des Feldes speichert, Enter springt zum nächsten Tisch.
+  - **Ein/Aus** (Standard): Antippen eines Tisches schaltet ihn ein oder aus. **Griffe** am oberen Rand (je Spalte) und am linken Rand (je Zeile, beschriftet mit A/B/… bzw. 1/2/…) schalten die ganze Spalte oder Zeile: ist darin mindestens ein Tisch aktiv, wird alles ausgeschaltet, sonst alles eingeschaltet.
+  - **Umbenennen**: Jeder Tisch ist direkt ein Eingabefeld; Verlassen des Feldes übernimmt den Namen in den Entwurf, Enter springt zum nächsten Tisch.
 - [ ] Rastertische werden nicht einzeln gelöscht (nur deaktiviert oder per Verkleinern entfernt).
 - [ ] **Freie Tische** ausserhalb des Rasters (z. B. „Bar“): anlegen/bearbeiten mit `label`, `sortOrder`, `active`; löschen.
 - [ ] Tische mit Bestellungen werden deaktiviert statt gelöscht.
