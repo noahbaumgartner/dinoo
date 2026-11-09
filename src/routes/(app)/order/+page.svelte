@@ -417,8 +417,7 @@
 								class={[
 									'article',
 									{
-										'article--selected accent-bar': quantity > 0 || articleLines.length > 0,
-										'article--grouped': articleLines.length > 0
+										'article--selected accent-bar': quantity > 0 || articleLines.length > 0
 									}
 								]}
 							>
@@ -472,13 +471,8 @@
 								{/if}
 							</li>
 							{#if withOptions}
-								{#each articleLines as line, index (line.id)}
-									<li
-										class={[
-											'article article-line article--selected accent-bar',
-											{ 'article-line--last': index === articleLines.length - 1 }
-										]}
-									>
+								{#each articleLines as line (line.id)}
+									<li class="article article-line">
 										<span class="line-text">
 											<span class="line-options"
 												>{line.labels.length > 0 ? line.labels.join(' · ') : 'Standard'}</span
@@ -865,18 +859,6 @@
 		color: var(--color-text-secondary);
 		font-size: 14px;
 		overflow-wrap: anywhere;
-	}
-
-	/* An article with options and its positions share one continuous accent bar. */
-	.article--grouped::before,
-	.article-line:not(.article-line--last)::before {
-		bottom: 0;
-		border-bottom-right-radius: 0;
-	}
-
-	.article-line::before {
-		top: 0;
-		border-top-right-radius: 0;
 	}
 
 	.line-text {
