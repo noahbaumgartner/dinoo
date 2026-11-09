@@ -410,7 +410,18 @@
 							{@const withOptions = article.options.length > 0}
 							{@const plain = withOptions ? undefined : plainLine(article.id)}
 							{@const quantity = plain?.quantity ?? 0}
-							<li class={['article', { 'article--selected accent-bar': quantity > 0 }]}>
+							{@const articleLines = withOptions
+								? lines.filter((line) => line.articleId === article.id)
+								: []}
+							<li
+								class={[
+									'article',
+									{
+										'article--selected accent-bar': quantity > 0 || articleLines.length > 0,
+										'article--grouped': articleLines.length > 0
+									}
+								]}
+							>
 								<button
 									type="button"
 									class="article-add"
@@ -461,8 +472,13 @@
 								{/if}
 							</li>
 							{#if withOptions}
-								{#each lines.filter((line) => line.articleId === article.id) as line (line.id)}
-									<li class="article article-line article--selected accent-bar">
+								{#each articleLines as line, index (line.id)}
+									<li
+										class={[
+											'article article-line article--selected accent-bar',
+											{ 'article-line--last': index === articleLines.length - 1 }
+										]}
+									>
 										<span class="line-text">
 											<span class="line-options"
 												>{line.labels.length > 0 ? line.labels.join(' · ') : 'Standard'}</span
@@ -851,9 +867,16 @@
 		overflow-wrap: anywhere;
 	}
 
-	/* A position of an article with options, indented below the article. */
-	.article-line {
-		--accent-bar-inset: 8px;
+	/* An article with options and its positions share one continuous accent bar. */
+	.article--grouped::before,
+	.article-line:not(.article-line--last)::before {
+		bottom: 0;
+		border-bottom-right-radius: 0;
+	}
+
+	.article-line::before {
+		top: 0;
+		border-top-right-radius: 0;
 	}
 
 	.line-text {
