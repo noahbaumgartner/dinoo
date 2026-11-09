@@ -171,3 +171,8 @@ h1 + p {
 .table-wrap tbody td:last-child {
 	background-size: calc(100% - 14px) 1px;
 }
+
+/* A card that ends in a `.table-wrap`: the table runs down to the card's edge. */
+.table-card {
+	padding-bottom: 0;
+}

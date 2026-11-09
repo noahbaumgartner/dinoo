@@ -242,7 +242,7 @@
 		</CardContent>
 	</Card>
 
-	<Card>
+	<Card class="table-card">
 		<CardHeader>
 			<CardTitle>Personal</CardTitle>
 			<p class="muted small">Wer hat wie viel eingebracht? Nach aufgenommenen Bestellungen.</p>
@@ -260,7 +260,7 @@
 		</div>
 	</Card>
 
-	<Card>
+	<Card class="table-card">
 		<CardHeader>
 			<CardTitle>Tische</CardTitle>
 			<p class="muted small">Nur Tische mit Bestellungen im gewählten Zeitraum.</p>
