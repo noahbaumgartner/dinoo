@@ -1,14 +1,14 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 
-	let { summary, children }: { summary?: Snippet; children: Snippet } = $props();
+	let { summary, children }: { summary?: Snippet; children?: Snippet } = $props();
 </script>
 
 <!-- Sticks to the bottom of the screen, where thumbs are on a phone. -->
 <div class="action-bar">
 	<div class="action-bar-inner">
 		<div class="action-bar-summary">{@render summary?.()}</div>
-		<div class="action-bar-actions">{@render children()}</div>
+		{#if children}<div class="action-bar-actions">{@render children()}</div>{/if}
 	</div>
 </div>
 
@@ -32,7 +32,9 @@
 		margin: 0 auto;
 	}
 
+	/* Takes the free width, e.g. for tabs that scroll sideways. */
 	.action-bar-summary {
+		flex: 1;
 		min-width: 0;
 		font-variant-numeric: tabular-nums;
 	}

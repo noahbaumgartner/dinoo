@@ -28,6 +28,7 @@
 		Input,
 		Label,
 		NumberStepper,
+		Select,
 		Tabs,
 		Textarea
 	} from '@noahbaumgartner/svelte-ui';
@@ -329,7 +330,7 @@
 		/>
 	{:else if step === 0}
 		<section
-			class={['stack', { 'plan-mode fill-viewport': showPlan }]}
+			class={['stack', { 'plan-mode fill-viewport': showPlan, 'above-bar': data.areas.length > 1 }]}
 			aria-labelledby="step-table"
 		>
 			<div class="row heading-row">
@@ -347,15 +348,7 @@
 					/>
 				{/if}
 			</div>
-			{#if data.areas.length > 1 && area}
-				<Tabs
-					class="area-tabs"
-					value={String(area.id)}
-					onchange={setArea}
-					label="Bereich"
-					options={data.areas.map((a) => ({ value: String(a.id), label: a.name }))}
-				/>
-			{/if}
+
 			<div class="stack table-choice" role="radiogroup" aria-label="Tisch">
 				{#if area && planTables.length > 0}
 					{#if showPlan}
@@ -397,6 +390,22 @@
 				{/if}
 			</div>
 		</section>
+		{#if data.areas.length > 1 && area}
+			<!-- The area at the bottom, where the thumb is; the tables fill the screen above. -->
+			<ActionBar>
+				{#snippet summary()}
+					<div class="area-choice">
+						<Label for="area-select">Bereich</Label>
+						<Select
+							id="area-select"
+							value={String(area.id)}
+							onchange={setArea}
+							options={data.areas.map((a) => ({ value: String(a.id), label: a.name }))}
+						/>
+					</div>
+				{/snippet}
+			</ActionBar>
+		{/if}
 	{:else if step === 1}
 		<section class="stack" aria-labelledby="step-articles">
 			<div class="row heading-row">
@@ -681,9 +690,25 @@
 		min-height: 0;
 	}
 
-	.plan-mode .table-group,
-	.plan-mode :global(.area-tabs) {
+	.plan-mode .table-group {
 		flex-shrink: 0;
+	}
+
+	/* The plan ends above the area bar instead of under it. */
+	.plan-mode.above-bar {
+		padding-bottom: 72px;
+	}
+
+	.area-choice {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+	}
+
+	.area-choice :global(.select) {
+		flex: 1;
+		min-width: 0;
+		max-width: 260px;
 	}
 
 	/* The other tables in one row that scrolls sideways. */
