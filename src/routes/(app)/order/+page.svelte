@@ -432,36 +432,47 @@
 									onclick={() => add(article)}
 								/>
 							</li>
-							{#each articleLines as line (line.id)}
-								<li class="article article-line">
-									<span class="line-text">
-										{#if line.labels.length > 0}
-											<span class="line-options">{line.labels.join(' · ')}</span>
-										{:else if !line.note}
-											<span class="line-options">Standard</span>
-										{/if}
-										{#if line.note}<span class="article-note">{line.note}</span>{/if}
-										<span class="article-price muted">{formatChf(line.priceCents)}</span>
-									</span>
-									<Button
-										variant="ghost"
-										icon={Pencil}
-										label="Position {article.name} bearbeiten"
-										aria-haspopup="dialog"
-										onclick={() => editLine(line)}
-									/>
-									<NumberStepper
-										value={line.quantity}
-										min={0}
-										max={99}
-										size="md"
-										label="Menge {article.name}"
-										decreaseLabel="Weniger"
-										increaseLabel="Mehr"
-										onchange={(value) => setLineQuantity(line.id, value)}
-									/>
+							{#if articleLines.length > 0}
+								<li class="lines">
+									<ul>
+										{#each articleLines as line (line.id)}
+											{@const surcharge = line.priceCents - article.priceCents}
+											<li class="line">
+												<button
+													type="button"
+													class="line-edit"
+													aria-haspopup="dialog"
+													aria-label="Position {article.name} bearbeiten"
+													onclick={() => editLine(line)}
+												>
+													<span class="line-options">
+														{#if line.labels.length > 0}
+															{line.labels.join(' · ')}
+														{:else if !line.note}
+															Standard
+														{/if}
+														<Pencil class="line-pencil" size={14} aria-hidden="true" />
+													</span>
+													{#if line.note}<span class="article-note">{line.note}</span>{/if}
+													{#if surcharge > 0}
+														<span class="article-price muted">+ {formatChf(surcharge)}</span>
+													{/if}
+												</button>
+												<NumberStepper
+													value={line.quantity}
+													min={0}
+													max={99}
+													size="md"
+													label="Menge {article.name}"
+													decreaseLabel="Weniger"
+													increaseLabel="Mehr"
+													onchange={(value) => setLineQuantity(line.id, value)}
+												/>
+											</li>
+										{/each}
+									</ul>
 								</li>
-							{/each}
+							{/if}
 						{/each}
 					</ul>
 				</div>
@@ -761,7 +772,8 @@
 	}
 
 	/* Inset divider like the admin lists; ::after because ::before is the accent bar. */
-	.article + .article::after {
+	.article + .article::after,
+	.lines + .article::after {
 		content: '';
 		position: absolute;
 		top: 0;
@@ -810,23 +822,67 @@
 		overflow-wrap: anywhere;
 	}
 
-	.line-text {
+	/* Positions sit in a page-coloured inset under their article; the stepper buttons
+	   (--color-surface) stay a shade darker than it. */
+	.lines {
+		margin: 0 12px 12px;
+		padding: 0 8px;
+		border-radius: 10px;
+		background-color: var(--color-bg);
+	}
+
+	.lines ul {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.line {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+	}
+
+	.line + .line {
+		border-top: 1px solid var(--color-border);
+	}
+
+	.line-edit {
 		display: flex;
 		flex: 1;
 		flex-direction: column;
+		align-items: flex-start;
 		gap: 2px;
 		min-width: 0;
-		padding: 10px 0 10px 28px;
+		min-height: 52px;
+		justify-content: center;
+		padding: 8px 4px;
+		border: none;
+		background: none;
+		color: inherit;
+		font: inherit;
+		text-align: left;
+		cursor: pointer;
+		touch-action: manipulation;
+	}
+
+	.line-edit:focus-visible {
+		outline: 2px solid var(--color-accent);
+		outline-offset: 2px;
+		border-radius: 6px;
 	}
 
 	.line-options {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
 		font-size: 15px;
 		overflow-wrap: anywhere;
 	}
 
-	/* Positions belong to the article above: no divider between them. */
-	.article + .article-line::after {
-		content: none;
+	.line-options :global(.line-pencil) {
+		flex: none;
+		color: var(--color-text-muted);
 	}
 
 	.review-option {
