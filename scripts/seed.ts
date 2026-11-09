@@ -46,7 +46,7 @@ const runtime = new Runtime({
 if (!runtime.files.exists(DATABASE)) {
 	runtime.services.databases.create({
 		name: DATABASE,
-		eventName: 'Sommerfest FC Dinoo',
+		eventName: 'Schauturnen STV Kriessern',
 		copyMasterData: false,
 		activate: true
 	});
@@ -61,7 +61,7 @@ if (!s.users.needsSetup()) {
 	process.exit(0);
 }
 
-s.settings.setEventName('Sommerfest FC Dinoo');
+s.settings.setEventName('Schauturnen STV Kriessern');
 // Demo content only; a real club scans its own TWINT code in the admin settings.
 s.settings.setTwintQrContent('https://example.org/dinoo-demo-twint');
 
