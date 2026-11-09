@@ -1,4 +1,5 @@
 <script lang="ts">
+	import DinoMark from '$lib/components/DinoMark.svelte';
 	import type { LayoutProps } from './$types';
 
 	let { children }: LayoutProps = $props();
@@ -6,7 +7,10 @@
 
 <main class="public">
 	<div class="public-card">
-		<p class="brand">dinoo</p>
+		<p class="brand">
+			<DinoMark size={28} color="var(--color-accent)" />
+			dinoo
+		</p>
 		{@render children()}
 	</div>
 </main>
@@ -33,6 +37,9 @@
 	}
 
 	.brand {
+		display: flex;
+		align-items: center;
+		gap: 8px;
 		font-size: 22px;
 		font-weight: 700;
 		letter-spacing: -0.02em;

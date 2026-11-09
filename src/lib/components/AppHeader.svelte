@@ -4,6 +4,7 @@
 	import { Button, Navbar, NavigationMenuItem } from '@noahbaumgartner/svelte-ui';
 	import { Menu, X } from '@lucide/svelte';
 	import type { Focus } from '$lib/focus-mode.svelte';
+	import DinoMark from './DinoMark.svelte';
 	import UserMenu, { type MenuUser } from './UserMenu.svelte';
 	import type { Snippet } from 'svelte';
 
@@ -35,11 +36,13 @@
 	{#snippet logo()}
 		{#if focus}
 			<span class="logo">
+				<DinoMark size={24} color="var(--color-accent)" />
 				dinoo
 				<span class="logo-subtitle">{focus.title}</span>
 			</span>
 		{:else}
 			<a href={resolve('/')} class="logo">
+				<DinoMark size={24} color="var(--color-accent)" />
 				dinoo
 				{#if subtitle}<span class="logo-subtitle">{subtitle}</span>{/if}
 			</a>

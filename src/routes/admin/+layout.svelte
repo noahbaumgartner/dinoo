@@ -25,6 +25,7 @@
 		ShoppingBasket,
 		UtensilsCrossed
 	} from '@lucide/svelte';
+	import DinoMark from '$lib/components/DinoMark.svelte';
 	import UserMenu from '$lib/components/UserMenu.svelte';
 	import type { LayoutProps } from './$types';
 
@@ -99,7 +100,10 @@
 	<Sidebar collapsible="offcanvas" labels={{ close: 'Menü schliessen' }}>
 		<SidebarHeader class="admin-sidebar-header" labels={{ close: 'Menü schliessen' }}>
 			<a class="brand" href={resolve('/admin')}>
-				<span class="brand-name">dinoo</span>
+				<span class="brand-name">
+					<DinoMark size={22} color="var(--color-accent)" />
+					dinoo
+				</span>
 				<span class="brand-event">{data.eventName ?? data.database}</span>
 			</a>
 		</SidebarHeader>
@@ -177,6 +181,9 @@
 	}
 
 	.brand-name {
+		display: flex;
+		align-items: center;
+		gap: 8px;
 		font-size: 18px;
 		font-weight: 700;
 		letter-spacing: -0.02em;
