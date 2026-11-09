@@ -1,6 +1,4 @@
-<p align="center">
-  <img src="assets/header.png" alt="dinoo" width="640">
-</p>
+<img src="assets/header.png" alt="dinoo" width="100%">
 
 # dinoo
 
