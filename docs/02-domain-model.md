@@ -110,7 +110,7 @@ letter → Zeilenbuchstabe + zweistellige Spalte: A01, A02, …, B01   (max. 26 
 number → Zeile × 100 + Spalte:                  101, 102, …, 201
 ```
 
-Bezeichnungen müssen nicht über alle Bereiche eindeutig sein (siehe `open-questions.md`).
+Bezeichnungen müssen nicht über alle Bereiche eindeutig sein. Zettel und Listen zeigen nur die Tischbezeichnung, nicht den Bereich; wer Verwechslungen vermeiden will, vergibt eindeutige Bezeichnungen.
 
 ### Bestellung (`Order`)
 
