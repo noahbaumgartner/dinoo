@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { invalidateAll } from '$app/navigation';
 	import AdminPage from '$lib/components/AdminPage.svelte';
 	import { inPlace, notify } from '$lib/components/notify';
 	import {
@@ -24,6 +25,7 @@
 		Printer,
 		Trash2
 	} from '@lucide/svelte';
+	import { onMount } from 'svelte';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -41,6 +43,12 @@
 		model = printer?.model ?? 'TM-T20IV';
 		editOpen = true;
 	}
+
+	// Live view: the pending counter and reachability follow the print queue.
+	onMount(() => {
+		const timer = setInterval(() => invalidateAll(), 3000);
+		return () => clearInterval(timer);
+	});
 </script>
 
 <AdminPage
