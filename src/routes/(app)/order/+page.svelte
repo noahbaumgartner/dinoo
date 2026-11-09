@@ -50,7 +50,7 @@
 	let tableId = $state<number | null>(null);
 	/**
 	 * One position per article and combination of options and note (F02). `note` is free text for
-	 * the kitchen, e.g. «ohne Zwiebeln». Articles without options have at most one position.
+	 * the kitchen, e.g. «ohne Zwiebeln».
 	 */
 	type Line = {
 		id: number;
@@ -216,28 +216,21 @@
 		} else positions = positions.filter((l) => l.id !== lineId);
 	}
 
-	/** Articles without options: their only position. */
-	function plainLine(articleId: number) {
-		return positions.find((line) => line.articleId === articleId);
+	/** Drawer for a new position of `article`, starting from the start values. */
+	function newLine(article: Article) {
+		editor = {
+			articleId: article.id,
+			lineId: null,
+			values: defaultValues(article.options),
+			note: ''
+		};
+		editorOpen = true;
 	}
 
-	function setPlainQuantity(article: Article, quantity: number) {
-		const line = plainLine(article.id);
-		if (line) setLineQuantity(line.id, quantity);
-		else if (quantity > 0) addLine(article, {}, null, quantity);
-	}
-
-	/** A tap on an article with options: with a required choice the drawer asks first. */
-	function addWithOptions(article: Article) {
-		if (hasRequiredChoice(article.options)) {
-			editor = {
-				articleId: article.id,
-				lineId: null,
-				values: defaultValues(article.options),
-				note: ''
-			};
-			editorOpen = true;
-		} else addLine(article, defaultValues(article.options), null);
+	/** «+»: adds a position with the start values; a required choice asks in the drawer first. */
+	function add(article: Article) {
+		if (hasRequiredChoice(article.options)) newLine(article);
+		else addLine(article, defaultValues(article.options), null);
 	}
 
 	function editLine(line: Line) {
@@ -262,11 +255,11 @@
 	);
 
 	/** Applies the drawer; a position that now equals another one is merged into it. */
-	function saveEditor(note = editor?.note ?? '') {
+	function saveEditor() {
 		if (!editor || !editorArticle || editorMissing > 0) return;
 		const article = editorArticle;
 		const values = { ...editor.values };
-		const trimmed = note.trim() || null;
+		const trimmed = editor.note.trim() || null;
 		const line = editorLine;
 		if (!line) addLine(article, values, trimmed);
 		else {
@@ -407,25 +400,12 @@
 					</h2>
 					<ul class="articles">
 						{#each category.articles as article (article.id)}
-							{@const withOptions = article.options.length > 0}
-							{@const plain = withOptions ? undefined : plainLine(article.id)}
-							{@const quantity = plain?.quantity ?? 0}
-							{@const articleLines = withOptions
-								? lines.filter((line) => line.articleId === article.id)
-								: []}
-							<li
-								class={[
-									'article',
-									{
-										'article--selected accent-bar': quantity > 0 || articleLines.length > 0
-									}
-								]}
-							>
+							{@const articleLines = lines.filter((line) => line.articleId === article.id)}
+							<li class={['article', { 'article--selected accent-bar': articleLines.length > 0 }]}>
 								<button
 									type="button"
 									class="article-add"
-									onclick={() =>
-										withOptions ? addWithOptions(article) : setPlainQuantity(article, quantity + 1)}
+									onclick={() => add(article)}
 									aria-label="{article.name} hinzufügen"
 								>
 									<span class="article-title">
@@ -436,70 +416,52 @@
 										<span class="article-description">{article.description}</span>
 									{/if}
 									<span class="article-price muted">{formatChf(article.priceCents)}</span>
-									{#if plain?.note}
-										<span class="article-note">{plain.note}</span>
-									{/if}
 								</button>
-								{#if withOptions}
+								<Button
+									variant="ghost"
+									icon={Pencil}
+									label="{article.name} mit Optionen oder Notiz hinzufügen"
+									aria-haspopup="dialog"
+									onclick={() => newLine(article)}
+								/>
+								<Button
+									variant="secondary"
+									icon={Plus}
+									label="{article.name} hinzufügen"
+									aria-haspopup={hasRequiredChoice(article.options) ? 'dialog' : undefined}
+									onclick={() => add(article)}
+								/>
+							</li>
+							{#each articleLines as line (line.id)}
+								<li class="article article-line">
+									<span class="line-text">
+										{#if line.labels.length > 0}
+											<span class="line-options">{line.labels.join(' · ')}</span>
+										{:else if !line.note}
+											<span class="line-options">Standard</span>
+										{/if}
+										{#if line.note}<span class="article-note">{line.note}</span>{/if}
+										<span class="article-price muted">{formatChf(line.priceCents)}</span>
+									</span>
 									<Button
-										variant="secondary"
-										icon={Plus}
-										label="{article.name} hinzufügen"
-										aria-haspopup={hasRequiredChoice(article.options) ? 'dialog' : undefined}
-										onclick={() => addWithOptions(article)}
+										variant="ghost"
+										icon={Pencil}
+										label="Position {article.name} bearbeiten"
+										aria-haspopup="dialog"
+										onclick={() => editLine(line)}
 									/>
-								{:else}
-									{#if plain}
-										<Button
-											variant="ghost"
-											icon={Pencil}
-											label="Notiz für {article.name}"
-											aria-haspopup="dialog"
-											onclick={() => editLine(plain)}
-										/>
-									{/if}
 									<NumberStepper
-										value={quantity}
+										value={line.quantity}
 										min={0}
 										max={99}
 										size="md"
 										label="Menge {article.name}"
 										decreaseLabel="Weniger"
 										increaseLabel="Mehr"
-										onchange={(value) => setPlainQuantity(article, value)}
+										onchange={(value) => setLineQuantity(line.id, value)}
 									/>
-								{/if}
-							</li>
-							{#if withOptions}
-								{#each articleLines as line (line.id)}
-									<li class="article article-line">
-										<span class="line-text">
-											<span class="line-options"
-												>{line.labels.length > 0 ? line.labels.join(' · ') : 'Standard'}</span
-											>
-											{#if line.note}<span class="article-note">{line.note}</span>{/if}
-											<span class="article-price muted">{formatChf(line.priceCents)}</span>
-										</span>
-										<Button
-											variant="ghost"
-											icon={Pencil}
-											label="Optionen und Notiz für {article.name}"
-											aria-haspopup="dialog"
-											onclick={() => editLine(line)}
-										/>
-										<NumberStepper
-											value={line.quantity}
-											min={0}
-											max={99}
-											size="md"
-											label="Menge {article.name}"
-											decreaseLabel="Weniger"
-											increaseLabel="Mehr"
-											onchange={(value) => setLineQuantity(line.id, value)}
-										/>
-									</li>
-								{/each}
-							{/if}
+								</li>
+							{/each}
 						{/each}
 					</ul>
 				</div>
@@ -589,10 +551,8 @@
 		</Drawer>
 		<Drawer
 			bind:open={editorOpen}
-			title={editorArticle?.options.length ? (editorArticle?.name ?? '') : 'Notiz für die Küche'}
-			description={editorArticle?.options.length
-				? (editorArticle?.description ?? undefined)
-				: editorArticle?.name}
+			title={editorArticle?.name ?? ''}
+			description={editorArticle?.description ?? undefined}
 			closeLabel="Schliessen"
 		>
 			{#if editor && editorArticle}
@@ -605,9 +565,7 @@
 						/>
 					{/if}
 					<Field>
-						<Label for="item-note"
-							>{editorArticle.options.length > 0 ? 'Notiz für die Küche' : 'Notiz'}</Label
-						>
+						<Label for="item-note">Notiz für die Küche</Label>
 						<Textarea
 							id="item-note"
 							bind:value={editor.note}
@@ -619,23 +577,14 @@
 				</div>
 			{/if}
 			{#snippet actions()}
-				{#if editorArticle?.options.length}
-					{#if editorLine}
-						<Button variant="secondary" size="lg" icon={Trash2} onclick={removeEditorLine}
-							>Entfernen</Button
-						>
-					{/if}
-					<Button size="lg" disabled={editorMissing > 0} onclick={() => saveEditor()}
-						>{editorLine ? 'Speichern' : 'Hinzufügen'} · {formatChf(editorPriceCents)}</Button
+				{#if editorLine}
+					<Button variant="secondary" size="lg" icon={Trash2} onclick={removeEditorLine}
+						>Entfernen</Button
 					>
-				{:else}
-					{#if editorLine?.note}
-						<Button variant="secondary" size="lg" icon={Trash2} onclick={() => saveEditor('')}
-							>Notiz entfernen</Button
-						>
-					{/if}
-					<Button size="lg" onclick={() => saveEditor()}>Speichern</Button>
 				{/if}
+				<Button size="lg" disabled={editorMissing > 0} onclick={saveEditor}
+					>{editorLine ? 'Speichern' : 'Hinzufügen'} · {formatChf(editorPriceCents)}</Button
+				>
 			{/snippet}
 		</Drawer>
 	{/if}
