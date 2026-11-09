@@ -10,6 +10,7 @@
 		AlertDialog,
 		Button,
 		Card,
+		CardAction,
 		CardContent,
 		CardDescription,
 		CardHeader,
@@ -63,6 +64,17 @@
 	// Every change stays on this page until «Speichern»; «Verwerfen» goes back to the saved state.
 	let draft = $state<Draft>(untrack(() => draftFrom(data)));
 	const discard = () => (draft = draftFrom(data));
+
+	// Another area (tabs, new or deleted area): start over with its saved plan.
+	let shownArea = untrack(() => data.area.id);
+	$effect.pre(() => {
+		if (data.area.id === shownArea) return;
+		shownArea = data.area.id;
+		discard();
+		mode = 'toggle';
+		areaOpen = false;
+		areaDeleteOpen = false;
+	});
 
 	/** A whole number from 1 to `max`, otherwise null. */
 	function size(raw: string, max: number): number | null {
@@ -122,6 +134,18 @@
 		if (type === 'leave') cancel();
 		else if (!confirm('Die Tische haben ungespeicherte Änderungen. Trotzdem verlassen?')) cancel();
 	});
+
+	let areaOpen = $state(false);
+	/** Whether the area dialog renames the shown area instead of creating one. */
+	let areaRenaming = $state(false);
+	let areaDeleteOpen = $state(false);
+	let areaTabs = $derived(
+		data.areas.map((area) => ({
+			value: String(area.id),
+			label: area.name,
+			href: `?area=${area.id}`
+		}))
+	);
 
 	/** «Ein/Aus»: a tap switches a table, handles switch rows and columns. «Umbenennen»: inline. */
 	let mode = $state<'toggle' | 'rename'>('toggle');
@@ -194,24 +218,59 @@
 
 <AdminPage
 	title="Tische"
-	description="Der Service wählt beim Bestellen einen Tisch im Saalplan oder einen der weiteren Tische. Inaktive Tische erscheinen nicht."
+	description="Der Service wählt beim Bestellen einen Tisch im Tischplan oder einen der weiteren Tische. Inaktive Tische erscheinen nicht."
 >
 	{#snippet actions()}
 		<Button variant="ghost" icon={RotateCcw} disabled={!dirty} onclick={discard}>Verwerfen</Button>
 		<!-- After saving, the draft starts again from the saved tables. -->
 		<form method="POST" action="?/plan" use:enhance={notify(discard)}>
+			<input type="hidden" name="areaId" value={data.area.id} />
 			<input type="hidden" name="plan" value={json} />
 			<Button type="submit" disabled={!dirty || !plan}>Speichern</Button>
 		</form>
 	{/snippet}
 
+	<div class="area-bar">
+		{#if data.areas.length > 1}
+			<Tabs value={String(data.area.id)} options={areaTabs} label="Bereich" />
+		{:else}
+			<p class="hint">Mehrere Bereiche (z. B. Saal und Festzelt) haben je einen eigenen Plan.</p>
+		{/if}
+		<Button
+			variant="secondary"
+			icon={Plus}
+			aria-label="Bereich erfassen"
+			onclick={() => ((areaRenaming = false), (areaOpen = true))}>Bereich</Button
+		>
+	</div>
+
 	<Card>
 		<CardHeader>
-			<CardTitle>Saalplan</CardTitle>
+			<CardTitle>{data.area.name}</CardTitle>
 			<CardDescription
-				>Raster aus Zeilen und Spalten; jede Zelle ist ein Tisch. Beim Verkleinern werden Tische
-				ausserhalb entfernt (mit Bestellungen: deaktiviert).</CardDescription
+				>Tischplan als Raster aus Zeilen und Spalten; jede Zelle ist ein Tisch. Beim Verkleinern
+				werden Tische ausserhalb entfernt (mit Bestellungen: deaktiviert).</CardDescription
 			>
+			<CardAction>
+				<span class="icon-actions">
+					<Button
+						variant="ghost"
+						size="sm"
+						icon={Pencil}
+						label="Bereich {data.area.name} umbenennen"
+						onclick={() => ((areaRenaming = true), (areaOpen = true))}
+					/>
+					{#if data.areas.length > 1}
+						<Button
+							variant="ghost"
+							size="sm"
+							icon={Trash2}
+							label="Bereich {data.area.name} löschen"
+							onclick={() => (areaDeleteOpen = true)}
+						/>
+					{/if}
+				</span>
+			</CardAction>
 		</CardHeader>
 		<CardContent>
 			<div class="grid-form">
@@ -256,7 +315,7 @@
 	{#if !plan}
 		<EmptyState
 			icon={LayoutGrid}
-			title={data.plan.rows > 0 ? 'Ungültige Grösse' : 'Noch kein Saalplan'}
+			title={data.plan.rows > 0 ? 'Ungültige Grösse' : 'Noch kein Tischplan'}
 			description="Gib oben Zeilen und Spalten an. Danach kannst du Tische, ganze Zeilen und Spalten ausschalten (z. B. für einen Gang) und Tische umbenennen."
 		/>
 	{:else}
@@ -281,7 +340,12 @@
 					Namen direkt ändern; Enter springt zum nächsten Tisch.
 				{/if}
 			</p>
-			<SeatingPlan rows={plan.rows} columns={plan.columns} tables={gridTables}>
+			<SeatingPlan
+				rows={plan.rows}
+				columns={plan.columns}
+				tables={gridTables}
+				label="Tischplan {data.area.name}"
+			>
 				{#snippet columnHandle(column)}
 					{@render lineHandle({ column }, `Spalte ${columnName(column)}`, columnName(column))}
 				{/snippet}
@@ -326,7 +390,7 @@
 			<h2 id="free-heading">Weitere Tische</h2>
 			<Button variant="secondary" icon={Plus} onclick={() => edit(null)}>Tisch erfassen</Button>
 		</div>
-		<p class="hint">Tische ausserhalb des Saalplans, z. B. «Bar» oder «Terrasse».</p>
+		<p class="hint">Tische dieses Bereichs ausserhalb des Plans, z. B. «Bar».</p>
 		{#if freeTables.length > 0}
 			<ul class="tables">
 				{#each freeTables as table (table.id)}
@@ -378,14 +442,18 @@
 		class="stack"
 		use:enhance={notify(() => (editOpen = false))}
 	>
-		{#if editing}<input type="hidden" name="id" value={editing.id} />{/if}
+		{#if editing}
+			<input type="hidden" name="id" value={editing.id} />
+		{:else}
+			<input type="hidden" name="areaId" value={data.area.id} />
+		{/if}
 		<Field>
 			<Label for="table-label">Bezeichnung</Label>
 			<Input
 				id="table-label"
 				name="label"
 				value={editing?.label ?? ''}
-				placeholder="z. B. Bar oder Terrasse"
+				placeholder="z. B. Bar"
 				required
 			/>
 		</Field>
@@ -419,7 +487,75 @@
 	{/snippet}
 </AlertDialog>
 
+<Dialog
+	bind:open={areaOpen}
+	title={areaRenaming ? `Bereich ${data.area.name}` : 'Bereich erfassen'}
+	description={areaRenaming
+		? undefined
+		: 'Ein Teil des Geländes mit eigenem Tischplan. Beim Bestellen wird zuerst der Bereich gewählt.'}
+	closeLabel="Schliessen"
+>
+	<form
+		id="area-form"
+		method="POST"
+		action="?/saveArea"
+		class="stack"
+		use:enhance={notify(() => (areaOpen = false))}
+	>
+		{#if areaRenaming}<input type="hidden" name="id" value={data.area.id} />{/if}
+		<Field>
+			<Label for="area-name">Name</Label>
+			<Input
+				id="area-name"
+				name="name"
+				value={areaRenaming ? data.area.name : ''}
+				placeholder="z. B. Festzelt oder Terrasse"
+				required
+			/>
+		</Field>
+	</form>
+	{#snippet actions(close)}
+		<Button variant="secondary" onclick={close}>Abbrechen</Button>
+		<Button type="submit" form="area-form">{areaRenaming ? 'Speichern' : 'Erfassen'}</Button>
+	{/snippet}
+</Dialog>
+
+<AlertDialog
+	bind:open={areaDeleteOpen}
+	title="Bereich löschen?"
+	description="«{data.area
+		.name}» wird mit allen seinen Tischen gelöscht. Hat ein Tisch schon Bestellungen, geht das nicht; schalte dann die Tische aus."
+>
+	{#snippet actions(close)}
+		<Button variant="secondary" onclick={close}>Abbrechen</Button>
+		<form method="POST" action="?/deleteArea" use:enhance={notify(close)}>
+			<input type="hidden" name="id" value={data.area.id} />
+			<Button type="submit" icon={Trash2}>Löschen</Button>
+		</form>
+	{/snippet}
+</AlertDialog>
+
 <style>
+	.area-bar {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 12px;
+	}
+
+	/* Many areas scroll inside the tabs; the button keeps its size. */
+	.area-bar :global(.tabs) {
+		min-width: 0;
+	}
+
+	.area-bar :global(.button) {
+		flex-shrink: 0;
+	}
+
+	.area-bar .hint {
+		margin: 0;
+	}
+
 	.grid-form {
 		display: flex;
 		flex-wrap: wrap;

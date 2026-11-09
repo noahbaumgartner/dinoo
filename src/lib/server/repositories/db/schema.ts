@@ -133,19 +133,34 @@ export const articles = sqliteTable(
 	(t) => [index('articles_category_idx').on(t.categoryId)]
 );
 
+/** Part of the venue with its own seating plan, e.g. «Saal» or «Festzelt». */
+export const areas = sqliteTable('areas', {
+	id: integer('id').primaryKey({ autoIncrement: true }),
+	name: text('name').notNull(),
+	/** Default labels of the seating plan: `letter` (A01) or `number` (101). */
+	numbering: text('numbering', { enum: ['letter', 'number'] })
+		.notNull()
+		.default('letter'),
+	sortOrder: integer('sort_order').notNull().default(0),
+	...timestamps
+});
+
 export const tables = sqliteTable(
 	'tables',
 	{
 		id: integer('id').primaryKey({ autoIncrement: true }),
+		areaId: integer('area_id')
+			.notNull()
+			.references(() => areas.id),
 		label: text('label').notNull(),
-		/** Position in the seating plan; both null for free tables such as «Bar». */
+		/** Position in the area's seating plan; both null for free tables such as «Bar». */
 		gridRow: integer('grid_row'),
 		gridColumn: integer('grid_column'),
 		sortOrder: integer('sort_order').notNull().default(0),
 		active: integer('active', { mode: 'boolean' }).notNull().default(true),
 		...timestamps
 	},
-	(t) => [uniqueIndex('tables_grid_cell_idx').on(t.gridRow, t.gridColumn)]
+	(t) => [uniqueIndex('tables_grid_cell_idx').on(t.areaId, t.gridRow, t.gridColumn)]
 );
 
 export const orders = sqliteTable(
@@ -272,6 +287,7 @@ export const schema = {
 	printers,
 	categories,
 	articles,
+	areas,
 	tables,
 	orders,
 	orderItems,

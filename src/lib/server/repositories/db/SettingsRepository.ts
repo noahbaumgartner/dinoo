@@ -2,7 +2,7 @@ import { eq } from 'drizzle-orm';
 import type { Db } from './client';
 import { settings } from './schema';
 
-export type SettingKey = 'eventName' | 'twintQrContent' | 'tableNumbering' | 'ticketTemplate';
+export type SettingKey = 'eventName' | 'twintQrContent' | 'ticketTemplate';
 
 export class SettingsRepository {
 	constructor(private readonly db: Db) {}

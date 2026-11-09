@@ -80,31 +80,46 @@
 	const TABLE_VIEW_KEY = 'dinoo.tableView';
 	let tableView = $state<TableView>('list');
 
+	/** Area whose tables are shown; remembered per device, the first one by default. */
+	const AREA_KEY = 'dinoo.area';
+	let areaId = $state<number | null>(null);
+
 	// Read after hydration so the server-rendered list and the client agree first.
 	$effect(() => {
 		try {
 			if (localStorage.getItem(TABLE_VIEW_KEY) === 'plan') tableView = 'plan';
+			areaId = Number(localStorage.getItem(AREA_KEY)) || null;
 		} catch {
-			// Storage unavailable; keep the default.
+			// Storage unavailable; keep the defaults.
 		}
 	});
 
-	function setTableView(view: TableView) {
+	/** Remembers a choice on this device; without storage (private mode) it just isn't kept. */
+	function remember(key: string, value: string) {
 		try {
-			localStorage.setItem(TABLE_VIEW_KEY, view);
+			localStorage.setItem(key, value);
 		} catch {
-			// Storage unavailable (private mode); the choice just isn't remembered.
+			// Storage unavailable.
 		}
+	}
+
+	function setArea(value: string) {
+		areaId = Number(value);
+		remember(AREA_KEY, value);
 	}
 
 	let articles = $derived(data.categories.flatMap((category) => category.articles));
 	let articleById = $derived(new Map(articles.map((article) => [article.id, article])));
 	let table = $derived(data.tables.find((t) => t.id === tableId));
-	let planTables = $derived(data.tables.filter((t) => t.gridRow !== null));
-	let freeTables = $derived(data.tables.filter((t) => t.gridRow === null));
+	// A remembered area that has no active tables any more falls back to the first one.
+	let area = $derived(data.areas.find((a) => a.id === areaId) ?? data.areas[0]);
+	let areaTables = $derived(data.tables.filter((t) => t.areaId === area?.id));
+	let planTables = $derived(areaTables.filter((t) => t.gridRow !== null));
+	let freeTables = $derived(areaTables.filter((t) => t.gridRow === null));
+	let showPlan = $derived(planTables.length > 0 && tableView === 'plan');
 	/** Plan tables grouped by row, in column order. */
 	let planRows = $derived(
-		Array.from({ length: data.plan.rows }, (_, index) => index + 1)
+		Array.from({ length: area?.rows ?? 0 }, (_, index) => index + 1)
 			.map((row) => ({
 				row,
 				tables: planTables
@@ -314,10 +329,7 @@
 		/>
 	{:else if step === 0}
 		<section
-			class={[
-				'stack',
-				{ 'plan-mode fill-viewport': planTables.length > 0 && tableView === 'plan' }
-			]}
+			class={['stack', { 'plan-mode fill-viewport': showPlan }]}
 			aria-labelledby="step-table"
 		>
 			<div class="row heading-row">
@@ -325,20 +337,35 @@
 				{#if planTables.length > 0}
 					<Tabs
 						bind:value={tableView}
-						onchange={setTableView}
+						onchange={(view) => remember(TABLE_VIEW_KEY, view)}
 						label="Ansicht"
 						size="sm"
 						options={[
 							{ value: 'list', label: 'Liste', icon: List },
-							{ value: 'plan', label: 'Saalplan', icon: LayoutGrid }
+							{ value: 'plan', label: 'Plan', icon: LayoutGrid }
 						]}
 					/>
 				{/if}
 			</div>
+			{#if data.areas.length > 1 && area}
+				<Tabs
+					class="area-tabs"
+					value={String(area.id)}
+					onchange={setArea}
+					label="Bereich"
+					options={data.areas.map((a) => ({ value: String(a.id), label: a.name }))}
+				/>
+			{/if}
 			<div class="stack table-choice" role="radiogroup" aria-label="Tisch">
-				{#if planTables.length > 0}
-					{#if tableView === 'plan'}
-						<SeatingPlan rows={data.plan.rows} columns={data.plan.columns} tables={planTables} fill>
+				{#if area && planTables.length > 0}
+					{#if showPlan}
+						<SeatingPlan
+							rows={area.rows}
+							columns={area.columns}
+							tables={planTables}
+							label="Tischplan {area.name}"
+							fill
+						>
 							{#snippet cell(t)}
 								{@render tile(t)}
 							{/snippet}
@@ -346,7 +373,7 @@
 					{:else}
 						{#each planRows as group (group.row)}
 							<div class="table-group">
-								<h2>{rowLabel(data.plan.numbering, group.row)}</h2>
+								<h2>{rowLabel(area.numbering, group.row)}</h2>
 								<div class="tables">
 									{#each group.tables as t (t.id)}
 										{@render tile(t)}
@@ -359,9 +386,9 @@
 				{#if freeTables.length > 0}
 					<div class="table-group">
 						{#if planTables.length > 0}
-							<h2>{tableView === 'plan' ? 'Weitere' : 'Weitere Tische'}</h2>
+							<h2>{showPlan ? 'Weitere' : 'Weitere Tische'}</h2>
 						{/if}
-						<div class={['tables', { 'tables--strip': tableView === 'plan' }]}>
+						<div class={['tables', { 'tables--strip': showPlan }]}>
 							{#each freeTables as t (t.id)}
 								{@render tile(t)}
 							{/each}
@@ -654,7 +681,8 @@
 		min-height: 0;
 	}
 
-	.plan-mode .table-group {
+	.plan-mode .table-group,
+	.plan-mode :global(.area-tabs) {
 		flex-shrink: 0;
 	}
 

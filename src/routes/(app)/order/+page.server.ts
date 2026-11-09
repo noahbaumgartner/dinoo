@@ -5,11 +5,15 @@ import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = ({ locals }) => {
 	const { tables, categories } = locals.services.orders.orderingData();
-	const { rows, columns, numbering } = locals.services.tables.plan();
 	return {
-		plan: { rows, columns, numbering },
-		tables: tables.map(({ id, label, gridRow, gridColumn }) => ({
+		// Only areas with active tables can be chosen.
+		areas: locals.services.tables
+			.areas()
+			.filter((area) => tables.some((table) => table.areaId === area.id))
+			.map(({ id, name }) => ({ id, name, ...locals.services.tables.plan(id) })),
+		tables: tables.map(({ id, areaId, label, gridRow, gridColumn }) => ({
 			id,
+			areaId,
 			label,
 			gridRow,
 			gridColumn

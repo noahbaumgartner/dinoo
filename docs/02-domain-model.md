@@ -78,25 +78,39 @@ article.printerId gesetzt → article.printerId
 sonst                    → category.defaultPrinterId (leer = kein Druck)
 ```
 
+### Bereich (`Area`)
+
+Ein Teil des Festgeländes mit eigenem Tischplan, z. B. „Saal“, „Festzelt“ oder „Terrasse“. Jeder Tisch gehört zu genau einem Bereich. Es gibt immer mindestens einen Bereich; eine neue Datenbank startet mit „Saal“.
+
+| Feld      | Typ    | Pflicht | Beschreibung                                                              |
+| --------- | ------ | ------- | ------------------------------------------------------------------------- |
+| id        | int    | ✓       |                                                                           |
+| name      | string | ✓       | Anzeige, z. B. „Saal“, „Festzelt“                                         |
+| numbering | string | ✓       | Nummerierung des Tischplans: `letter` (A01, Standard) oder `number` (101) |
+| sortOrder | int    | ✓       | Reihenfolge der Bereiche (Erfassungsreihenfolge)                          |
+
 ### Tisch (`Table`)
 
-Vom Admin vorkonfigurierte Tische, aus denen der Service beim Bestellen auswählt. Die meisten Tische liegen im **Saalplan**, einem Raster aus Zeilen und Spalten; daneben gibt es **freie Tische** ohne Platz im Raster (z. B. „Bar“, „Terrasse“).
+Vom Admin vorkonfigurierte Tische, aus denen der Service beim Bestellen auswählt. Die meisten Tische liegen im **Tischplan** ihres Bereichs, einem Raster aus Zeilen und Spalten; daneben gibt es **freie Tische** ohne Platz im Raster (z. B. „Bar“), ebenfalls je Bereich.
 
 | Feld       | Typ    | Pflicht | Beschreibung                                                          |
 | ---------- | ------ | ------- | --------------------------------------------------------------------- |
 | id         | int    | ✓       |                                                                       |
+| areaId     | → Area | ✓       | Bereich, zu dem der Tisch gehört                                      |
 | label      | string | ✓       | Anzeige, z. B. „A01“, „101“, „Bar“; im Raster vorbelegt, umbenennbar  |
-| gridRow    | int    | –       | Zeile im Saalplan (1 = oberste); leer = freier Tisch                  |
-| gridColumn | int    | –       | Spalte im Saalplan (1 = linke); zusammen mit `gridRow` eindeutig      |
+| gridRow    | int    | –       | Zeile im Tischplan (1 = oberste); leer = freier Tisch                 |
+| gridColumn | int    | –       | Spalte im Tischplan (1 = linke); mit `areaId` und `gridRow` eindeutig |
 | sortOrder  | int    | ✓       | Reihenfolge der freien Tische (Rastertische: nach Zeile, dann Spalte) |
 | active     | bool   | ✓       | Inaktive Rastertische sind Lücken im Plan (Gang, Bühne)               |
 
-**Saalplan:** Die Grösse ergibt sich aus den Rastertischen (grösste Zeile × grösste Spalte); jede Zelle ist ein Tisch. Vorbelegte Bezeichnung je nach `Settings.tableNumbering`:
+**Tischplan:** Die Grösse ergibt sich aus den Rastertischen des Bereichs (grösste Zeile × grösste Spalte); jede Zelle ist ein Tisch. Vorbelegte Bezeichnung je nach `Area.numbering`:
 
 ```
 letter → Zeilenbuchstabe + zweistellige Spalte: A01, A02, …, B01   (max. 26 Zeilen)
 number → Zeile × 100 + Spalte:                  101, 102, …, 201
 ```
+
+Bezeichnungen müssen nicht über alle Bereiche eindeutig sein (siehe `open-questions.md`).
 
 ### Bestellung (`Order`)
 
@@ -124,7 +138,6 @@ Einzelwerte für den Anlass, Key-Value.
 | Key            | Typ    | Beschreibung                                                                                                                                  |
 | -------------- | ------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
 | eventName      | string | Name des Anlasses (Zettelkopf)                                                                                                                |
-| tableNumbering | string | Nummerierung des Saalplans: `letter` (A01, Standard) oder `number` (101)                                                                      |
 | twintQrContent | string | **Inhalt** des statischen TWINT-QR-Codes des Vereins (beim Einrichten gescannt oder eingefügt). Der QR wird daraus zur Anzeige neu generiert. |
 | ticketTemplate | JSON   | Druckvorlage für alle Bestellzettel (Blöcke, Stil, Platzhalter, → F11). Leer = Standardvorlage.                                               |
 
@@ -190,7 +203,7 @@ Welche Positionen (und wie viele davon) eine Zahlung abdeckt. Eine Teilzahlung e
 ## Beziehungen
 
 ```
-User 1 ──── n Order n ──── 1 Table
+User 1 ──── n Order n ──── 1 Table n ──── 1 Area
 Order 1 ──── n OrderItem n ──── 1 Article n ──── 1 Category
 Order 1 ──── n PrintJob n ──── 1 Printer
 Order 1 ──── n Payment  n ──── 1 User

@@ -64,6 +64,13 @@
       "when": 1794200814229,
       "tag": "0008_article_options",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1794206312307,
+      "tag": "0009_areas",
+      "breakpoints": true
     }
   ]
 }

@@ -5,7 +5,15 @@ import type {
 import { DomainError } from './errors';
 
 /** Tables copied into a new event database when the admin keeps the master data. */
-const MASTER_DATA_TABLES = ['user', 'account', 'printers', 'categories', 'articles', 'tables'];
+const MASTER_DATA_TABLES = [
+	'user',
+	'account',
+	'printers',
+	'categories',
+	'articles',
+	'areas',
+	'tables'
+];
 
 export type DatabaseRuntime = {
 	activeName(): string;

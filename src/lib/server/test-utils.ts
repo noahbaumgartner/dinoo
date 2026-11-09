@@ -87,9 +87,10 @@ export async function seedBasics(runtime: Runtime) {
 		categoryId: drinks.id,
 		printerId: null
 	})!;
-	s.tables.applyGrid({ rows: 1, columns: 3, numbering: 'number' });
+	const area = s.tables.areas()[0];
+	s.tables.applyGrid(area.id, { rows: 1, columns: 3, numbering: 'number' });
 	const admin = runtime.repositories.users.get(adminId)!;
 	const service = runtime.repositories.users.get(serviceId)!;
 	const tables = s.tables.list();
-	return { admin, service, kitchen, grill, food, drinks, fries, sausage, beer, tables };
+	return { admin, service, kitchen, grill, food, drinks, fries, sausage, beer, area, tables };
 }

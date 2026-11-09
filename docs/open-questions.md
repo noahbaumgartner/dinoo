@@ -4,7 +4,7 @@ Ungeklärte Punkte, die vor oder während der Umsetzung entschieden werden müss
 
 ## Offen
 
-- keine. Neue Fragen hier eintragen; sie entstehen typischerweise während der Umsetzung.
+- [ ] **Bereich auf Zettel und in Listen?** Tischbezeichnungen müssen nicht über alle Bereiche eindeutig sein (z. B. „A01“ im Saal und im Festzelt). Zettel, Bestellhistorie und Tischfilter zeigen bisher nur `tableLabel`. Soll bei mehreren Bereichen der Bereichsname mitgedruckt/angezeigt werden (z. B. Platzhalter `{bereich}` in F11, Snapshot in `Order`), oder genügt es, dass der Admin eindeutige Bezeichnungen vergibt?
 
 ## Entschieden
 
@@ -26,7 +26,8 @@ Ungeklärte Punkte, die vor oder während der Umsetzung entschieden werden müss
 - [x] Teilzahlungen / Splitting → **Ja, so einfach wie möglich**: Betrag pro Zahlung frei wählbar, mehrere `Payment`s pro Bestellung (F07).
 - [x] Mehrere Anlässe → **Genau ein Anlass pro Datenbank; Datenbank im Admin austauschbar** (F10).
 - [x] Auswertungen → **Ja, als Graph mit Verlauf** (F09).
-- [x] Tische erfassen → **Saalplan als Raster** (Zeilen × Spalten, Nummerierung `A01` oder `101`), zusätzlich freie Tische wie „Bar“; Lücken durch Deaktivieren, jeder Tisch umbenennbar (F06, 02-domain-model).
+- [x] Tische erfassen → **Tischplan als Raster** (Zeilen × Spalten, Nummerierung `A01` oder `101`), zusätzlich freie Tische wie „Bar“; Lücken durch Deaktivieren, jeder Tisch umbenennbar (F06, 02-domain-model).
+- [x] Mehrere Tischpläne → **Bereiche** (z. B. Saal, Festzelt), je mit eigenem Tischplan, Nummerierung und freien Tischen; beim Bestellen wird der Bereich gewählt und pro Gerät gemerkt, bei nur einem Bereich ändert sich nichts (F02, F06, 02-domain-model).
 
 ### Technisch
 

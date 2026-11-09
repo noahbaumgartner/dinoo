@@ -5,9 +5,8 @@ import {
 	TABLE_NUMBERINGS,
 	type TableNumbering
 } from '../../table-grid';
-import type { SettingsRepository } from '../repositories/db/SettingsRepository';
 import type { TableChanges, TableInput, TableRepository } from '../repositories/db/TableRepository';
-import type { TableRecord } from '../repositories/db/types';
+import type { AreaRecord, TableRecord } from '../repositories/db/types';
 import { DomainError, ensure } from './errors';
 
 export type SeatingPlan = {
@@ -30,27 +29,65 @@ export type GridInput = SeatingPlan & {
 
 /**
  * Label and order; the position in the seating plan is set via `applyGrid`, the active flag via
- * `setActive` (new tables start active).
+ * `setActive` (new tables start active). `areaId` is needed for new tables only; a table never moves
+ * to another area.
  */
-export type TableEdit = Omit<TableInput, 'gridRow' | 'gridColumn' | 'active'>;
+export type TableEdit = Pick<TableInput, 'label' | 'sortOrder'> & { areaId?: number };
 
 export class TableService {
-	constructor(
-		private readonly tables: TableRepository,
-		private readonly settings: SettingsRepository
-	) {}
+	constructor(private readonly tables: TableRepository) {}
 
-	list(): TableRecord[] {
-		return this.tables.list();
+	/** All areas in their order; there is always at least one. */
+	areas(): AreaRecord[] {
+		return this.tables.listAreas();
 	}
 
-	/** Size of the seating plan (derived from its tables) and its numbering. */
-	plan(tables = this.tables.list()): SeatingPlan {
-		const grid = tables.filter(isGridTable);
+	area(id: number): AreaRecord {
+		return ensure(this.tables.getArea(id), 'Bereich');
+	}
+
+	/** Creates an area (numbered like the last one) or renames one. */
+	saveArea(id: number | null, input: { name: string }): AreaRecord | undefined {
+		const name = input.name.trim();
+		if (!name) throw new DomainError('Bitte einen Namen für den Bereich angeben.');
+		if (id !== null) {
+			this.area(id);
+			this.tables.updateArea(id, { name });
+			return;
+		}
+		const areas = this.tables.listAreas();
+		return this.tables.createArea({
+			name,
+			numbering: areas.at(-1)?.numbering ?? 'letter',
+			sortOrder: Math.max(0, ...areas.map((area) => area.sortOrder)) + 1
+		});
+	}
+
+	/** Deletes an area with all its tables, unless it is the last one or has orders. */
+	deleteArea(id: number) {
+		this.area(id);
+		if (this.tables.listAreas().length <= 1)
+			throw new DomainError('Der letzte Bereich kann nicht gelöscht werden.');
+		if (this.tables.areaHasOrders(id))
+			throw new DomainError(
+				'Der Bereich hat Bestellungen und kann nicht gelöscht werden. Schalte stattdessen seine Tische aus.',
+				409
+			);
+		this.tables.deleteArea(id);
+	}
+
+	/** All tables, or those of one area. */
+	list(areaId?: number): TableRecord[] {
+		return this.tables.list(areaId);
+	}
+
+	/** Size of the area's seating plan (derived from its tables) and its numbering. */
+	plan(areaId: number, tables = this.tables.list(areaId)): SeatingPlan {
+		const grid = tables.filter((table) => table.areaId === areaId).filter(isGridTable);
 		return {
 			rows: Math.max(0, ...grid.map((table) => table.gridRow)),
 			columns: Math.max(0, ...grid.map((table) => table.gridColumn)),
-			numbering: this.numbering()
+			numbering: this.area(areaId).numbering
 		};
 	}
 
@@ -59,7 +96,7 @@ export class TableService {
 	 * with orders become inactive free tables), relabels cells that still carry the old default label
 	 * and applies the edited labels and active flags.
 	 */
-	applyGrid(input: GridInput) {
+	applyGrid(areaId: number, input: GridInput) {
 		const { rows, columns, numbering } = input;
 		if (!TABLE_NUMBERINGS.includes(numbering)) throw new DomainError('Ungültige Nummerierung.');
 		if (!Number.isInteger(rows) || rows < 1 || rows > MAX_GRID_ROWS)
@@ -72,12 +109,12 @@ export class TableService {
 			if (edit.row < 1 || edit.row > rows || edit.column < 1 || edit.column > columns)
 				throw new DomainError('Diese Zeile oder Spalte gibt es nicht.');
 			const label = edit.label.trim();
-			if (!label) throw new DomainError('Bitte jedem Tisch im Saalplan eine Bezeichnung geben.');
+			if (!label) throw new DomainError('Bitte jedem Tisch im Tischplan eine Bezeichnung geben.');
 			edits.set(`${edit.row}:${edit.column}`, { ...edit, label });
 		}
 
-		const previous = this.numbering();
-		const existing = this.tables.list();
+		const previous = this.area(areaId).numbering;
+		const existing = this.tables.list(areaId);
 		const byId = new Map(existing.map((table) => [table.id, table]));
 		let freeSortOrder = Math.max(
 			0,
@@ -114,6 +151,7 @@ export class TableService {
 				if (!cells.has(`${row}:${column}`)) {
 					const edit = edits.get(`${row}:${column}`);
 					changes.create.push({
+						areaId,
 						label: edit?.label ?? gridLabel(numbering, row, column),
 						gridRow: row,
 						gridColumn: column,
@@ -123,21 +161,25 @@ export class TableService {
 				}
 
 		for (const { id, active } of input.free ?? []) {
+			// Only tables of this area are in `byId`.
 			const table = ensure(byId.get(id), 'Tisch');
-			if (isGridTable(table)) throw new DomainError('Dieser Tisch liegt im Saalplan.');
+			if (isGridTable(table)) throw new DomainError('Dieser Tisch liegt im Tischplan.');
 			if (table.active !== active) changes.update.push({ id, input: { active } });
 		}
 
-		this.tables.apply(changes);
-		this.settings.set('tableNumbering', numbering);
+		this.tables.apply(areaId, changes, { numbering });
 	}
 
-	/** Creates a free table (outside the seating plan) or edits any table. */
+	/** Creates a free table (outside the seating plan) in an area or edits any table. */
 	save(id: number | null, input: TableEdit): TableRecord | undefined {
 		const label = input.label.trim();
 		if (!label) throw new DomainError('Bitte eine Bezeichnung für den Tisch angeben.');
 		const values = { label, sortOrder: input.sortOrder };
-		if (id === null) return this.tables.create({ ...values, active: true });
+		if (id === null) {
+			if (input.areaId === undefined) throw new DomainError('Bitte einen Bereich wählen.');
+			const areaId = this.area(input.areaId).id;
+			return this.tables.create({ ...values, areaId, active: true });
+		}
 		ensure(this.tables.get(id), 'Tisch');
 		this.tables.update(id, values);
 	}
@@ -152,7 +194,7 @@ export class TableService {
 		const table = ensure(this.tables.get(id), 'Tisch');
 		if (isGridTable(table))
 			throw new DomainError(
-				'Tische im Saalplan werden deaktiviert oder durch Verkleinern des Rasters entfernt.'
+				'Tische im Tischplan werden deaktiviert oder durch Verkleinern des Rasters entfernt.'
 			);
 		if (this.tables.hasOrders(id)) {
 			this.tables.update(id, { active: false });
@@ -160,10 +202,6 @@ export class TableService {
 		}
 		this.tables.delete(id);
 		return 'deleted';
-	}
-
-	private numbering(): TableNumbering {
-		return this.settings.get('tableNumbering') === 'number' ? 'number' : 'letter';
 	}
 }
 

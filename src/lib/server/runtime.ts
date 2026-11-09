@@ -111,6 +111,8 @@ export class Runtime implements DatabaseRuntime {
 			sqlite.prepare('attach database ? as source').run(this.scope.connection.file);
 			sqlite.transaction(() => {
 				for (const table of tables) {
+					// Replaces what the migrations created, e.g. the default area.
+					sqlite.prepare(`delete from main."${table}"`).run();
 					sqlite.prepare(`insert into main."${table}" select * from source."${table}"`).run();
 				}
 				if (eventName) new SettingsRepository(connection.db).set('eventName', eventName);
@@ -198,7 +200,7 @@ function createScope(file: string, name: string, deps: ScopeDeps): Scope {
 	const services: Services = {
 		users: new UserService(repositories.users, auth),
 		menu: new MenuService(repositories.menu, repositories.printers),
-		tables: new TableService(repositories.tables, repositories.settings),
+		tables: new TableService(repositories.tables),
 		settings: new SettingsService(repositories.settings),
 		printers: new PrinterService(repositories.printers, repositories.printJobs),
 		printQueue,

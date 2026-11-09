@@ -11,6 +11,7 @@ Der Admin legt Benutzer (Service, Admin), die Tische des Anlasses und allgemeine
 
 - Als Admin möchte ich für jeden Helfer einen Benutzer anlegen, damit Bestellungen nachvollziehbar sind.
 - Als Admin möchte ich die Tische des Anlasses erfassen, damit der Service sie nur noch antippen muss.
+- Als Admin möchte ich die Tische in mehrere Bereiche (z. B. Saal, Festzelt) aufteilen, damit jeder Bereich seinen eigenen, übersichtlichen Plan hat.
 - Als Admin möchte ich den TWINT-QR-Code des Vereins einmal abscannen, damit er beim Bezahlen angezeigt wird.
 
 ## Akzeptanzkriterien
@@ -29,7 +30,10 @@ Der Admin legt Benutzer (Service, Admin), die Tische des Anlasses und allgemeine
 
 **Tische** (`/admin/tables`)
 
-- [ ] **Saalplan:** Der Admin gibt Anzahl Zeilen und Spalten sowie die Nummerierung an (`A01, A02, …` oder `101, 102, …`). Jede Zelle des Rasters ist ein Tisch; fehlende Zellen werden mit vorbelegter Bezeichnung angelegt.
+- [ ] **Bereiche:** Die Tische sind in Bereiche aufgeteilt; jeder Bereich hat einen eigenen Tischplan, eine eigene Nummerierung und eigene freie Tische. Es gibt immer mindestens einen Bereich (neue Datenbank: „Saal“).
+- [ ] Bereich erfassen (Name), umbenennen und löschen. Ein Bereich wird nur gelöscht, wenn keiner seiner Tische Bestellungen hat (sonst: Tische ausschalten, dann erscheint er beim Bestellen nicht mehr); der letzte Bereich kann nicht gelöscht werden. Ein neuer Bereich wird sofort angelegt; sein Plan wird wie unten bearbeitet.
+- [ ] Gibt es mehrere Bereiche, wählen Tabs oben auf der Seite den bearbeiteten Bereich (`?area=<id>`); mit nur einem Bereich gibt es keine Tabs. Ein Wechsel mit ungespeicherten Änderungen fragt nach.
+- [ ] **Tischplan** (je Bereich): Der Admin gibt Anzahl Zeilen und Spalten sowie die Nummerierung an (`A01, A02, …` oder `101, 102, …`). Jede Zelle des Rasters ist ein Tisch; fehlende Zellen werden mit vorbelegter Bezeichnung angelegt.
 - [ ] Grenzen: 1–26 Zeilen, 1–30 Spalten.
 - [ ] Wird das Raster verkleinert, fallen Tische ausserhalb weg: ohne Bestellungen werden sie gelöscht, mit Bestellungen deaktiviert und zu freien Tischen.
 - [ ] Wechselt die Nummerierung, erhalten Rastertische mit unveränderter Bezeichnung die neue; umbenannte Tische behalten ihren Namen.
@@ -39,7 +43,7 @@ Der Admin legt Benutzer (Service, Admin), die Tische des Anlasses und allgemeine
   - **Ein/Aus** (Standard): Antippen eines Tisches schaltet ihn ein oder aus. **Griffe** am oberen Rand (je Spalte) und am linken Rand (je Zeile, beschriftet mit A/B/… bzw. 1/2/…) schalten die ganze Spalte oder Zeile: ist darin mindestens ein Tisch aktiv, wird alles ausgeschaltet, sonst alles eingeschaltet.
   - **Umbenennen**: Jeder Tisch ist direkt ein Eingabefeld; Verlassen des Feldes übernimmt den Namen in den Entwurf, Enter springt zum nächsten Tisch.
 - [ ] Rastertische werden nicht einzeln gelöscht (nur deaktiviert oder per Verkleinern entfernt).
-- [ ] **Freie Tische** ausserhalb des Rasters (z. B. „Bar“): anlegen/bearbeiten mit `label`, `sortOrder`, `active`; löschen.
+- [ ] **Freie Tische** ausserhalb des Rasters (z. B. „Bar“), je Bereich: anlegen/bearbeiten mit `label`, `sortOrder`, `active`; löschen.
 - [ ] Tische mit Bestellungen werden deaktiviert statt gelöscht.
 
 **Einstellungen** (`/admin/settings`)
@@ -51,7 +55,7 @@ Der Admin legt Benutzer (Service, Admin), die Tische des Anlasses und allgemeine
 
 ## Daten / API
 
-- `User`, `Table`, `Settings`
+- `User`, `Area`, `Table`, `Settings`
 - `UserService`, `TableService`, `SettingsService`
 - QR: Scan clientseitig (z. B. `BarcodeDetector`/`jsQR`), Generierung clientseitig (z. B. `qrcode`).
 

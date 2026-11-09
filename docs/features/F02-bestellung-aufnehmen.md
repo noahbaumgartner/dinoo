@@ -14,7 +14,7 @@ Service-Personal nimmt am Tisch eine Bestellung in vier Schritten auf: Tisch wä
 
 ## Ablauf (verbindlich)
 
-1. **Tisch auswählen** – als Liste nach Reihen (Standard) oder als Saalplan-Raster, darunter die freien Tische (grosse Kacheln).
+1. **Tisch auswählen** – bei mehreren Bereichen zuerst den Bereich, dann als Liste nach Reihen (Standard) oder als Tischplan-Raster, darunter die freien Tische (grosse Kacheln).
 2. **Artikel auswählen** – nach Kategorie gruppiert, Positionen per «+» oder Stift, Menge pro Position per +/–, laufende Zwischensumme, optional Optionen und eine Notiz pro Position.
 3. **Bestellung abschicken** – ein Button. Speichert, vergibt Bestellnummer, erzeugt PrintJobs (F03).
 4. **Bestellung abrechnen** – Bar (mit Rechnungshilfe) oder TWINT-Code anzeigen (F07). Kann übersprungen und später nachgeholt werden.
@@ -22,9 +22,10 @@ Service-Personal nimmt am Tisch eine Bestellung in vier Schritten auf: Tisch wä
 ## Akzeptanzkriterien
 
 - [ ] Nur angemeldete Benutzer (`service` oder `admin`).
-- [ ] Schritt 1 hat zwei Ansichten, umschaltbar über Tabs oben rechts («Liste» / «Saalplan»); Standard ist «Liste», die Wahl wird pro Gerät gemerkt. Die Tabs erscheinen nur, wenn es Rastertische gibt.
-- [ ] «Liste»: pro Zeile des Saalplans ein Untertitel «Reihe A» (bzw. «Reihe 1» bei Zahlen-Nummerierung), darunter die aktiven Tische der Reihe in Spaltenreihenfolge als Kacheln in derselben Grösse wie im Saalplan; Reihen ohne aktive Tische entfallen. Die freien Tische folgen unter «Weitere Tische».
-- [ ] «Saalplan»: der Saalplan als Raster (Zeilen × Spalten wie in F06); inaktive Rastertische sind leere Stellen. Darunter die aktiven freien Tische, sortiert nach `sortOrder`. Ist der Plan breiter als der Bildschirm, scrollt er horizontal. **Pflichtfeld: Tisch.** Ein Name des Bestellers wird nicht erfasst.
+- [ ] **Bereich:** Haben mehrere Bereiche aktive Tische, zeigt Schritt 1 unter dem Titel eine Auswahl der Bereiche (Tabs, scrollen seitwärts bei vielen Bereichen); angezeigt werden nur die Tische des gewählten Bereichs. Die Wahl wird pro Gerät gemerkt (ein Helfer arbeitet meist in einem Bereich); Standard ist der erste Bereich. Bereiche ohne aktive Tische erscheinen nicht. Hat nur ein Bereich aktive Tische, gibt es keine Auswahl und Schritt 1 sieht aus wie ohne Bereiche.
+- [ ] Schritt 1 hat zwei Ansichten, umschaltbar über Tabs oben rechts («Liste» / «Plan»); Standard ist «Liste», die Wahl wird pro Gerät gemerkt. Die Tabs erscheinen nur, wenn der Bereich Rastertische hat.
+- [ ] «Liste»: pro Zeile des Tischplans ein Untertitel «Reihe A» (bzw. «Reihe 1» bei Zahlen-Nummerierung), darunter die aktiven Tische der Reihe in Spaltenreihenfolge als Kacheln in derselben Grösse wie im Tischplan; Reihen ohne aktive Tische entfallen. Die freien Tische folgen unter «Weitere Tische».
+- [ ] «Plan»: der Tischplan des Bereichs als Raster (Zeilen × Spalten wie in F06); inaktive Rastertische sind leere Stellen. Darunter die aktiven freien Tische, sortiert nach `sortOrder`. Ist der Plan breiter als der Bildschirm, scrollt er horizontal. **Pflichtfeld: Tisch.** Ein Name des Bestellers wird nicht erfasst.
 - [ ] Schritt 2 zeigt nur aktive Artikel in aktiven Kategorien; Menge pro Position per +/– (0 entfernt die Position); Zwischensumme laufend sichtbar; Zurück zu Schritt 1 ohne Datenverlust.
 - [ ] Artikelzeile: Name, Preis, darunter die Beschreibung (falls vorhanden, gedämpft) und bei Mindestalter 16/18 ein Badge «16+»/«18+».
 - [ ] **Positionen:** Jede unterschiedliche Kombination aus Optionen und Notiz eines Artikels ist eine eigene Position, bei allen Artikeln, ob mit oder ohne Optionen. Die Artikelzeile hat rechts einen Stift und einen «+»-Button, aber keine Mengenauswahl. Die Positionen des Artikels stehen eingerückt darunter, ohne Akzentbalken, je mit den gewählten Optionen (z. B. «Sorte: Schoggi · 2× Becher»), Notiz (kursiv; ohne Optionen und Notiz steht «Standard»), Stückpreis, Stift und Mengenauswahl (0 entfernt die Position). Die Artikelzeile trägt den Akzentbalken, sobald der Artikel eine Position hat.

@@ -214,11 +214,15 @@ menu.forEach(([name, printerId, items], categoryIndex) => {
 	});
 });
 
-s.tables.applyGrid({ rows: 4, columns: 6, numbering: 'letter' });
+const hall = s.tables.areas()[0];
+s.tables.applyGrid(hall.id, { rows: 4, columns: 6, numbering: 'letter' });
 // An aisle in the middle of the hall.
-for (const table of s.tables.list())
+for (const table of s.tables.list(hall.id))
 	if (table.gridColumn === 4) s.tables.setActive(table.id, false);
-s.tables.save(null, { label: 'Bar', sortOrder: 1, active: true });
+s.tables.save(null, { label: 'Bar', sortOrder: 1, areaId: hall.id });
+// A second area with its own plan.
+const tent = s.tables.saveArea(null, { name: 'Festzelt' })!;
+s.tables.applyGrid(tent.id, { rows: 2, columns: 5, numbering: 'number' });
 const tables = s.tables.list().filter((table) => table.active);
 
 const users = [...staffIds, adminId].map((id) => runtime.repositories.users.get(id)!);

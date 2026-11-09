@@ -402,9 +402,9 @@ describe('seating plan', () => {
 	it('creates a grid numbered by row and column', () => {
 		const s = t.services();
 		expect(cells()).toEqual(['101', '102', '103']);
-		s.tables.applyGrid({ rows: 2, columns: 2, numbering: 'letter' });
+		s.tables.applyGrid(seed.area.id, { rows: 2, columns: 2, numbering: 'letter' });
 		expect(cells()).toEqual(['A01', 'A02', 'B01', 'B02']);
-		expect(s.tables.plan()).toEqual({ rows: 2, columns: 2, numbering: 'letter' });
+		expect(s.tables.plan(seed.area.id)).toEqual({ rows: 2, columns: 2, numbering: 'letter' });
 	});
 
 	it('keeps renamed tables and turns removed tables with orders into inactive free tables', () => {
@@ -412,11 +412,11 @@ describe('seating plan', () => {
 		place(); // on 102
 		const first = s.tables.list()[0];
 		s.tables.save(first.id, { label: 'VIP', sortOrder: 0 });
-		s.tables.applyGrid({ rows: 2, columns: 1, numbering: 'letter' });
+		s.tables.applyGrid(seed.area.id, { rows: 2, columns: 1, numbering: 'letter' });
 		expect(cells()).toEqual(['VIP', 'B01']);
 		const free = s.tables.list().filter((table) => table.gridRow === null);
 		expect(free).toMatchObject([{ label: '102', active: false }]);
-		expect(s.tables.plan()).toMatchObject({ rows: 2, columns: 1 });
+		expect(s.tables.plan(seed.area.id)).toMatchObject({ rows: 2, columns: 1 });
 	});
 
 	it('deactivates but never deletes grid tables; free tables can be deleted', () => {
@@ -424,16 +424,16 @@ describe('seating plan', () => {
 		const cell = s.tables.list()[0];
 		s.tables.setActive(cell.id, false);
 		expect(s.tables.list()[0].active).toBe(false);
-		expect(() => s.tables.delete(cell.id)).toThrow(/Saalplan/);
-		const bar = s.tables.save(null, { label: 'Bar', sortOrder: 1 })!;
+		expect(() => s.tables.delete(cell.id)).toThrow(/Tischplan/);
+		const bar = s.tables.save(null, { label: 'Bar', sortOrder: 1, areaId: seed.area.id })!;
 		expect(bar.gridRow).toBeNull();
 		expect(s.tables.delete(bar.id)).toBe('deleted');
 	});
 
 	it('saves edited cells and free tables together with the grid', () => {
 		const s = t.services();
-		const bar = s.tables.save(null, { label: 'Bar', sortOrder: 1 })!;
-		s.tables.applyGrid({
+		const bar = s.tables.save(null, { label: 'Bar', sortOrder: 1, areaId: seed.area.id })!;
+		s.tables.applyGrid(seed.area.id, {
 			rows: 2,
 			columns: 2,
 			numbering: 'letter',
@@ -451,7 +451,7 @@ describe('seating plan', () => {
 			{ label: 'Bar', active: false }
 		]);
 		// Renamed cells keep their name when the numbering changes.
-		s.tables.applyGrid({ rows: 2, columns: 2, numbering: 'number' });
+		s.tables.applyGrid(seed.area.id, { rows: 2, columns: 2, numbering: 'number' });
 		expect(cells()).toEqual(['VIP', '102', '201', '202']);
 	});
 
@@ -459,18 +459,61 @@ describe('seating plan', () => {
 		const s = t.services();
 		const grid = { rows: 1, columns: 3, numbering: 'number' } as const;
 		expect(() =>
-			s.tables.applyGrid({ ...grid, cells: [{ row: 1, column: 1, label: ' ', active: true }] })
+			s.tables.applyGrid(seed.area.id, {
+				...grid,
+				cells: [{ row: 1, column: 1, label: ' ', active: true }]
+			})
 		).toThrow(/Bezeichnung/);
 		expect(() =>
-			s.tables.applyGrid({ ...grid, cells: [{ row: 2, column: 1, label: 'X', active: true }] })
+			s.tables.applyGrid(seed.area.id, {
+				...grid,
+				cells: [{ row: 2, column: 1, label: 'X', active: true }]
+			})
 		).toThrow(/gibt es nicht/);
 		expect(cells()).toEqual(['101', '102', '103']);
 	});
 
 	it('rejects grids that are too large', () => {
 		expect(() =>
-			t.services().tables.applyGrid({ rows: 27, columns: 2, numbering: 'letter' })
+			t.services().tables.applyGrid(seed.area.id, { rows: 27, columns: 2, numbering: 'letter' })
 		).toThrow(/Zeilen/);
+	});
+
+	it('keeps a separate plan and numbering per area', () => {
+		const s = t.services();
+		const tent = s.tables.saveArea(null, { name: ' Festzelt ' })!;
+		expect(tent).toMatchObject({ name: 'Festzelt', numbering: 'number' });
+		s.tables.applyGrid(tent.id, { rows: 1, columns: 2, numbering: 'letter' });
+		expect(s.tables.areas().map((area) => area.name)).toEqual(['Saal', 'Festzelt']);
+		expect(s.tables.list(tent.id).map((table) => table.label)).toEqual(['A01', 'A02']);
+		expect(cells()).toEqual(['101', '102', '103', 'A01', 'A02']);
+		expect(s.tables.plan(seed.area.id)).toEqual({ rows: 1, columns: 3, numbering: 'number' });
+		expect(s.tables.plan(tent.id)).toEqual({ rows: 1, columns: 2, numbering: 'letter' });
+		// Free tables of another area cannot be switched from this one.
+		const bar = s.tables.save(null, { label: 'Bar', sortOrder: 1, areaId: seed.area.id })!;
+		expect(() =>
+			s.tables.applyGrid(tent.id, {
+				rows: 1,
+				columns: 2,
+				numbering: 'letter',
+				free: [{ id: bar.id, active: false }]
+			})
+		).toThrow(/nicht gefunden/);
+	});
+
+	it('renames and deletes areas, but not the last one or one with orders', () => {
+		const s = t.services();
+		s.tables.saveArea(seed.area.id, { name: 'Halle' });
+		expect(s.tables.area(seed.area.id).name).toBe('Halle');
+		expect(() => s.tables.saveArea(null, { name: ' ' })).toThrow(/Namen/);
+		expect(() => s.tables.deleteArea(seed.area.id)).toThrow(/letzte Bereich/);
+		const tent = s.tables.saveArea(null, { name: 'Festzelt' })!;
+		s.tables.applyGrid(tent.id, { rows: 1, columns: 1, numbering: 'letter' });
+		place(); // in the hall
+		expect(() => s.tables.deleteArea(seed.area.id)).toThrow(/Bestellungen/);
+		s.tables.deleteArea(tent.id);
+		expect(s.tables.areas().map((area) => area.name)).toEqual(['Halle']);
+		expect(s.tables.list(tent.id)).toEqual([]);
 	});
 });
 
@@ -480,6 +523,7 @@ describe('event databases', () => {
 		await t.runtime.worker.tick();
 		const s = t.services();
 		s.settings.setEventName('Sommerfest');
+		s.tables.saveArea(seed.area.id, { name: 'Halle' });
 		const name = s.databases.create({
 			name: 'Herbstfest 2026',
 			eventName: 'Herbstfest',
@@ -493,6 +537,8 @@ describe('event databases', () => {
 		expect(next.settings.get().eventName).toBe('Herbstfest');
 		expect(next.orders.search({})).toHaveLength(0);
 		expect(next.menu.overview().flatMap((c) => c.articles)).toHaveLength(3);
+		expect(next.tables.areas().map((area) => area.name)).toEqual(['Halle']);
+		expect(next.tables.list()).toHaveLength(3);
 		expect(
 			next.users
 				.list()
