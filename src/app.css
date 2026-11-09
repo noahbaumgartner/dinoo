@@ -172,7 +172,31 @@ h1 + p {
 	background-size: calc(100% - 14px) 1px;
 }
 
-/* A card that ends in a `.table-wrap`: the table runs down to the card's edge. */
+/* A card that ends in a `.table-wrap`: the table runs down to the card's edge. Taller than 500px,
+   only the table scrolls (the card title stays), and the header sticks to the top of it. A table
+   wider than the card scrolls sideways. The scrolling box is svelte-ui's `.table-container`. */
 .table-card {
+	max-height: 500px;
 	padding-bottom: 0;
+}
+
+.table-card .table-wrap {
+	display: flex;
+	flex: 1 1 auto;
+	flex-direction: column;
+	min-height: 0;
+	overflow: hidden;
+}
+
+.table-card .table-container {
+	flex: 1 1 auto;
+	min-height: 0;
+	overflow: auto;
+}
+
+.table-card .table-container th {
+	position: sticky;
+	top: 0;
+	z-index: 1;
+	background-color: var(--color-fill);
 }

@@ -22,6 +22,7 @@ Der Admin sieht auf einen Blick, wie der Anlass läuft: Einnahmenverlauf als Lin
 - [ ] **Verkaufte Artikel (Balkendiagramm):** Stückzahl (`Σ OrderItem.quantity`) bzw. Umsatz (`Σ quantity × priceCents`) pro Artikel, absteigend sortiert, nach Kategorie filterbar. Waagrechte Balken, damit die Namen lesbar bleiben.
 - [ ] **Personal (Liste):** Eine sortierbare Tabelle mit Name, Anzahl Bestellungen (`Order.createdByUserId`) und Umsatz (`Σ Order.totalCents`) pro Service-Mitarbeiter im gewählten Zeitraum, standardmässig nach Umsatz absteigend. Unter den Artikeln. Der Umschalter Umsatz/Anzahl wirkt hier nicht, beide Zahlen stehen nebeneinander.
 - [ ] **Tische (Liste):** Eine sortierbare Tabelle mit Tisch (Bezeichnung als Snapshot, `Order.tableId`), Anzahl Bestellungen und Umsatz, nur Tische mit Bestellungen im Zeitraum, standardmässig nach Umsatz absteigend. Zuunterst. Gibt es mehrere Bereiche, kommt eine Spalte «Bereich» dazu.
+- [ ] **Listen scrollen:** Die Karten «Personal» und «Tische» sind höchstens 500 px hoch; darüber scrollt nur die Tabelle, der Kartentitel bleibt stehen und die Kopfzeile bleibt oben haften (sticky). Ist die Tabelle für die Karte zu breit, scrollt sie seitwärts.
 - [ ] Aktualisiert sich automatisch (Polling, ~30 s).
 - [ ] Alle Zahlen basieren auf Snapshots (`OrderItem.priceCents`, `quantity`), nicht auf aktuellen Artikelpreisen.
 
