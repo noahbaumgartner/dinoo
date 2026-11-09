@@ -201,31 +201,6 @@
 		min-width: 180px;
 	}
 
-	/* White like the cards instead of the off-white page background. */
-	.table-wrap {
-		border-radius: var(--radius);
-		background-color: var(--color-fill);
-		overflow-x: auto;
-	}
-
-	/* Inset divider like the order list, also below the header. Drawn on the cells: a pseudo-element
-	   on the row would become an extra table cell and shift the columns. */
-	.table-wrap :global(tbody td) {
-		background-image: linear-gradient(var(--color-border), var(--color-border));
-		background-position: left top;
-		background-size: 100% 1px;
-		background-repeat: no-repeat;
-	}
-
-	.table-wrap :global(tbody td:first-child) {
-		background-position: 14px top;
-		background-size: calc(100% - 14px) 1px;
-	}
-
-	.table-wrap :global(tbody td:last-child) {
-		background-size: calc(100% - 14px) 1px;
-	}
-
 	.status {
 		display: inline-flex;
 		flex-direction: column;
