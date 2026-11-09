@@ -97,6 +97,7 @@
 		align-items: baseline;
 		gap: 8px;
 		color: var(--color-text);
+		font-family: var(--font-display);
 		font-size: 18px;
 		font-weight: 700;
 		letter-spacing: -0.02em;
@@ -105,6 +106,7 @@
 
 	.logo-subtitle {
 		color: var(--color-text-muted);
+		font-family: var(--font-sans);
 		font-size: 13px;
 		font-weight: 500;
 		letter-spacing: 0;

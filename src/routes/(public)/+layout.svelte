@@ -40,6 +40,7 @@
 		display: flex;
 		align-items: center;
 		gap: 8px;
+		font-family: var(--font-display);
 		font-size: 22px;
 		font-weight: 700;
 		letter-spacing: -0.02em;
