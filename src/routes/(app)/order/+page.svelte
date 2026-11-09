@@ -394,15 +394,13 @@
 			<!-- The area at the bottom, where the thumb is; the tables fill the screen above. -->
 			<ActionBar>
 				{#snippet summary()}
-					<div class="area-choice">
-						<Label for="area-select">Bereich</Label>
-						<Select
-							id="area-select"
-							value={String(area.id)}
-							onchange={setArea}
-							options={data.areas.map((a) => ({ value: String(a.id), label: a.name }))}
-						/>
-					</div>
+					<Select
+						class="area-select"
+						aria-label="Bereich"
+						value={String(area.id)}
+						onchange={setArea}
+						options={data.areas.map((a) => ({ value: String(a.id), label: a.name }))}
+					/>
 				{/snippet}
 			</ActionBar>
 		{/if}
@@ -699,16 +697,11 @@
 		padding-bottom: 72px;
 	}
 
-	.area-choice {
-		display: flex;
-		align-items: center;
-		gap: 12px;
-	}
-
-	.area-choice :global(.select) {
-		flex: 1;
-		min-width: 0;
-		max-width: 260px;
+	/* Full width on phones, a normal field width on larger screens. */
+	@media (min-width: 640px) {
+		:global(.area-select) {
+			max-width: 320px;
+		}
 	}
 
 	/* The other tables in one row that scrolls sideways. */
