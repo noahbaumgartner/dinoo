@@ -1,12 +1,20 @@
 import { and, desc, eq, gte, lte, sql } from 'drizzle-orm';
 import type { Db } from './client';
-import { articles, orderItems, orders } from './schema';
+import { articles, orderItems, orders, user } from './schema';
 
 export type RevenueBucket = { start: Date; revenueCents: number; orders: number };
 export type ArticleSales = {
 	articleId: number;
 	name: string;
 	quantity: number;
+	revenueCents: number;
+};
+export type StaffSales = { userId: string; name: string; orders: number; revenueCents: number };
+export type TableSales = {
+	tableId: number;
+	label: string;
+	areaName: string;
+	orders: number;
 	revenueCents: number;
 };
 /** Orders created within the range; a missing bound is open. Both bounds are inclusive. */
@@ -85,6 +93,53 @@ export class StatsRepository {
 				articleId: row.articleId,
 				name: row.name,
 				quantity: Number(row.quantity),
+				revenueCents: Number(row.revenue)
+			}));
+	}
+
+	/** Orders taken and revenue brought in per staff member, highest revenue first. */
+	staffSales(range: TimeRange): StaffSales[] {
+		return this.db
+			.select({
+				userId: orders.createdByUserId,
+				name: user.name,
+				orders: sql<number>`count(*)`,
+				revenue: sql<number>`sum(${orders.totalCents})`
+			})
+			.from(orders)
+			.innerJoin(user, eq(user.id, orders.createdByUserId))
+			.where(inRange(range))
+			.groupBy(orders.createdByUserId)
+			.orderBy(desc(sql`sum(${orders.totalCents})`))
+			.all()
+			.map((row) => ({
+				userId: row.userId,
+				name: row.name,
+				orders: Number(row.orders),
+				revenueCents: Number(row.revenue)
+			}));
+	}
+
+	/** Orders and revenue per table, highest revenue first. Label and area are order snapshots. */
+	tableSales(range: TimeRange): TableSales[] {
+		return this.db
+			.select({
+				tableId: orders.tableId,
+				label: sql<string>`max(${orders.tableLabel})`,
+				areaName: sql<string>`max(${orders.areaName})`,
+				orders: sql<number>`count(*)`,
+				revenue: sql<number>`sum(${orders.totalCents})`
+			})
+			.from(orders)
+			.where(inRange(range))
+			.groupBy(orders.tableId)
+			.orderBy(desc(sql`sum(${orders.totalCents})`))
+			.all()
+			.map((row) => ({
+				tableId: row.tableId,
+				label: row.label,
+				areaName: row.areaName,
+				orders: Number(row.orders),
 				revenueCents: Number(row.revenue)
 			}));
 	}

@@ -1,7 +1,9 @@
 import type {
 	ArticleSales,
 	RevenueBucket,
+	StaffSales,
 	StatsRepository,
+	TableSales,
 	TimeRange,
 	Totals
 } from '../repositories/db/StatsRepository';
@@ -27,9 +29,11 @@ export type Dashboard = {
 	totals: Totals;
 	timeline: RevenueBucket[];
 	articles: ArticleSales[];
+	staff: StaffSales[];
+	tables: TableSales[];
 };
 
-/** Dashboard figures (F09): revenue over time, articles sold, sum of articles sold. */
+/** Dashboard figures (F09): revenue over time, articles sold, revenue per staff member and table. */
 export class StatsService {
 	constructor(
 		private readonly stats: StatsRepository,
@@ -57,7 +61,9 @@ export class StatsService {
 				range,
 				this.now()
 			),
-			articles: this.stats.articleSales(range, categoryId)
+			articles: this.stats.articleSales(range, categoryId),
+			staff: this.stats.staffSales(range),
+			tables: this.stats.tableSales(range)
 		};
 	}
 }

@@ -27,12 +27,46 @@
 	const time = new Intl.DateTimeFormat('de-CH', { hour: '2-digit', minute: '2-digit' });
 	const count = new Intl.NumberFormat('de-CH');
 
+	let byRevenue = $derived(data.metric === 'revenue');
+
+	// Revenue in Rappen or a count; the other figure is shown as the detail next to each bar.
+	const orderCount = (n: number) => `${count.format(n)} ${n === 1 ? 'Bestellung' : 'Bestellungen'}`;
 	let timeline = $derived(
 		data.dashboard.timeline.map((bucket) => ({
 			label: time.format(bucket.start),
-			value: bucket.revenueCents
+			value: byRevenue ? bucket.revenueCents : bucket.orders
 		}))
 	);
+	let articles = $derived(
+		data.dashboard.articles
+			.map((article) => ({
+				label: article.name,
+				value: byRevenue ? article.revenueCents : article.quantity,
+				detail: byRevenue ? `${count.format(article.quantity)}×` : formatChf(article.revenueCents)
+			}))
+			.sort((a, b) => b.value - a.value)
+	);
+	let staff = $derived(
+		data.dashboard.staff
+			.map((person) => ({
+				label: person.name,
+				value: byRevenue ? person.revenueCents : person.orders,
+				detail: byRevenue ? orderCount(person.orders) : formatChf(person.revenueCents)
+			}))
+			.sort((a, b) => b.value - a.value)
+	);
+	// Table labels repeat across areas («A01»), so the area is only named when there are several.
+	let severalAreas = $derived(new Set(data.dashboard.tables.map((t) => t.areaName)).size > 1);
+	let tables = $derived(
+		data.dashboard.tables
+			.map((table) => ({
+				label: severalAreas && table.areaName ? `${table.label} (${table.areaName})` : table.label,
+				value: byRevenue ? table.revenueCents : table.orders,
+				detail: byRevenue ? orderCount(table.orders) : formatChf(table.revenueCents)
+			}))
+			.sort((a, b) => b.value - a.value)
+	);
+	const formatMetric = (value: number) => (byRevenue ? formatChf(value) : count.format(value));
 	let soldInCategory = $derived(data.dashboard.articles.reduce((sum, a) => sum + a.quantity, 0));
 
 	const setParam = (name: string, value: string) => setSearchParams({ [name]: value || null });
@@ -108,6 +142,23 @@
 		/>
 	</div>
 
+	<div class="metric">
+		<Tabs
+			label="Diagramme anzeigen nach"
+			value={data.metric}
+			options={[
+				{ value: 'revenue', label: 'Umsatz' },
+				{ value: 'count', label: 'Anzahl' }
+			]}
+			onchange={(value) => setParam('metric', value === 'revenue' ? '' : value)}
+		/>
+		<p class="muted small">
+			{byRevenue
+				? 'Die Diagramme zeigen den Umsatz.'
+				: 'Die Diagramme zeigen Anzahlen: Bestellungen, bei den Artikeln Stück.'}
+		</p>
+	</div>
+
 	<Card>
 		<CardHeader>
 			<div class="card-head">
@@ -128,10 +179,14 @@
 		<CardContent>
 			<LineChart
 				data={timeline}
-				label="Umsatz pro Intervall"
-				format={(cents) => formatAmount(cents)}
+				label={byRevenue ? 'Umsatz pro Intervall' : 'Bestellungen pro Intervall'}
+				format={(value) => (byRevenue ? formatAmount(value) : count.format(value))}
 				height={260}
-				labels={{ empty: 'Noch keine Bestellungen', labelColumn: 'Zeit', valueColumn: 'Umsatz' }}
+				labels={{
+					empty: 'Noch keine Bestellungen',
+					labelColumn: 'Zeit',
+					valueColumn: byRevenue ? 'Umsatz' : 'Bestellungen'
+				}}
 			/>
 		</CardContent>
 	</Card>
@@ -162,14 +217,40 @@
 		</CardHeader>
 		<CardContent>
 			<BarChart
-				items={data.dashboard.articles.map((article) => ({
-					label: article.name,
-					value: article.quantity,
-					detail: formatChf(article.revenueCents)
-				}))}
-				label="Verkaufte Artikel nach Stückzahl"
-				format={(value) => `${count.format(value)}×`}
+				items={articles}
+				label={byRevenue ? 'Verkaufte Artikel nach Umsatz' : 'Verkaufte Artikel nach Stückzahl'}
+				format={(value) => (byRevenue ? formatChf(value) : `${count.format(value)}×`)}
 				labels={{ empty: 'Noch nichts verkauft' }}
+			/>
+		</CardContent>
+	</Card>
+
+	<Card>
+		<CardHeader>
+			<CardTitle>Personal</CardTitle>
+			<p class="muted small">Wer hat wie viel eingebracht? Nach aufgenommenen Bestellungen.</p>
+		</CardHeader>
+		<CardContent>
+			<BarChart
+				items={staff}
+				label={byRevenue ? 'Umsatz pro Person' : 'Bestellungen pro Person'}
+				format={formatMetric}
+				labels={{ empty: 'Noch keine Bestellungen' }}
+			/>
+		</CardContent>
+	</Card>
+
+	<Card>
+		<CardHeader>
+			<CardTitle>Tische</CardTitle>
+			<p class="muted small">Nur Tische mit Bestellungen im gewählten Zeitraum.</p>
+		</CardHeader>
+		<CardContent>
+			<BarChart
+				items={tables}
+				label={byRevenue ? 'Umsatz pro Tisch' : 'Bestellungen pro Tisch'}
+				format={formatMetric}
+				labels={{ empty: 'Noch keine Bestellungen' }}
 			/>
 		</CardContent>
 	</Card>
@@ -194,6 +275,17 @@
 
 	.range :global(.field) {
 		flex: 1 1 200px;
+	}
+
+	.metric {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 8px 16px;
+	}
+
+	.metric .small {
+		margin-top: 0;
 	}
 
 	.stats {

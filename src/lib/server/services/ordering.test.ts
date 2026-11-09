@@ -348,6 +348,28 @@ describe('search and dashboard', () => {
 		expect(food.articles.map((article) => article.name)).toEqual(['Pommes', 'Bratwurst']);
 	});
 
+	it('sums revenue and orders per staff member and table', () => {
+		place();
+		place();
+		t.services().orders.place(
+			{
+				clientRequestId: 'other-table',
+				tableId: seed.tables[0].id,
+				items: [{ articleId: seed.beer.id, quantity: 1 }]
+			},
+			seed.admin
+		);
+		const { staff, tables } = t.services().stats.dashboard('1h');
+		expect(staff.map((s) => [s.userId, s.orders, s.revenueCents])).toEqual([
+			[seed.service.id, 2, 7200],
+			[seed.admin.id, 1, 550]
+		]);
+		expect(tables.map((x) => [x.label, x.orders, x.revenueCents])).toEqual([
+			['102', 2, 7200],
+			['101', 1, 550]
+		]);
+	});
+
 	describe('time range', () => {
 		const HOUR = 60 * 60 * 1000;
 
