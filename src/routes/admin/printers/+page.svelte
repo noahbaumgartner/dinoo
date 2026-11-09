@@ -68,15 +68,15 @@
 							<Printer size={18} aria-hidden="true" />
 							{printer.name}
 							{#if !printer.active}<Badge>Deaktiviert</Badge>{/if}
+							{#if printer.reachable === false}
+								<Badge variant="primary" icon={CircleAlert}>Nicht erreichbar</Badge>
+							{:else if printer.reachable === true}
+								<Badge icon={CircleCheck}>Erreichbar</Badge>
+							{/if}
 						</span>
 						<span class="muted small tabular">{printer.host}:{printer.port} · {printer.model}</span>
 					</div>
 					<span class="state">
-						{#if printer.reachable === false}
-							<Badge variant="primary" icon={CircleAlert}>Nicht erreichbar</Badge>
-						{:else if printer.reachable === true}
-							<Badge icon={CircleCheck}>Erreichbar</Badge>
-						{/if}
 						{#if printer.pendingJobs > 0}
 							<span class="muted small">{printer.pendingJobs} wartend</span>
 						{/if}
@@ -254,9 +254,10 @@
 	}
 
 	.name {
-		display: inline-flex;
+		display: flex;
+		flex-wrap: wrap;
 		align-items: center;
-		gap: 8px;
+		gap: 4px 8px;
 		font-weight: 600;
 	}
 
