@@ -8,6 +8,7 @@ export type FakePrint = { target: PrinterTarget; ticket: Ticket; text: string; a
  * starting with `offline`) fail like an unreachable printer.
  */
 export class FakePrinterDeviceRepository implements PrinterDeviceRepository {
+	readonly simulated: boolean = true;
 	readonly printed: FakePrint[] = [];
 	readonly offlineHosts = new Set<string>();
 

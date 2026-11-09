@@ -22,6 +22,7 @@ export type EposOptions = {
  * reports why it could not (cover open, paper out, timeout).
  */
 export class EposPrinterDeviceRepository implements PrinterDeviceRepository {
+	readonly simulated = false;
 	private readonly options: EposOptions;
 
 	constructor(options: Partial<EposOptions> = {}) {

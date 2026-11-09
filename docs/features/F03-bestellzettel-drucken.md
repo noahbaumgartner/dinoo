@@ -29,6 +29,7 @@ Jede Bestellung wird automatisch auf die zuständigen Küchendrucker verteilt; p
 - [ ] Ein Druck gilt nur als `printed`, wenn der Drucker den Druck bestätigt hat (ePOS-Print `success="true"`); Fehlercodes wie Deckel offen oder Papier leer erscheinen als `lastError`.
 - [ ] Beim Start der Anwendung werden `printing`-Jobs auf `queued` zurückgesetzt (Absturz während des Drucks), und die Warteschlange läuft weiter.
 - [ ] Die Antwort an den Service wartet nicht auf den Drucker.
+- [ ] Pro Datenverzeichnis arbeitet nur ein Prozess die Warteschlange ab; ein Prozess mit Fake-Drucker druckt nie Jobs, solange ein Prozess mit echten Druckern dasselbe Verzeichnis nutzt (→ ADR-010).
 
 **Einsehen und eingreifen** (UI in F05)
 

@@ -9,6 +9,7 @@ import { DatabaseFileRepository } from './repositories/db/DatabaseFileRepository
 import { MenuRepository } from './repositories/db/MenuRepository';
 import { OrderRepository } from './repositories/db/OrderRepository';
 import { PaymentRepository } from './repositories/db/PaymentRepository';
+import { PrintLeaseRepository } from './repositories/lease/PrintLeaseRepository';
 import { PrinterRepository } from './repositories/db/PrinterRepository';
 import { PrintJobRepository } from './repositories/db/PrintJobRepository';
 import { SettingsRepository } from './repositories/db/SettingsRepository';
@@ -75,7 +76,8 @@ export class Runtime implements DatabaseRuntime {
 			() => this.scope.repositories,
 			options.device,
 			options.workerOptions,
-			this.now
+			this.now,
+			new PrintLeaseRepository(options.dataDir)
 		);
 		const name = this.files.readActiveName() ?? DEFAULT_DATABASE;
 		this.scope = this.createScope(name);

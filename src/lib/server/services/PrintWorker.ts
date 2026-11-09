@@ -1,3 +1,4 @@
+import type { PrintLeaseRepository } from '../repositories/lease/PrintLeaseRepository';
 import type { PrinterRepository } from '../repositories/db/PrinterRepository';
 import type { PrintJobRepository } from '../repositories/db/PrintJobRepository';
 import type { PrinterRecord } from '../repositories/db/types';
@@ -17,6 +18,9 @@ export type PrintWorkerOptions = {
 
 type PrinterState = { busy: boolean; failures: number; nextAttemptAt: number };
 
+/** A worker whose heartbeat is older than this is considered dead and can be replaced. */
+const LEASE_TTL_MS = 10_000;
+
 const DEFAULT_OPTIONS: PrintWorkerOptions = {
 	tickMs: 1000,
 	backoffMs: [2000, 5000, 15000, 30000]
@@ -26,21 +30,31 @@ const DEFAULT_OPTIONS: PrintWorkerOptions = {
  * Works off the print queue: one lane per printer, strictly oldest job first. A failed job stays
  * queued and the printer is retried with growing pauses until it is reachable again, then every
  * waiting job is printed in order.
+ *
+ * Only one process per data directory works off the queue (see `PrintLeaseRepository`). A process
+ * with real printers always outranks one with simulated printers, so a development server using
+ * the fake driver can never mark jobs as printed that a real printer was meant to print.
  */
 export class PrintWorker {
 	private readonly states = new Map<number, PrinterState>();
 	private readonly options: PrintWorkerOptions;
 	private timer: ReturnType<typeof setInterval> | null = null;
 	private running = new Set<Promise<void>>();
+	private readonly owner = crypto.randomUUID();
+	private readonly priority: number;
+	private active = true;
+	private warned = false;
 
 	constructor(
 		/** Called on every tick, so switching the event database is picked up automatically. */
 		private readonly repositories: () => PrintWorkerRepositories,
 		private readonly device: PrinterDeviceRepository,
 		options: Partial<PrintWorkerOptions> = {},
-		private readonly now: () => Date = () => new Date()
+		private readonly now: () => Date = () => new Date(),
+		private readonly lease?: PrintLeaseRepository
 	) {
 		this.options = { ...DEFAULT_OPTIONS, ...options };
+		this.priority = device.simulated ? 0 : 1;
 	}
 
 	start() {
@@ -53,6 +67,7 @@ export class PrintWorker {
 	stop() {
 		if (this.timer) clearInterval(this.timer);
 		this.timer = null;
+		this.lease?.release(this.owner);
 	}
 
 	/** Prints new jobs right away instead of waiting for the next tick. */
@@ -78,6 +93,11 @@ export class PrintWorker {
 		} catch {
 			return;
 		}
+		this.active = this.claimLease();
+		if (!this.active) {
+			await Promise.all(this.running);
+			return;
+		}
 		const now = this.now().getTime();
 		for (const printer of repositories.printers.list()) {
 			if (!printer.active) continue;
@@ -91,6 +111,34 @@ export class PrintWorker {
 			this.running.add(lane);
 		}
 		await Promise.all(this.running);
+	}
+
+	/** Takes or renews the lease; false if another live process with equal or higher rank has it. */
+	private claimLease(): boolean {
+		if (!this.lease) return true;
+		const now = this.now().getTime();
+		const current = this.lease.read();
+		const yields =
+			current !== null &&
+			current.owner !== this.owner &&
+			now - current.heartbeatAt <= LEASE_TTL_MS &&
+			current.priority >= this.priority;
+		if (!yields) {
+			this.lease.write({ owner: this.owner, priority: this.priority, heartbeatAt: now });
+			// Two processes may write at the same moment; the last write wins, the other one yields.
+			if (this.lease.read()?.owner === this.owner) {
+				this.warned = false;
+				return true;
+			}
+		}
+		if (!this.warned) {
+			this.warned = true;
+			console.warn(
+				'[print worker] Another dinoo process works off the print queue of this data directory; ' +
+					`this one (${this.device.simulated ? 'simulated' : 'real'} printers) stays idle.`
+			);
+		}
+		return false;
 	}
 
 	private state(printerId: number): PrinterState {
@@ -107,7 +155,7 @@ export class PrintWorker {
 		printer: PrinterRecord,
 		state: PrinterState
 	) {
-		for (;;) {
+		while (this.active) {
 			const job = repositories.printJobs.nextQueued(printer.id);
 			if (!job) return;
 			if (!repositories.printJobs.claim(job.id, printer.id, this.now())) continue;
