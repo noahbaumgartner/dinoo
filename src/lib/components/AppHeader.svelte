@@ -31,7 +31,7 @@
 	}
 </script>
 
-<Navbar class="app-navbar" label="Hauptnavigation">
+<Navbar class={['app-navbar', focus && 'app-navbar--focus']} label="Hauptnavigation">
 	{#snippet logo()}
 		{#if focus}
 			<span class="logo">
@@ -76,11 +76,17 @@
 	}
 
 	:global(.app-navbar .navbar-bar) {
-		box-sizing: content-box;
-		max-width: var(--content-max-width);
+		/* Same box as .app-main, so the logo and the rightmost button line up
+		   with the left and right edges of the page content. */
+		box-sizing: border-box;
+		max-width: calc(var(--content-max-width) + 2 * var(--gutter));
 		margin-inline: auto;
-		/* The rightmost control sits as far from the edge as from the top and bottom */
-		padding-inline-end: 14px;
+		padding-inline: var(--gutter);
+	}
+
+	/* The navbar renders an empty trigger wrapper; its gap would push the cancel button off the edge */
+	:global(.app-navbar--focus .navbar-trigger) {
+		display: none;
 	}
 
 	.logo {
