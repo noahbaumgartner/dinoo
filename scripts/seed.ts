@@ -5,14 +5,12 @@
  *   DATA_DIR=/tmp/x npm run seed
  *   SEED_DATABASE=last SEED_STAFF=8 SEED_HOURS=4 SEED_ORDERS=400 npm run seed
  *
- * SEED_PRINTER=<host> creates one printer «Küche» at that host for everything instead of the demo
- * printers (one of them offline). SEED_STAFF sets the number of service users (default 2), SEED_HOURS spreads SEED_ORDERS orders
+ * A single printer «Küche» is created (host 192.168.0.55, override with SEED_PRINTER=<host>).
+ * SEED_STAFF sets the number of service users (default 2), SEED_HOURS spreads SEED_ORDERS orders
  * over the last hours up to now with busier and quieter phases (default: one fixed evening).
  *
  * Demo logins (development only): admin / admin1234, anna / anna1234, ben / ben1234, further
  * service users <first name> / <first name>1234.
- * Printer hosts starting with «offline» fail on purpose with the fake printer driver, so the
- * print queue shows waiting jobs.
  */
 import path from 'node:path';
 import type { RequestEvent } from '@sveltejs/kit';
@@ -27,7 +25,7 @@ const dataDir = path.resolve(process.env.DATA_DIR ?? 'data');
 const STAFF = Number(process.env.SEED_STAFF ?? 2);
 const HOURS = process.env.SEED_HOURS ? Number(process.env.SEED_HOURS) : null;
 const ORDERS = Number(process.env.SEED_ORDERS ?? 300);
-const PRINTER = process.env.SEED_PRINTER ?? null;
+const PRINTER = process.env.SEED_PRINTER ?? '192.168.0.55';
 
 let now = new Date();
 if (HOURS === null) now.setHours(17, 30, 0, 0);
@@ -88,29 +86,23 @@ for (const [username, name] of staff)
 		await s.users.create({ username, name, role: 'service', password: `${username}1234` })
 	);
 
+// A single real printer. The seed itself prints through the fake driver (see above), so the
+// seeded jobs are marked as printed and a real printer never receives them.
 const kitchen = s.printers.save(null, {
 	name: 'Küche',
-	host: PRINTER ?? '192.168.50.21',
+	host: PRINTER,
 	port: 443,
 	model: 'TM-T20IV'
 })!;
-const grill = PRINTER
-	? kitchen
-	: s.printers.save(null, {
-			name: 'Grill',
-			host: 'offline-grill.local',
-			port: 443,
-			model: 'TM-T20III'
-		})!;
 
-const menu: [string, number | null, [string, number, ('grill' | 'none')?][]][] = [
+const menu: [string, number | null, [string, number][]][] = [
 	[
 		'Warme Küche',
 		kitchen.id,
 		[
 			['Pommes frites', 600],
-			['Bratwurst mit Brot', 750, 'grill'],
-			['Cervelat', 650, 'grill'],
+			['Bratwurst mit Brot', 750],
+			['Cervelat', 650],
 			['Chicken Nuggets', 900],
 			['Älplermagronen', 1450]
 		]
@@ -201,13 +193,13 @@ menu.forEach(([name, printerId, items], categoryIndex) => {
 		color: nextCategoryColor(categoryIndex),
 		defaultPrinterId: printerId
 	})!;
-	items.forEach(([articleName, priceCents, mode]) => {
+	items.forEach(([articleName, priceCents]) => {
 		articles.push(
 			s.menu.saveArticle(null, {
 				name: articleName,
 				priceCents,
 				categoryId: category.id,
-				printerId: mode === 'grill' && grill !== kitchen ? grill.id : null,
+				printerId: null,
 				...extras[articleName]
 			})!
 		);
@@ -297,7 +289,7 @@ for (const at of orderTimes()) {
 	}
 }
 
-// The kitchen printer works, the grill printer is «offline»: print what can be printed.
+// Work off the queue with the fake driver so no seeded job stays pending for the real printer.
 await runtime.worker.tick();
 runtime.close();
 console.log(`Seeded «${DATABASE}» in ${dataDir} with ${orderCount} orders.`);
