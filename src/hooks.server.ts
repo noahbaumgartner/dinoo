@@ -1,4 +1,4 @@
-import { error, redirect, type Handle, type ServerInit } from '@sveltejs/kit';
+import { redirect, type Handle, type ServerInit } from '@sveltejs/kit';
 import { app } from '$lib/server/app';
 
 const PUBLIC_PATHS = new Set(['/login', '/setup']);
@@ -23,8 +23,9 @@ export const handle: Handle = async ({ event, resolve }) => {
 		const target = path === '/' ? '' : `?redirectTo=${encodeURIComponent(path + event.url.search)}`;
 		redirect(303, `/login${target}`);
 	}
+	// Service staff who open an admin link (e.g. a bookmark) land on their start page instead.
 	if ((path === '/admin' || path.startsWith('/admin/')) && event.locals.user?.role !== 'admin') {
-		error(403, { message: 'Dieser Bereich ist nur für Admins.' });
+		redirect(303, '/');
 	}
 	return resolve(event);
 };

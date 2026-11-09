@@ -19,7 +19,7 @@ Service-Personal und Admins melden sich mit Benutzername und Passwort an, damit 
 - [ ] Deaktivierte Benutzer (`active = false`) können sich nicht anmelden.
 - [ ] Die Session bleibt mindestens für die Dauer eines Anlasses (≥ 24 h) gültig.
 - [ ] Abmelden ist von jeder Seite möglich.
-- [ ] Routen unter `/admin` sind nur mit Rolle `admin` erreichbar; `service` erhält 403.
+- [ ] Routen unter `/admin` sind nur mit Rolle `admin` erreichbar; `service` wird auf die Startseite weitergeleitet.
 - [ ] Passwörter werden gehasht gespeichert (z. B. argon2), nie im Klartext.
 
 ## Daten / API
