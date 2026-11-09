@@ -319,6 +319,18 @@
 	</button>
 {/snippet}
 
+{#snippet areaSelect()}
+	{#if area}
+		<Select
+			class="area-select"
+			aria-label="Bereich"
+			value={String(area.id)}
+			onchange={setArea}
+			options={data.areas.map((a) => ({ value: String(a.id), label: a.name }))}
+		/>
+	{/if}
+{/snippet}
+
 <svelte:head><title>Bestellen · dinoo</title></svelte:head>
 
 <div class="order stack">
@@ -334,7 +346,13 @@
 			aria-labelledby="step-table"
 		>
 			<div class="row heading-row">
-				<h1 id="step-table">Tisch wählen</h1>
+				<div class="row heading-main">
+					<h1 id="step-table">Tisch wählen</h1>
+					{#if data.areas.length > 1}
+						<!-- Desktop: next to the title; on a phone the area sits in the bar at the bottom. -->
+						<div class="heading-area">{@render areaSelect()}</div>
+					{/if}
+				</div>
 				{#if planTables.length > 0}
 					<Tabs
 						bind:value={tableView}
@@ -391,18 +409,14 @@
 			</div>
 		</section>
 		{#if data.areas.length > 1 && area}
-			<!-- The area at the bottom, where the thumb is; the tables fill the screen above. -->
-			<ActionBar>
-				{#snippet summary()}
-					<Select
-						class="area-select"
-						aria-label="Bereich"
-						value={String(area.id)}
-						onchange={setArea}
-						options={data.areas.map((a) => ({ value: String(a.id), label: a.name }))}
-					/>
-				{/snippet}
-			</ActionBar>
+			<!-- Phone: the area at the bottom, where the thumb is; the tables fill the screen above. -->
+			<div class="area-bar">
+				<ActionBar>
+					{#snippet summary()}
+						{@render areaSelect()}
+					{/snippet}
+				</ActionBar>
+			</div>
 		{/if}
 	{:else if step === 1}
 		<section class="stack" aria-labelledby="step-articles">
@@ -692,15 +706,37 @@
 		flex-shrink: 0;
 	}
 
+	.heading-main {
+		min-width: 0;
+		gap: 16px;
+	}
+
+	.area-bar {
+		display: contents;
+	}
+
+	.heading-area {
+		display: none;
+	}
+
 	/* The plan ends above the area bar instead of under it. */
 	.plan-mode.above-bar {
 		padding-bottom: 72px;
 	}
 
-	/* Full width on phones, a normal field width on larger screens. */
+	/* Full width in the bar on phones; on larger screens the area sits next to the title. */
 	@media (min-width: 640px) {
-		:global(.area-select) {
-			max-width: 320px;
+		.area-bar {
+			display: none;
+		}
+
+		.heading-area {
+			display: block;
+			width: 220px;
+		}
+
+		.plan-mode.above-bar {
+			padding-bottom: 0;
 		}
 	}
 
