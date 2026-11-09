@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import { beforeNavigate } from '$app/navigation';
+	import { beforeNavigate, replaceState } from '$app/navigation';
+	import { page } from '$app/state';
 	import { untrack } from 'svelte';
 	import AdminPage from '$lib/components/AdminPage.svelte';
 	import SeatingPlan from '$lib/components/SeatingPlan.svelte';
@@ -28,7 +29,8 @@
 
 	let { data }: PageProps = $props();
 
-	type Table = (typeof data.tables)[number];
+	type Area = (typeof data.areas)[number];
+	type Table = Area['tables'][number];
 
 	/** A seating plan cell as edited; `label: null` follows the numbering. */
 	type DraftCell = { label: string | null; active: boolean };
@@ -44,7 +46,7 @@
 
 	const key = (row: number, column: number) => `${row}:${column}`;
 
-	function draftFrom({ tables, plan }: typeof data): Draft {
+	function draftFrom({ tables, plan }: Area): Draft {
 		const cells: Record<string, DraftCell> = {};
 		for (const { gridRow: row, gridColumn: column, label, active } of tables)
 			if (row !== null && column !== null)
@@ -61,20 +63,37 @@
 		};
 	}
 
-	// Every change stays on this page until «Speichern»; «Verwerfen» goes back to the saved state.
-	let draft = $state<Draft>(untrack(() => draftFrom(data)));
-	const discard = () => (draft = draftFrom(data));
+	const draftsFrom = (areas: Area[]) =>
+		Object.fromEntries(areas.map((area) => [area.id, draftFrom(area)]));
 
-	// Another area (tabs, new or deleted area): start over with its saved plan.
-	let shownArea = untrack(() => data.area.id);
+	/**
+	 * One draft per area. Every change stays on this page until «Speichern», which saves all changed
+	 * areas at once; switching areas keeps the drafts. «Verwerfen» goes back to the saved state.
+	 */
+	let drafts = $state<Record<number, Draft>>(untrack(() => draftsFrom(data.areas)));
+	const discard = () => (drafts = draftsFrom(data.areas));
+
+	// `?area=<id>` picks the area shown first; the tabs then switch without a request.
+	let areaId = $state(untrack(() => Number(page.url.searchParams.get('area')) || data.areas[0].id));
+	let area = $derived(data.areas.find((a) => a.id === areaId) ?? data.areas[0]);
+
+	// Areas created or deleted elsewhere on the page: add a draft, drop the old one.
 	$effect.pre(() => {
-		if (data.area.id === shownArea) return;
-		shownArea = data.area.id;
-		discard();
-		mode = 'toggle';
-		areaOpen = false;
-		areaDeleteOpen = false;
+		for (const a of data.areas) if (!untrack(() => drafts[a.id])) drafts[a.id] = draftFrom(a);
+		const ids = new Set(data.areas.map((a) => a.id));
+		for (const id of Object.keys(untrack(() => drafts)).map(Number))
+			if (!ids.has(id)) delete drafts[id];
 	});
+
+	let draft = $derived(drafts[area.id] ?? draftFrom(area));
+
+	function showArea(id: number) {
+		areaId = id;
+		const url = new URL(page.url);
+		url.searchParams.set('area', String(id));
+		// eslint-disable-next-line svelte/no-navigation-without-resolve
+		replaceState(url, {});
+	}
 
 	/** A whole number from 1 to `max`, otherwise null. */
 	function size(raw: string, max: number): number | null {
@@ -104,12 +123,15 @@
 
 	let plan = $derived(planOf(draft));
 	let gridTables = $derived(plan?.tables ?? []);
-	let freeTables = $derived(data.tables.filter((table) => table.gridRow === null));
+	const freeOf = (a: Area) => a.tables.filter((table) => table.gridRow === null);
+	let freeTables = $derived(freeOf(area));
 	let freeActive = (table: Table) => draft.free[table.id] ?? table.active;
 
-	const payload = (state: Draft) => {
+	/** What «Speichern» sends for one area; equal to the saved one when nothing changed. */
+	const payload = (a: Area, state: Draft) => {
 		const { rows = 0, columns = 0, tables = [] } = planOf(state) ?? {};
 		return JSON.stringify({
+			areaId: a.id,
 			rows,
 			columns,
 			numbering: state.numbering,
@@ -119,14 +141,19 @@
 				label,
 				active
 			})),
-			free: freeTables.map((table) => ({
+			free: freeOf(a).map((table) => ({
 				id: table.id,
 				active: state.free[table.id] ?? table.active
 			}))
 		});
 	};
-	let json = $derived(payload(draft));
-	let dirty = $derived(json !== payload(draftFrom(data)));
+	let changed = $derived(
+		data.areas.filter((a) => drafts[a.id] && payload(a, drafts[a.id]) !== payload(a, draftFrom(a)))
+	);
+	let dirty = $derived(changed.length > 0);
+	/** Changed areas whose size is not valid yet; saving waits for them. */
+	let invalid = $derived(changed.filter((a) => !planOf(drafts[a.id])));
+	let json = $derived(`[${changed.map((a) => payload(a, drafts[a.id])).join(',')}]`);
 
 	beforeNavigate(({ cancel, type }) => {
 		if (!dirty) return;
@@ -139,11 +166,11 @@
 	/** Whether the area dialog renames the shown area instead of creating one. */
 	let areaRenaming = $state(false);
 	let areaDeleteOpen = $state(false);
+	/** Areas with unsaved changes carry a dot. */
 	let areaTabs = $derived(
-		data.areas.map((area) => ({
-			value: String(area.id),
-			label: area.name,
-			href: `?area=${area.id}`
+		data.areas.map((a) => ({
+			value: String(a.id),
+			label: changed.includes(a) ? `${a.name} •` : a.name
 		}))
 	);
 
@@ -224,15 +251,19 @@
 		<Button variant="ghost" icon={RotateCcw} disabled={!dirty} onclick={discard}>Verwerfen</Button>
 		<!-- After saving, the draft starts again from the saved tables. -->
 		<form method="POST" action="?/plan" use:enhance={notify(discard)}>
-			<input type="hidden" name="areaId" value={data.area.id} />
-			<input type="hidden" name="plan" value={json} />
-			<Button type="submit" disabled={!dirty || !plan}>Speichern</Button>
+			<input type="hidden" name="plans" value={json} />
+			<Button type="submit" disabled={!dirty || invalid.length > 0}>Speichern</Button>
 		</form>
 	{/snippet}
 
 	<div class="area-bar">
 		{#if data.areas.length > 1}
-			<Tabs value={String(data.area.id)} options={areaTabs} label="Bereich" />
+			<Tabs
+				value={String(area.id)}
+				options={areaTabs}
+				label="Bereich"
+				onchange={(value) => showArea(Number(value))}
+			/>
 		{:else}
 			<p class="hint">Mehrere Bereiche (z. B. Saal und Festzelt) haben je einen eigenen Plan.</p>
 		{/if}
@@ -246,7 +277,7 @@
 
 	<Card>
 		<CardHeader>
-			<CardTitle>{data.area.name}</CardTitle>
+			<CardTitle>{area.name}</CardTitle>
 			<CardDescription
 				>Tischplan als Raster aus Zeilen und Spalten; jede Zelle ist ein Tisch. Beim Verkleinern
 				werden Tische ausserhalb entfernt (mit Bestellungen: deaktiviert).</CardDescription
@@ -257,7 +288,7 @@
 						variant="ghost"
 						size="sm"
 						icon={Pencil}
-						label="Bereich {data.area.name} umbenennen"
+						label="Bereich {area.name} umbenennen"
 						onclick={() => ((areaRenaming = true), (areaOpen = true))}
 					/>
 					{#if data.areas.length > 1}
@@ -265,7 +296,7 @@
 							variant="ghost"
 							size="sm"
 							icon={Trash2}
-							label="Bereich {data.area.name} löschen"
+							label="Bereich {area.name} löschen"
 							onclick={() => (areaDeleteOpen = true)}
 						/>
 					{/if}
@@ -315,7 +346,7 @@
 	{#if !plan}
 		<EmptyState
 			icon={LayoutGrid}
-			title={data.plan.rows > 0 ? 'Ungültige Grösse' : 'Noch kein Tischplan'}
+			title={area.plan.rows > 0 ? 'Ungültige Grösse' : 'Noch kein Tischplan'}
 			description="Gib oben Zeilen und Spalten an. Danach kannst du Tische, ganze Zeilen und Spalten ausschalten (z. B. für einen Gang) und Tische umbenennen."
 		/>
 	{:else}
@@ -344,7 +375,7 @@
 				rows={plan.rows}
 				columns={plan.columns}
 				tables={gridTables}
-				label="Tischplan {data.area.name}"
+				label="Tischplan {area.name}"
 			>
 				{#snippet columnHandle(column)}
 					{@render lineHandle({ column }, `Spalte ${columnName(column)}`, columnName(column))}
@@ -445,7 +476,7 @@
 		{#if editing}
 			<input type="hidden" name="id" value={editing.id} />
 		{:else}
-			<input type="hidden" name="areaId" value={data.area.id} />
+			<input type="hidden" name="areaId" value={area.id} />
 		{/if}
 		<Field>
 			<Label for="table-label">Bezeichnung</Label>
@@ -489,7 +520,7 @@
 
 <Dialog
 	bind:open={areaOpen}
-	title={areaRenaming ? `Bereich ${data.area.name}` : 'Bereich erfassen'}
+	title={areaRenaming ? `Bereich ${area.name}` : 'Bereich erfassen'}
 	description={areaRenaming
 		? undefined
 		: 'Ein Teil des Geländes mit eigenem Tischplan. Beim Bestellen wird zuerst der Bereich gewählt.'}
@@ -500,15 +531,19 @@
 		method="POST"
 		action="?/saveArea"
 		class="stack"
-		use:enhance={notify(() => (areaOpen = false))}
+		use:enhance={notify((result) => {
+			areaOpen = false;
+			// A new area opens right away so its plan can be set up.
+			if (typeof result?.areaId === 'number') showArea(result.areaId);
+		})}
 	>
-		{#if areaRenaming}<input type="hidden" name="id" value={data.area.id} />{/if}
+		{#if areaRenaming}<input type="hidden" name="id" value={area.id} />{/if}
 		<Field>
 			<Label for="area-name">Name</Label>
 			<Input
 				id="area-name"
 				name="name"
-				value={areaRenaming ? data.area.name : ''}
+				value={areaRenaming ? area.name : ''}
 				placeholder="z. B. Festzelt oder Terrasse"
 				required
 			/>
@@ -523,13 +558,19 @@
 <AlertDialog
 	bind:open={areaDeleteOpen}
 	title="Bereich löschen?"
-	description="«{data.area
-		.name}» wird mit allen seinen Tischen gelöscht. Hat ein Tisch schon Bestellungen, geht das nicht; schalte dann die Tische aus."
+	description="«{area.name}» wird mit allen seinen Tischen gelöscht. Hat ein Tisch schon Bestellungen, geht das nicht; schalte dann die Tische aus."
 >
 	{#snippet actions(close)}
 		<Button variant="secondary" onclick={close}>Abbrechen</Button>
-		<form method="POST" action="?/deleteArea" use:enhance={notify(close)}>
-			<input type="hidden" name="id" value={data.area.id} />
+		<form
+			method="POST"
+			action="?/deleteArea"
+			use:enhance={notify(() => {
+				close();
+				showArea(data.areas[0].id);
+			})}
+		>
+			<input type="hidden" name="id" value={area.id} />
 			<Button type="submit" icon={Trash2}>Löschen</Button>
 		</form>
 	{/snippet}

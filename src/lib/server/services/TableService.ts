@@ -109,6 +109,27 @@ export class TableService {
 	 * and applies the edited labels and active flags.
 	 */
 	applyGrid(areaId: number, input: GridInput) {
+		this.applyGrids([{ ...input, areaId }]);
+	}
+
+	/**
+	 * Saves the seating plans of several areas at once (as edited on the tables page): all are
+	 * checked first, then written in one transaction, so either every area is saved or none.
+	 */
+	applyGrids(inputs: (GridInput & { areaId: number })[]) {
+		if (new Set(inputs.map((input) => input.areaId)).size !== inputs.length)
+			throw new DomainError('Jeder Bereich darf nur einmal vorkommen.');
+		this.tables.applyAll(
+			inputs.map(({ areaId, ...input }) => ({
+				areaId,
+				changes: this.gridChanges(areaId, input),
+				area: { numbering: input.numbering }
+			}))
+		);
+	}
+
+	/** What saving one area's plan changes; throws if the plan is invalid. */
+	private gridChanges(areaId: number, input: GridInput): TableChanges {
 		const { rows, columns, numbering } = input;
 		if (!TABLE_NUMBERINGS.includes(numbering)) throw new DomainError('Ungültige Nummerierung.');
 		if (!Number.isInteger(rows) || rows < 1 || rows > MAX_GRID_ROWS)
@@ -179,7 +200,7 @@ export class TableService {
 			if (table.active !== active) changes.update.push({ id, input: { active } });
 		}
 
-		this.tables.apply(areaId, changes, { numbering });
+		return changes;
 	}
 
 	/** Creates a free table (outside the seating plan) in an area or edits any table. */

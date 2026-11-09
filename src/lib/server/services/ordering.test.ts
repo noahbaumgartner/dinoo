@@ -502,6 +502,26 @@ describe('seating plan', () => {
 		).toThrow(/nicht gefunden/);
 	});
 
+	it('saves several areas at once, or none if one of them is invalid', () => {
+		const s = t.services();
+		const tent = s.tables.saveArea(null, { name: 'Festzelt' })!;
+		const hall = { areaId: seed.area.id, columns: 3, numbering: 'number' } as const;
+		expect(() =>
+			s.tables.applyGrids([
+				{ ...hall, rows: 2 },
+				{ areaId: tent.id, rows: 99, columns: 2, numbering: 'letter' }
+			])
+		).toThrow(/Zeilen/);
+		expect(s.tables.plan(seed.area.id).rows).toBe(1);
+		expect(s.tables.list(tent.id)).toEqual([]);
+		s.tables.applyGrids([
+			{ ...hall, rows: 2 },
+			{ areaId: tent.id, rows: 1, columns: 2, numbering: 'letter' }
+		]);
+		expect(s.tables.plan(seed.area.id).rows).toBe(2);
+		expect(s.tables.list(tent.id).map((table) => table.label)).toEqual(['A01', 'A02']);
+	});
+
 	it('renames and deletes areas, but not the last one or one with orders', () => {
 		const s = t.services();
 		s.tables.saveArea(seed.area.id, { name: 'Halle' });

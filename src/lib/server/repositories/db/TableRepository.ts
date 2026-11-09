@@ -84,17 +84,19 @@ export class TableRepository {
 	}
 
 	/**
-	 * Applies all changes and the area's numbering atomically: updates (freeing cells) first, then
-	 * deletes, then inserts.
+	 * Applies the changes and area fields of several areas in one transaction; per area updates
+	 * (freeing cells) first, then deletes, then inserts.
 	 */
-	apply(areaId: number, changes: TableChanges, area: Partial<AreaInput> = {}) {
+	applyAll(plans: { areaId: number; changes: TableChanges; area: Partial<AreaInput> }[]) {
 		this.db.transaction((tx) => {
-			for (const { id, input } of changes.update)
-				tx.update(tables).set(input).where(eq(tables.id, id)).run();
-			for (const id of changes.delete) tx.delete(tables).where(eq(tables.id, id)).run();
-			if (changes.create.length > 0) tx.insert(tables).values(changes.create).run();
-			if (Object.keys(area).length > 0)
-				tx.update(areas).set(area).where(eq(areas.id, areaId)).run();
+			for (const { areaId, changes, area } of plans) {
+				for (const { id, input } of changes.update)
+					tx.update(tables).set(input).where(eq(tables.id, id)).run();
+				for (const id of changes.delete) tx.delete(tables).where(eq(tables.id, id)).run();
+				if (changes.create.length > 0) tx.insert(tables).values(changes.create).run();
+				if (Object.keys(area).length > 0)
+					tx.update(areas).set(area).where(eq(areas.id, areaId)).run();
+			}
 		});
 	}
 
