@@ -9,9 +9,12 @@ import type { ArticleRecord, CategoryRecord } from '../repositories/db/types';
 import { DomainError, ensure, notFound } from './errors';
 import { effectivePrinterId } from './menu-rules';
 
-/** New entries go to the end; the order is changed with `reorderCategories`/`reorderArticles`. */
+/**
+ * New entries go to the end; the order is changed with `reorderCategories`/`reorderArticles`.
+ * Articles start active; the active flag is changed via `setArticleActive`.
+ */
 export type CategoryFields = Omit<CategoryInput, 'sortOrder'>;
-export type ArticleFields = Omit<ArticleInput, 'sortOrder'>;
+export type ArticleFields = Omit<ArticleInput, 'sortOrder' | 'active'>;
 
 export type MenuArticle = ArticleRecord & { effectivePrinterId: number | null };
 export type MenuCategory = CategoryRecord & { articles: MenuArticle[] };
@@ -67,7 +70,8 @@ export class MenuService {
 		if (input.printerId !== null) this.printer(input.printerId);
 		const clean = { ...input, name };
 		const appended = () => nextSortOrder(this.articlesIn(input.categoryId));
-		if (id === null) return this.menu.createArticle({ ...clean, sortOrder: appended() });
+		if (id === null)
+			return this.menu.createArticle({ ...clean, active: true, sortOrder: appended() });
 		const existing = ensure(this.menu.getArticle(id), 'Artikel');
 		// Moved to another category: append there.
 		const sortOrder = existing.categoryId === input.categoryId ? existing.sortOrder : appended();

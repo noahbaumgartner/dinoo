@@ -32,8 +32,7 @@ export const actions: Actions = {
 				name: form.string('name'),
 				priceCents: form.cents('price'),
 				categoryId: form.int('categoryId'),
-				printerId: form.optionalInt('printerId'),
-				active: form.bool('active')
+				printerId: form.optionalInt('printerId')
 			});
 			return { message: id === null ? 'Artikel erfasst' : 'Artikel gespeichert' };
 		}),

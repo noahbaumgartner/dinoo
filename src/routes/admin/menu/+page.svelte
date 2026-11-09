@@ -28,7 +28,6 @@
 		Label,
 		Select,
 		SortableList,
-		Switch,
 		toast
 	} from '@noahbaumgartner/svelte-ui';
 	import {
@@ -75,13 +74,11 @@
 	let article = $state<Article | null>(null);
 	let articleCategory = $state('');
 	let articlePrinter = $state(LIKE_CATEGORY);
-	let articleActive = $state(true);
 
 	function editArticle(value: Article | null, categoryId: number) {
 		article = value;
 		articleCategory = String(value?.categoryId ?? categoryId);
 		articlePrinter = value?.printerId ? String(value.printerId) : LIKE_CATEGORY;
-		articleActive = value?.active ?? true;
 		articleOpen = true;
 	}
 
@@ -362,10 +359,6 @@
 					...printerOptions
 				]}
 			/>
-		</Field>
-		<Field orientation="horizontal">
-			<Switch id="article-active" name="active" bind:checked={articleActive} />
-			<Label for="article-active">Bestellbar (nicht ausverkauft)</Label>
 		</Field>
 	</form>
 	{#snippet actions(close)}

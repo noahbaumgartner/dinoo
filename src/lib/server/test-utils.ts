@@ -73,22 +73,19 @@ export async function seedBasics(runtime: Runtime) {
 		name: 'Pommes',
 		priceCents: 600,
 		categoryId: food.id,
-		printerId: null,
-		active: true
+		printerId: null
 	})!;
 	const sausage = s.menu.saveArticle(null, {
 		name: 'Bratwurst',
 		priceCents: 750,
 		categoryId: food.id,
-		printerId: grill.id,
-		active: true
+		printerId: grill.id
 	})!;
 	const beer = s.menu.saveArticle(null, {
 		name: 'Bier',
 		priceCents: 550,
 		categoryId: drinks.id,
-		printerId: null,
-		active: true
+		printerId: null
 	})!;
 	s.tables.applyGrid({ rows: 1, columns: 3, numbering: 'number' });
 	const admin = runtime.repositories.users.get(adminId)!;

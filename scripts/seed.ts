@@ -136,8 +136,7 @@ menu.forEach(([name, printerId, items], categoryIndex) => {
 				name: articleName,
 				priceCents,
 				categoryId: category.id,
-				printerId: mode === 'grill' ? grill.id : null,
-				active: true
+				printerId: mode === 'grill' ? grill.id : null
 			})!
 		);
 	});

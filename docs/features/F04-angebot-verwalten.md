@@ -20,7 +20,7 @@ Der Admin pflegt Kategorien und Artikel inkl. Preisen, legt pro Kategorie den St
 - [ ] Sortieren von Kategorien und von Artikeln innerhalb ihrer Kategorie per Drag & Drop über einen eigenen Griff (Handle) links am Eintrag; alternativ per Tastatur (Griff fokussieren, Pfeiltasten, Pos1/Ende). Die neue Reihenfolge wird sofort gespeichert. Wurde das Angebot inzwischen geändert, erscheint ein Hinweis und die aktuelle Reihenfolge wird neu geladen.
 - [ ] Kategorien haben eine Farbe aus einer festen Palette von 10 Farben, passend zum Farbschema. Auswahl über ein Popover mit 10 Quadraten (Tastatur: Pfeiltasten). Neue Kategorien erhalten reihum eine noch passende Vorschlagsfarbe.
 - [ ] Die Farbe erscheint in der Kategorienliste (Akzentbalken, Farbpunkt) und in der Bestellansicht (Kategorie-Chips und -Überschriften).
-- [ ] Artikel: anlegen, bearbeiten (Name, Preis in CHF mit Rappen, Kategorie), aktiv/inaktiv. Neue oder in eine andere Kategorie verschobene Artikel kommen ans Ende der Kategorie.
+- [ ] Artikel: anlegen, bearbeiten (Name, Preis in CHF mit Rappen, Kategorie), aktiv/inaktiv (nur über die Schnellaktion in der Liste, nicht im Bearbeiten-Dialog). Neue oder in eine andere Kategorie verschobene Artikel kommen ans Ende der Kategorie.
 - [ ] Artikel-Druckerwahl: „Wie Kategorie (= X)“ (`printerId` leer) oder ein konkreter Drucker. Ein Artikel kann den Druck nicht separat abschalten; „kein Druck“ wird über die Kategorie gesteuert.
 - [ ] Effektiver Drucker wird in der Artikelliste angezeigt.
 - [ ] Artikel mit bestehenden Bestellungen werden deaktiviert statt gelöscht.
