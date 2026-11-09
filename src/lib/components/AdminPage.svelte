@@ -13,11 +13,11 @@
 
 <div class="page">
 	<header class="page-head">
-		<div>
+		<div class="title-row">
 			<h1>{title}</h1>
-			{#if description}<p class="muted">{description}</p>{/if}
+			{#if actions}<div class="page-actions">{@render actions()}</div>{/if}
 		</div>
-		{#if actions}<div class="page-actions">{@render actions()}</div>{/if}
+		{#if description}<p class="muted">{description}</p>{/if}
 	</header>
 	{@render children()}
 </div>
@@ -31,8 +31,14 @@
 
 	.page-head {
 		display: flex;
+		flex-direction: column;
+		gap: 4px;
+	}
+
+	.title-row {
+		display: flex;
 		flex-wrap: wrap;
-		align-items: flex-end;
+		align-items: center;
 		justify-content: space-between;
 		gap: 12px;
 	}
