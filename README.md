@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/header.png" alt="dinoo" width="640">
+</p>
+
 # dinoo
 
 Food ordering for club events. A laptop on site runs the server: service staff take orders on their phones in the local Wi-Fi, kitchen tickets come out of Epson receipt printers, and payment is cash (with change calculator) or the club's TWINT code. Everything works offline.
