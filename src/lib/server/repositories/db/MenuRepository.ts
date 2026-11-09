@@ -1,4 +1,5 @@
 import { asc, eq } from 'drizzle-orm';
+import type { ArticleOption, MinAge } from '../../../article-options';
 import { countRows, type Db } from './client';
 import { articles, categories, orderItems } from './schema';
 import type { ArticleRecord, CategoryRecord } from './types';
@@ -17,6 +18,9 @@ export type ArticleInput = {
 	printerId: number | null;
 	sortOrder: number;
 	active: boolean;
+	description: string | null;
+	minAge: MinAge;
+	options: ArticleOption[];
 };
 
 /** Categories and articles. */

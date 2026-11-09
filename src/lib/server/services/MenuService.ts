@@ -1,3 +1,4 @@
+import { MIN_AGES } from '../../article-options';
 import { isCategoryColor } from '../../category-colors';
 import type {
 	ArticleInput,
@@ -7,14 +8,23 @@ import type {
 import type { PrinterRepository } from '../repositories/db/PrinterRepository';
 import type { ArticleRecord, CategoryRecord } from '../repositories/db/types';
 import { DomainError, ensure, notFound } from './errors';
-import { effectivePrinterId } from './menu-rules';
+import { cleanArticleOptions, effectivePrinterId } from './menu-rules';
 
 /**
  * New entries go to the end; the order is changed with `reorderCategories`/`reorderArticles`.
  * Articles start active; the active flag is changed via `setArticleActive`.
  */
 export type CategoryFields = Omit<CategoryInput, 'sortOrder'>;
-export type ArticleFields = Omit<ArticleInput, 'sortOrder' | 'active'>;
+export type ArticleFields = Omit<
+	ArticleInput,
+	'sortOrder' | 'active' | 'description' | 'minAge' | 'options'
+> &
+	Partial<Pick<ArticleInput, 'description' | 'minAge'>> & {
+		/** As entered; checked by `cleanArticleOptions`. */
+		options?: unknown;
+	};
+
+const MAX_DESCRIPTION_LENGTH = 200;
 
 export type MenuArticle = ArticleRecord & { effectivePrinterId: number | null };
 export type MenuCategory = CategoryRecord & { articles: MenuArticle[] };
@@ -68,7 +78,21 @@ export class MenuService {
 			throw new DomainError('Bitte einen gültigen Preis angeben.');
 		ensure(this.menu.getCategory(input.categoryId), 'Kategorie');
 		if (input.printerId !== null) this.printer(input.printerId);
-		const clean = { ...input, name };
+		const description = input.description?.trim() || null;
+		if (description && description.length > MAX_DESCRIPTION_LENGTH)
+			throw new DomainError(
+				`Die Beschreibung ist höchstens ${MAX_DESCRIPTION_LENGTH} Zeichen lang.`
+			);
+		const minAge = input.minAge ?? 0;
+		if (!MIN_AGES.includes(minAge))
+			throw new DomainError('Bitte ein gültiges Mindestalter wählen.');
+		const clean = {
+			...input,
+			name,
+			description,
+			minAge,
+			options: cleanArticleOptions(input.options ?? [])
+		};
 		const appended = () => nextSortOrder(this.articlesIn(input.categoryId));
 		if (id === null)
 			return this.menu.createArticle({ ...clean, active: true, sortOrder: appended() });

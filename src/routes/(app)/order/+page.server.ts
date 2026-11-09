@@ -18,7 +18,14 @@ export const load: PageServerLoad = ({ locals }) => {
 			id: category.id,
 			name: category.name,
 			color: category.color,
-			articles: category.articles.map(({ id, name, priceCents }) => ({ id, name, priceCents }))
+			articles: category.articles.map(({ id, name, priceCents, description, minAge, options }) => ({
+				id,
+				name,
+				priceCents,
+				description,
+				minAge,
+				options
+			}))
 		}))
 	};
 };
@@ -28,7 +35,7 @@ export const actions: Actions = {
 		action(async () => {
 			const user = requireUser(locals);
 			const form = await Form.from(request);
-			let items: { articleId: number; quantity: number; note?: unknown }[];
+			let items: { articleId: number; quantity: number; options?: unknown; note?: unknown }[];
 			try {
 				items = JSON.parse(form.string('items'));
 				if (!Array.isArray(items)) throw new Error();
@@ -42,6 +49,7 @@ export const actions: Actions = {
 					items: items.map((item) => ({
 						articleId: Number(item.articleId),
 						quantity: Number(item.quantity),
+						options: item.options,
 						note: typeof item.note === 'string' ? item.note : null
 					}))
 				},

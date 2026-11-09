@@ -39,7 +39,8 @@ export type TicketData = {
 	createdAt: Date;
 	serviceName: string;
 	printerName: string;
-	items: { quantity: number; articleName: string; note: string | null }[];
+	/** `options` are the picked option texts, printed like notes before the note. */
+	items: { quantity: number; articleName: string; options?: string[]; note: string | null }[];
 };
 
 export const MAX_BLOCKS = 30;
@@ -335,6 +336,8 @@ export function renderTemplate(
 						{ ...common, menge: String(item.quantity), artikel: item.articleName },
 						index
 					);
+					for (const option of item.options ?? [])
+						addText(block.note, { ...common, notiz: option }, index);
 					if (item.note) addText(block.note, { ...common, notiz: item.note }, index);
 				}
 				break;
@@ -365,7 +368,7 @@ export function sampleTicketData(input: {
 		printerName: input.printerName,
 		items: [
 			{ quantity: 2, articleName: 'Pommes', note: null },
-			{ quantity: 1, articleName: 'Bratwurst', note: 'ohne Senf, extra Brot' },
+			{ quantity: 1, articleName: 'Bratwurst', options: ['ohne Senf'], note: 'extra Brot' },
 			{ quantity: 3, articleName: 'Rivella', note: null },
 			{ quantity: 1, articleName: 'Cordon bleu mit Pommes und Salat', note: null }
 		]

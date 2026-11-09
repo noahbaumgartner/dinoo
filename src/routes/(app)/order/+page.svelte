@@ -8,8 +8,19 @@
 	import { formatChf } from '$lib/money';
 	import { uid } from '$lib/uid';
 	import { useFocusMode } from '$lib/focus-mode.svelte';
+	import ArticleOptionsForm from '$lib/components/ArticleOptionsForm.svelte';
+	import {
+		defaultValues,
+		hasRequiredChoice,
+		missingRequired,
+		optionLabels,
+		surchargeCents,
+		valuesKey,
+		type OptionValues
+	} from '$lib/article-options';
 	import {
 		AlertDialog,
+		Badge,
 		Button,
 		Drawer,
 		EmptyState,
@@ -26,24 +37,39 @@
 		LayoutGrid,
 		List,
 		Pencil,
+		Plus,
 		Send,
 		Trash2,
 		UtensilsCrossed
 	} from '@lucide/svelte';
-	import { SvelteMap } from 'svelte/reactivity';
 	import type { PageProps } from './$types';
 
 	let { data, form }: PageProps = $props();
 
 	let step = $state(0);
 	let tableId = $state<number | null>(null);
-	let quantities = new SvelteMap<number, number>();
-	/** Note for the kitchen per article line, e.g. «ohne Zwiebeln». */
-	let notes = new SvelteMap<number, string>();
-	/** Article whose note is being edited in the drawer. */
-	let noteArticleId = $state<number | null>(null);
-	let noteDraft = $state('');
-	let noteOpen = $state(false);
+	/**
+	 * One position per article and combination of options and note (F02). `note` is free text for
+	 * the kitchen, e.g. «ohne Zwiebeln». Articles without options have at most one position.
+	 */
+	type Line = {
+		id: number;
+		articleId: number;
+		quantity: number;
+		values: OptionValues;
+		note: string | null;
+	};
+	let positions = $state<Line[]>([]);
+	let nextLineId = 0;
+
+	/** Position being edited in the drawer; `lineId` null = a new position. */
+	let editor = $state<{
+		articleId: number;
+		lineId: number | null;
+		values: OptionValues;
+		note: string;
+	} | null>(null);
+	let editorOpen = $state(false);
 	let clientRequestId = $state(uid());
 	let submitting = $state(false);
 	let activeCategory = $state<number | null>(null);
@@ -72,6 +98,7 @@
 	}
 
 	let articles = $derived(data.categories.flatMap((category) => category.articles));
+	let articleById = $derived(new Map(articles.map((article) => [article.id, article])));
 	let table = $derived(data.tables.find((t) => t.id === tableId));
 	let planTables = $derived(data.tables.filter((t) => t.gridRow !== null));
 	let freeTables = $derived(data.tables.filter((t) => t.gridRow === null));
@@ -86,14 +113,19 @@
 			}))
 			.filter((group) => group.tables.length > 0)
 	);
+	/** Positions in menu order, with their article, unit price and option texts. */
 	let lines = $derived(
-		articles
-			.filter((article) => (quantities.get(article.id) ?? 0) > 0)
-			.map((article) => ({
-				...article,
-				quantity: quantities.get(article.id) ?? 0,
-				note: notes.get(article.id) ?? null
-			}))
+		articles.flatMap((article) =>
+			positions
+				.filter((line) => line.articleId === article.id)
+				.map((line) => ({
+					...line,
+					name: article.name,
+					minAge: article.minAge,
+					priceCents: article.priceCents + surchargeCents(article.options, line.values),
+					labels: optionLabels(article.options, line.values)
+				}))
+		)
 	);
 	let itemCount = $derived(lines.reduce((sum, line) => sum + line.quantity, 0));
 	let totalCents = $derived(lines.reduce((sum, line) => sum + line.quantity * line.priceCents, 0));
@@ -125,8 +157,7 @@
 	});
 
 	function reset() {
-		quantities.clear();
-		notes.clear();
+		positions = [];
 		tableId = null;
 		activeCategory = null;
 		reviewOpen = false;
@@ -155,26 +186,107 @@
 		window.scrollTo({ top: 0 });
 	}
 
-	function setQuantity(articleId: number, quantity: number) {
-		if (quantity > 0) return quantities.set(articleId, quantity);
-		quantities.delete(articleId);
-		notes.delete(articleId);
+	type Article = (typeof articles)[number];
+
+	/** Same article, options and note: such positions are one. */
+	function sameCombination(
+		article: Article,
+		line: Pick<Line, 'articleId' | 'values' | 'note'>,
+		values: OptionValues,
+		note: string | null
+	) {
+		return (
+			line.articleId === article.id &&
+			line.note === note &&
+			valuesKey(article.options, line.values) === valuesKey(article.options, values)
+		);
 	}
 
-	let noteArticle = $derived(articles.find((article) => article.id === noteArticleId));
-
-	function editNote(articleId: number) {
-		noteArticleId = articleId;
-		noteDraft = notes.get(articleId) ?? '';
-		noteOpen = true;
+	/** Adds `quantity` to the position with this combination, or creates it. */
+	function addLine(article: Article, values: OptionValues, note: string | null, quantity = 1) {
+		const same = positions.find((line) => sameCombination(article, line, values, note));
+		if (same) same.quantity += quantity;
+		else positions.push({ id: nextLineId++, articleId: article.id, quantity, values, note });
 	}
 
-	function saveNote(text: string) {
-		if (noteArticleId === null) return;
-		const trimmed = text.trim();
-		if (trimmed) notes.set(noteArticleId, trimmed);
-		else notes.delete(noteArticleId);
-		noteOpen = false;
+	function setLineQuantity(lineId: number, quantity: number) {
+		if (quantity > 0) {
+			const line = positions.find((l) => l.id === lineId);
+			if (line) line.quantity = quantity;
+		} else positions = positions.filter((l) => l.id !== lineId);
+	}
+
+	/** Articles without options: their only position. */
+	function plainLine(articleId: number) {
+		return positions.find((line) => line.articleId === articleId);
+	}
+
+	function setPlainQuantity(article: Article, quantity: number) {
+		const line = plainLine(article.id);
+		if (line) setLineQuantity(line.id, quantity);
+		else if (quantity > 0) addLine(article, {}, null, quantity);
+	}
+
+	/** A tap on an article with options: with a required choice the drawer asks first. */
+	function addWithOptions(article: Article) {
+		if (hasRequiredChoice(article.options)) {
+			editor = {
+				articleId: article.id,
+				lineId: null,
+				values: defaultValues(article.options),
+				note: ''
+			};
+			editorOpen = true;
+		} else addLine(article, defaultValues(article.options), null);
+	}
+
+	function editLine(line: Line) {
+		editor = {
+			articleId: line.articleId,
+			lineId: line.id,
+			values: { ...line.values },
+			note: line.note ?? ''
+		};
+		editorOpen = true;
+	}
+
+	let editorArticle = $derived(editor ? articleById.get(editor.articleId) : undefined);
+	let editorLine = $derived(positions.find((line) => line.id === editor?.lineId));
+	let editorMissing = $derived(
+		editor && editorArticle ? missingRequired(editorArticle.options, editor.values).length : 0
+	);
+	let editorPriceCents = $derived(
+		editor && editorArticle
+			? editorArticle.priceCents + surchargeCents(editorArticle.options, editor.values)
+			: 0
+	);
+
+	/** Applies the drawer; a position that now equals another one is merged into it. */
+	function saveEditor(note = editor?.note ?? '') {
+		if (!editor || !editorArticle || editorMissing > 0) return;
+		const article = editorArticle;
+		const values = { ...editor.values };
+		const trimmed = note.trim() || null;
+		const line = editorLine;
+		if (!line) addLine(article, values, trimmed);
+		else {
+			const same = positions.find(
+				(other) => other.id !== line.id && sameCombination(article, other, values, trimmed)
+			);
+			if (same) {
+				same.quantity += line.quantity;
+				positions = positions.filter((l) => l.id !== line.id);
+			} else {
+				line.values = values;
+				line.note = trimmed;
+			}
+		}
+		editorOpen = false;
+	}
+
+	function removeEditorLine() {
+		if (editorLine) setLineQuantity(editorLine.id, 0);
+		editorOpen = false;
 	}
 
 	function jumpTo(categoryId: number) {
@@ -295,40 +407,89 @@
 					</h2>
 					<ul class="articles">
 						{#each category.articles as article (article.id)}
-							{@const quantity = quantities.get(article.id) ?? 0}
+							{@const withOptions = article.options.length > 0}
+							{@const plain = withOptions ? undefined : plainLine(article.id)}
+							{@const quantity = plain?.quantity ?? 0}
 							<li class={['article', { 'article--selected accent-bar': quantity > 0 }]}>
 								<button
 									type="button"
 									class="article-add"
-									onclick={() => setQuantity(article.id, quantity + 1)}
+									onclick={() =>
+										withOptions ? addWithOptions(article) : setPlainQuantity(article, quantity + 1)}
 									aria-label="{article.name} hinzufügen"
 								>
-									<span class="article-name">{article.name}</span>
+									<span class="article-title">
+										<span class="article-name">{article.name}</span>
+										{#if article.minAge > 0}<Badge>{article.minAge}+</Badge>{/if}
+									</span>
+									{#if article.description}
+										<span class="article-description">{article.description}</span>
+									{/if}
 									<span class="article-price muted">{formatChf(article.priceCents)}</span>
-									{#if quantity > 0 && notes.get(article.id)}
-										<span class="article-note">{notes.get(article.id)}</span>
+									{#if plain?.note}
+										<span class="article-note">{plain.note}</span>
 									{/if}
 								</button>
-								{#if quantity > 0}
+								{#if withOptions}
 									<Button
-										variant="ghost"
-										icon={Pencil}
-										label="Notiz für {article.name}"
-										aria-haspopup="dialog"
-										onclick={() => editNote(article.id)}
+										variant="secondary"
+										icon={Plus}
+										label="{article.name} hinzufügen"
+										aria-haspopup={hasRequiredChoice(article.options) ? 'dialog' : undefined}
+										onclick={() => addWithOptions(article)}
+									/>
+								{:else}
+									{#if plain}
+										<Button
+											variant="ghost"
+											icon={Pencil}
+											label="Notiz für {article.name}"
+											aria-haspopup="dialog"
+											onclick={() => editLine(plain)}
+										/>
+									{/if}
+									<NumberStepper
+										value={quantity}
+										min={0}
+										max={99}
+										size="md"
+										label="Menge {article.name}"
+										decreaseLabel="Weniger"
+										increaseLabel="Mehr"
+										onchange={(value) => setPlainQuantity(article, value)}
 									/>
 								{/if}
-								<NumberStepper
-									value={quantity}
-									min={0}
-									max={99}
-									size="md"
-									label="Menge {article.name}"
-									decreaseLabel="Weniger"
-									increaseLabel="Mehr"
-									onchange={(value) => setQuantity(article.id, value)}
-								/>
 							</li>
+							{#if withOptions}
+								{#each lines.filter((line) => line.articleId === article.id) as line (line.id)}
+									<li class="article article-line article--selected accent-bar">
+										<span class="line-text">
+											<span class="line-options"
+												>{line.labels.length > 0 ? line.labels.join(' · ') : 'Standard'}</span
+											>
+											{#if line.note}<span class="article-note">{line.note}</span>{/if}
+											<span class="article-price muted">{formatChf(line.priceCents)}</span>
+										</span>
+										<Button
+											variant="ghost"
+											icon={Pencil}
+											label="Optionen und Notiz für {article.name}"
+											aria-haspopup="dialog"
+											onclick={() => editLine(line)}
+										/>
+										<NumberStepper
+											value={line.quantity}
+											min={0}
+											max={99}
+											size="md"
+											label="Menge {article.name}"
+											decreaseLabel="Weniger"
+											increaseLabel="Mehr"
+											onchange={(value) => setLineQuantity(line.id, value)}
+										/>
+									</li>
+								{/each}
+							{/if}
 						{/each}
 					</ul>
 				</div>
@@ -358,7 +519,10 @@
 					<li>
 						<span class="tabular">{line.quantity} ×</span>
 						<span class="review-name">
-							{line.name}
+							<span class="article-title"
+								>{line.name}{#if line.minAge > 0}<Badge>{line.minAge}+</Badge>{/if}</span
+							>
+							{#each line.labels as label (label)}<span class="review-option">{label}</span>{/each}
 							{#if line.note}<span class="article-note">{line.note}</span>{/if}
 						</span>
 						<span class="tabular">{formatChf(line.quantity * line.priceCents)}</span>
@@ -399,7 +563,12 @@
 						type="hidden"
 						name="items"
 						value={JSON.stringify(
-							lines.map((l) => ({ articleId: l.id, quantity: l.quantity, note: l.note }))
+							lines.map((l) => ({
+								articleId: l.articleId,
+								quantity: l.quantity,
+								options: l.values,
+								note: l.note
+							}))
 						)}
 					/>
 					<Button type="submit" size="lg" icon={Send} loading={submitting}
@@ -409,28 +578,54 @@
 			{/snippet}
 		</Drawer>
 		<Drawer
-			bind:open={noteOpen}
-			title="Notiz für die Küche"
-			description={noteArticle?.name}
+			bind:open={editorOpen}
+			title={editorArticle?.options.length ? (editorArticle?.name ?? '') : 'Notiz für die Küche'}
+			description={editorArticle?.options.length
+				? (editorArticle?.description ?? undefined)
+				: editorArticle?.name}
 			closeLabel="Schliessen"
 		>
-			<Field>
-				<Label for="item-note">Notiz</Label>
-				<Textarea
-					id="item-note"
-					bind:value={noteDraft}
-					rows={3}
-					maxlength={200}
-					placeholder="z. B. ohne Zwiebeln"
-				/>
-			</Field>
+			{#if editor && editorArticle}
+				<div class="stack editor">
+					{#if editorArticle.options.length > 0}
+						<ArticleOptionsForm
+							id="line-option"
+							options={editorArticle.options}
+							bind:values={editor.values}
+						/>
+					{/if}
+					<Field>
+						<Label for="item-note"
+							>{editorArticle.options.length > 0 ? 'Notiz für die Küche' : 'Notiz'}</Label
+						>
+						<Textarea
+							id="item-note"
+							bind:value={editor.note}
+							rows={editorArticle.options.length > 0 ? 2 : 3}
+							maxlength={200}
+							placeholder="z. B. ohne Zwiebeln"
+						/>
+					</Field>
+				</div>
+			{/if}
 			{#snippet actions()}
-				{#if noteArticleId !== null && notes.has(noteArticleId)}
-					<Button variant="secondary" size="lg" icon={Trash2} onclick={() => saveNote('')}
-						>Notiz entfernen</Button
+				{#if editorArticle?.options.length}
+					{#if editorLine}
+						<Button variant="secondary" size="lg" icon={Trash2} onclick={removeEditorLine}
+							>Entfernen</Button
+						>
+					{/if}
+					<Button size="lg" disabled={editorMissing > 0} onclick={() => saveEditor()}
+						>{editorLine ? 'Speichern' : 'Hinzufügen'} · {formatChf(editorPriceCents)}</Button
 					>
+				{:else}
+					{#if editorLine?.note}
+						<Button variant="secondary" size="lg" icon={Trash2} onclick={() => saveEditor('')}
+							>Notiz entfernen</Button
+						>
+					{/if}
+					<Button size="lg" onclick={() => saveEditor()}>Speichern</Button>
 				{/if}
-				<Button size="lg" onclick={() => saveNote(noteDraft)}>Speichern</Button>
 			{/snippet}
 		</Drawer>
 	{/if}
@@ -639,8 +834,54 @@
 		touch-action: manipulation;
 	}
 
+	.article-title {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 6px;
+	}
+
 	.article-name {
 		font-weight: 500;
+	}
+
+	.article-description {
+		color: var(--color-text-secondary);
+		font-size: 14px;
+		overflow-wrap: anywhere;
+	}
+
+	/* A position of an article with options, indented below the article. */
+	.article-line {
+		--accent-bar-inset: 8px;
+	}
+
+	.line-text {
+		display: flex;
+		flex: 1;
+		flex-direction: column;
+		gap: 2px;
+		min-width: 0;
+		padding: 10px 0 10px 28px;
+	}
+
+	.line-options {
+		font-size: 15px;
+		overflow-wrap: anywhere;
+	}
+
+	/* Positions belong to the article above: no divider between them. */
+	.article + .article-line::after {
+		content: none;
+	}
+
+	.review-option {
+		color: var(--color-text-secondary);
+		font-size: 14px;
+	}
+
+	.editor {
+		gap: 20px;
 	}
 
 	.article-note {

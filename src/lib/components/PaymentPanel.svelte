@@ -22,6 +22,7 @@
 		paidQuantity: number;
 		articleName: string;
 		priceCents: number;
+		options: string[];
 		note: string | null;
 	};
 

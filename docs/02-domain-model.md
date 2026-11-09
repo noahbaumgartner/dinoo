@@ -48,15 +48,28 @@ Gruppiert Artikel und legt den **Standard-Drucker** fest.
 
 Ein bestellbares Produkt.
 
-| Feld       | Typ        | Pflicht | Beschreibung                                               |
-| ---------- | ---------- | ------- | ---------------------------------------------------------- |
-| id         | int        | ✓       |                                                            |
-| name       | string     | ✓       |                                                            |
-| priceCents | int        | ✓       | Preis in Rappen (CHF)                                      |
-| categoryId | → Category | ✓       |                                                            |
-| printerId  | → Printer  | –       | Eigener Drucker. Leer = wie Kategorie                      |
-| sortOrder  | int        | ✓       | Reihenfolge innerhalb der Kategorie                        |
-| active     | bool       | ✓       | Inaktive Artikel sind nicht bestellbar (z. B. ausverkauft) |
+| Feld        | Typ                      | Pflicht | Beschreibung                                                                      |
+| ----------- | ------------------------ | ------- | --------------------------------------------------------------------------------- |
+| id          | int                      | ✓       |                                                                                   |
+| name        | string                   | ✓       |                                                                                   |
+| priceCents  | int                      | ✓       | Preis in Rappen (CHF)                                                             |
+| categoryId  | → Category               | ✓       |                                                                                   |
+| printerId   | → Printer                | –       | Eigener Drucker. Leer = wie Kategorie                                             |
+| sortOrder   | int                      | ✓       | Reihenfolge innerhalb der Kategorie                                               |
+| active      | bool                     | ✓       | Inaktive Artikel sind nicht bestellbar (z. B. ausverkauft)                        |
+| description | string                   | –       | Kurze Beschreibung für den Service, ≤ 200 Zeichen                                 |
+| minAge      | enum `0` \| `16` \| `18` | ✓       | Mindestalter; `0` = keines. 16/18 erscheint beim Bestellen als Badge «16+»/«18+»  |
+| options     | JSON                     | ✓       | Liste von **Optionen** (siehe unten), leer = keine. Gehören nur zu diesem Artikel |
+
+**Option (`ArticleOption`)** – Teil des Artikels, kein eigenes Objekt. Jede Option hat eine stabile `id`, einen `name` und eine Art:
+
+| Art (`kind`) | Felder                                                     | Beim Bestellen                                      | Auf Zettel/Position    |
+| ------------ | ---------------------------------------------------------- | --------------------------------------------------- | ---------------------- |
+| `count`      | `min`, `max` (0 ≤ min ≤ max ≤ 20), `priceCents` pro Stück  | Anzahl im Bereich `min`–`max`, Start bei `min`      | «2× Becher» (nur > 0)  |
+| `toggle`     | `priceCents`                                               | Schalter ein/aus, Start aus                         | «ohne Sauce» (nur ein) |
+| `choice`     | `required`, `choices` (≥ 1, je `id`, `name`, `priceCents`) | Genau ein Wert; ohne `required` auch keiner möglich | «Sorte: Schoggi»       |
+
+Aufpreise (`priceCents` ≥ 0) kommen zum Artikelpreis dazu: `count` × Anzahl, `toggle` wenn ein, `choice` für den gewählten Wert. Höchstens 10 Optionen pro Artikel, 10 Werte pro Auswahl.
 
 **Regel „effektiver Drucker“:**
 
@@ -119,18 +132,19 @@ Eine Datenbankdatei = genau ein Anlass. Für einen neuen Anlass wird eine neue D
 
 ### Bestellposition (`OrderItem`)
 
-Ein Artikel in einer bestimmten Menge innerhalb einer Bestellung, optional mit einer Notiz für die Küche. Name und Preis werden **kopiert**, damit spätere Preisänderungen alte Bestellungen nicht verändern.
+Ein Artikel in einer bestimmten Menge innerhalb einer Bestellung, optional mit gewählten Optionen und einer Notiz für die Küche. Name, Preis und Optionen werden **kopiert**, damit spätere Änderungen am Angebot alte Bestellungen nicht verändern. Jede unterschiedliche Kombination aus Optionen und Notiz ist eine eigene Position (z. B. 2× Kuchen «Sorte: Schoggi» und 1× Kuchen «Sorte: Zitrone»).
 
-| Feld        | Typ       | Pflicht | Beschreibung                                                              |
-| ----------- | --------- | ------- | ------------------------------------------------------------------------- |
-| id          | int       | ✓       |                                                                           |
-| orderId     | → Order   | ✓       |                                                                           |
-| articleId   | → Article | ✓       | Referenz für Auswertungen                                                 |
-| articleName | string    | ✓       | Snapshot                                                                  |
-| priceCents  | int       | ✓       | Snapshot                                                                  |
-| quantity    | int       | ✓       | ≥ 1                                                                       |
-| note        | string    | –       | Freitext für die Küche zu dieser Position (z. B. «ohne Zwiebeln»), ≤ 200  |
-| printerId   | → Printer | –       | Effektiver Drucker zum Bestellzeitpunkt (Snapshot), leer = nicht gedruckt |
+| Feld        | Typ       | Pflicht | Beschreibung                                                                                     |
+| ----------- | --------- | ------- | ------------------------------------------------------------------------------------------------ |
+| id          | int       | ✓       |                                                                                                  |
+| orderId     | → Order   | ✓       |                                                                                                  |
+| articleId   | → Article | ✓       | Referenz für Auswertungen                                                                        |
+| articleName | string    | ✓       | Snapshot                                                                                         |
+| priceCents  | int       | ✓       | Snapshot: Stückpreis inkl. Aufpreise der gewählten Optionen                                      |
+| quantity    | int       | ✓       | ≥ 1                                                                                              |
+| options     | JSON      | ✓       | Snapshot der gewählten Optionen als Texte, z. B. `["Sorte: Schoggi", "2× Becher"]`; leer = keine |
+| note        | string    | –       | Freitext für die Küche zu dieser Position (z. B. «ohne Zwiebeln»), ≤ 200                         |
+| printerId   | → Printer | –       | Effektiver Drucker zum Bestellzeitpunkt (Snapshot), leer = nicht gedruckt                        |
 
 ### Druckauftrag (`PrintJob`)
 
@@ -212,7 +226,7 @@ Pro effektivem Drucker ein Zettel. Aufbau, Reihenfolge und Grössen bestimmt die
 
 1. Bestellnummer (gross), Datum/Zeit
 2. Tisch (gross)
-3. Positionen, die **auf diesen Drucker** gehören: Menge × Artikelname, darunter eingerückt die Notiz der Position (falls vorhanden)
+3. Positionen, die **auf diesen Drucker** gehören: Menge × Artikelname, darunter eingerückt je eine Zeile pro gewählter Option und die Notiz der Position (falls vorhanden)
 4. Aufgenommen von: `User.displayName`
 
 Positionen anderer Drucker erscheinen nicht und werden auch nicht erwähnt (Küche sieht nur, was sie zubereitet).

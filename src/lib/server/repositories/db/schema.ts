@@ -1,5 +1,6 @@
 import { sql } from 'drizzle-orm';
 import { index, integer, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core';
+import type { ArticleOption, MinAge } from '../../../article-options';
 
 const timestamps = {
 	createdAt: integer('created_at', { mode: 'timestamp_ms' })
@@ -118,6 +119,15 @@ export const articles = sqliteTable(
 		printerId: integer('printer_id').references(() => printers.id, { onDelete: 'set null' }),
 		sortOrder: integer('sort_order').notNull().default(0),
 		active: integer('active', { mode: 'boolean' }).notNull().default(true),
+		/** Short text for the service, shown below the name when ordering. */
+		description: text('description'),
+		/** 0 = none; 16/18 is shown as a badge when ordering. */
+		minAge: integer('min_age').$type<MinAge>().notNull().default(0),
+		/** Options picked per position, see `src/lib/article-options.ts`. */
+		options: text('options', { mode: 'json' })
+			.$type<ArticleOption[]>()
+			.notNull()
+			.default(sql`'[]'`),
 		...timestamps
 	},
 	(t) => [index('articles_category_idx').on(t.categoryId)]
@@ -175,6 +185,11 @@ export const orderItems = sqliteTable(
 		articleName: text('article_name').notNull(),
 		priceCents: integer('price_cents').notNull(),
 		quantity: integer('quantity').notNull(),
+		/** Snapshot of the picked options as texts, e.g. «Sorte: Schoggi»; priced into `priceCents`. */
+		options: text('options', { mode: 'json' })
+			.$type<string[]>()
+			.notNull()
+			.default(sql`'[]'`),
 		/** Free text for the kitchen, e.g. «ohne Zwiebeln». */
 		note: text('note'),
 		printerId: integer('printer_id').references(() => printers.id, { onDelete: 'set null' })

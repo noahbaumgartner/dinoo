@@ -45,6 +45,15 @@ export class Form {
 		return value === 'on' || value === 'true' || value === '1';
 	}
 
+	/** Parsed JSON of a field; the service checks its shape. */
+	json(name: string): unknown {
+		try {
+			return JSON.parse(this.string(name));
+		} catch {
+			throw new DomainError('Ungültige Eingabe.');
+		}
+	}
+
 	cents(name: string): number {
 		const value = parseChf(this.string(name));
 		if (value === null) throw new DomainError('Bitte einen gültigen Betrag angeben, z. B. 4.50.');

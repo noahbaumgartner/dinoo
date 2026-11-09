@@ -1,5 +1,7 @@
+import { normalizeValues, optionLabels, surchargeCents, valuesKey } from '../../article-options';
 import type { MenuRepository } from '../repositories/db/MenuRepository';
 import type {
+	NewOrderItem,
 	OrderFilter,
 	OrderRepository,
 	OrderSummary
@@ -22,8 +24,11 @@ import type { PrintJobView, PrintQueueService } from './PrintQueueService';
 export type PlaceOrderInput = {
 	clientRequestId: string;
 	tableId: number;
-	/** `note` is free text for the kitchen for this item, e.g. «ohne Zwiebeln». */
-	items: { articleId: number; quantity: number; note?: string | null }[];
+	/**
+	 * `options` are the picked values per option id (`OptionValues`), checked against the article.
+	 * `note` is free text for the kitchen for this item, e.g. «ohne Zwiebeln».
+	 */
+	items: { articleId: number; quantity: number; options?: unknown; note?: string | null }[];
 };
 
 export type OrderingData = {
@@ -81,58 +86,65 @@ export class OrderService {
 		const table = this.tables.get(input.tableId);
 		if (!table || !table.active) throw new DomainError('Bitte einen gültigen Tisch wählen.');
 
-		// Same article with the same note is one item; a different note makes its own item.
-		const lines = new Map<string, { articleId: number; quantity: number; note: string | null }>();
-		for (const item of input.items) {
-			if (!Number.isInteger(item.quantity) || item.quantity <= 0) continue;
-			const note = item.note?.trim() || null;
-			if (note && note.length > MAX_NOTE_LENGTH)
-				throw new DomainError(`Notizen sind höchstens ${MAX_NOTE_LENGTH} Zeichen lang.`);
-			const key = `${item.articleId}:${note ?? ''}`;
-			const line = lines.get(key);
-			if (line) line.quantity += item.quantity;
-			else lines.set(key, { articleId: item.articleId, quantity: item.quantity, note });
-		}
-		if (lines.size === 0) throw new DomainError('Die Bestellung enthält keine Artikel.');
-
-		const articles = this.menu.getArticles([
-			...new Set([...lines.values()].map((l) => l.articleId))
-		]);
+		const requested = input.items.filter(
+			(item) => Number.isInteger(item.quantity) && item.quantity > 0
+		);
+		if (requested.length === 0) throw new DomainError('Die Bestellung enthält keine Artikel.');
+		const articles = new Map(
+			this.menu
+				.getArticles([...new Set(requested.map((item) => item.articleId))])
+				.map((a) => [a.id, a])
+		);
 		const categories = new Map(this.menu.listCategories().map((c) => [c.id, c]));
-		const items = [...lines.values()].map(({ articleId, quantity, note }) => {
-			const article = articles.find((a) => a.id === articleId);
+
+		// Same article with the same options and note is one item; anything else makes its own item.
+		const items = new Map<string, NewOrderItem>();
+		for (const item of requested) {
+			const article = articles.get(item.articleId);
 			if (!article || !article.active)
 				throw new DomainError(
 					'Ein Artikel ist nicht mehr verfügbar. Bitte Bestellung prüfen.',
 					409
 				);
-			if (quantity > MAX_QUANTITY)
-				throw new DomainError(`Höchstens ${MAX_QUANTITY} Stück pro Artikel.`);
-			return {
-				articleId,
-				articleName: article.name,
-				priceCents: article.priceCents,
-				quantity,
-				note,
-				printerId: effectivePrinterId(article, categories.get(article.categoryId))
-			};
-		});
+			const values = normalizeValues(article.options, item.options);
+			if (!values)
+				throw new DomainError('Ein Artikel wurde geändert. Bitte Bestellung prüfen.', 409);
+			const note = item.note?.trim() || null;
+			if (note && note.length > MAX_NOTE_LENGTH)
+				throw new DomainError(`Notizen sind höchstens ${MAX_NOTE_LENGTH} Zeichen lang.`);
+			const key = `${article.id}:${valuesKey(article.options, values)}:${note ?? ''}`;
+			const same = items.get(key);
+			if (same) same.quantity += item.quantity;
+			else
+				items.set(key, {
+					articleId: article.id,
+					articleName: article.name,
+					priceCents: article.priceCents + surchargeCents(article.options, values),
+					quantity: item.quantity,
+					options: optionLabels(article.options, values),
+					note,
+					printerId: effectivePrinterId(article, categories.get(article.categoryId))
+				});
+		}
+		const lines = [...items.values()];
+		if (lines.some((item) => item.quantity > MAX_QUANTITY))
+			throw new DomainError(`Höchstens ${MAX_QUANTITY} Stück pro Position.`);
 
 		const order = this.orders.create(
 			{
 				clientRequestId: input.clientRequestId,
 				tableId: table.id,
 				tableLabel: table.label,
-				totalCents: items.reduce((sum, item) => sum + item.priceCents * item.quantity, 0),
+				totalCents: lines.reduce((sum, item) => sum + item.priceCents * item.quantity, 0),
 				createdByUserId: by.id,
 				createdAt: this.now()
 			},
-			items,
+			lines,
 			// Queued in the same transaction: an order never exists without its tickets.
 			(created) =>
 				this.printQueue.enqueueOrder(
 					created,
-					items.map((item, index) => ({ ...item, id: index, orderId: created.id })),
+					lines.map((item, index) => ({ ...item, id: index, orderId: created.id })),
 					by.name
 				)
 		);

@@ -2,6 +2,7 @@
 	import { deserialize, enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
 	import AdminPage from '$lib/components/AdminPage.svelte';
+	import ArticleOptionsEditor from '$lib/components/ArticleOptionsEditor.svelte';
 	import CategoryColorPicker from '$lib/components/CategoryColorPicker.svelte';
 	import {
 		categoryColor,
@@ -37,6 +38,7 @@
 		Pencil,
 		Plus,
 		Printer,
+		SlidersHorizontal,
 		Trash2,
 		UtensilsCrossed
 	} from '@lucide/svelte';
@@ -74,11 +76,16 @@
 	let article = $state<Article | null>(null);
 	let articleCategory = $state('');
 	let articlePrinter = $state(LIKE_CATEGORY);
+	let articleMinAge = $state('0');
+	/** Recreates the options editor, so it starts from the opened article. */
+	let articleKey = $state(0);
 
 	function editArticle(value: Article | null, categoryId: number) {
 		article = value;
 		articleCategory = String(value?.categoryId ?? categoryId);
 		articlePrinter = value?.printerId ? String(value.printerId) : LIKE_CATEGORY;
+		articleMinAge = String(value?.minAge ?? 0);
+		articleKey++;
 		articleOpen = true;
 	}
 
@@ -212,6 +219,18 @@
 									<span class="article-handle">{@render handle()}</span>
 									<span class="article-name">
 										{item.name}
+										{#if item.minAge > 0}<Badge>{item.minAge}+</Badge>{/if}
+										{#if item.options.length > 0}
+											<Badge
+												icon={SlidersHorizontal}
+												title="{item.options.length} {item.options.length === 1
+													? 'Option'
+													: 'Optionen'}"
+												aria-label="{item.options.length} {item.options.length === 1
+													? 'Option'
+													: 'Optionen'}">{item.options.length}</Badge
+											>
+										{/if}
 									</span>
 									<span class="tabular">{formatChf(item.priceCents)}</span>
 									<span class="icon-actions">
@@ -360,6 +379,37 @@
 				]}
 			/>
 		</Field>
+		<Field>
+			<Label for="article-description">Beschreibung (optional)</Label>
+			<Input
+				id="article-description"
+				name="description"
+				value={article?.description ?? ''}
+				maxlength={200}
+				placeholder="z. B. mit Pommes und Salat"
+			/>
+		</Field>
+		<Field>
+			<Label for="article-min-age">Mindestalter</Label>
+			<Select
+				id="article-min-age"
+				name="minAge"
+				bind:value={articleMinAge}
+				options={[
+					{ value: '0', label: 'Keines' },
+					{ value: '16', label: '16 Jahre (Hinweis «16+»)' },
+					{ value: '18', label: '18 Jahre (Hinweis «18+»)' }
+				]}
+			/>
+		</Field>
+		<!-- Not a Field: its disabled buttons would grey out the label. -->
+		<section class="article-options" aria-labelledby="article-options-title">
+			<h3 id="article-options-title">Optionen</h3>
+			<p class="muted">Pro Position wählbar, Aufpreise kommen zum Preis dazu.</p>
+			{#key articleKey}
+				<ArticleOptionsEditor options={article?.options ?? []} />
+			{/key}
+		</section>
 	</form>
 	{#snippet actions(close)}
 		<Button variant="secondary" onclick={close}>Abbrechen</Button>
@@ -463,6 +513,22 @@
 
 	.toggle {
 		display: flex;
+	}
+
+	.article-options {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+	}
+
+	.article-options h3 {
+		font-size: 14px;
+		font-weight: 600;
+	}
+
+	.article-options p {
+		margin: 0 0 4px;
+		font-size: 14px;
 	}
 
 	.add {

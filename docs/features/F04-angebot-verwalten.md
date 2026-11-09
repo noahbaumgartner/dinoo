@@ -22,6 +22,13 @@ Der Admin pflegt Kategorien und Artikel inkl. Preisen, legt pro Kategorie den St
 - [ ] Die Farbe erscheint in der Kategorienliste (Akzentbalken, Farbpunkt) und in der Bestellansicht (Kategorie-Chips und -Überschriften).
 - [ ] Artikel: anlegen, bearbeiten (Name, Preis in CHF mit Rappen, Kategorie), aktiv/inaktiv (nur über die Schnellaktion in der Liste, nicht im Bearbeiten-Dialog). Neue oder in eine andere Kategorie verschobene Artikel kommen ans Ende der Kategorie.
 - [ ] Artikel-Druckerwahl: „Wie Kategorie (= X)“ (`printerId` leer) oder ein konkreter Drucker. Ein Artikel kann den Druck nicht separat abschalten; „kein Druck“ wird über die Kategorie gesteuert.
+- [ ] Artikel: optionale **Beschreibung** (≤ 200 Zeichen) und **Mindestalter** «Keines» / «16» / «18» (Auswahl, Standard «Keines»). In der Artikelliste erscheint ein Badge «16+»/«18+» und ein Hinweis auf die Anzahl Optionen.
+- [ ] Artikel-**Optionen** (Domänenmodell `ArticleOption`) werden im Artikel-Dialog unter «Optionen» erfasst: «Option hinzufügen» mit Art «Anzahl», «Schalter» oder «Auswahl»; pro Option Name und Aufpreis in CHF (0 = gratis), entfernen per Papierkorb, Reihenfolge = Reihenfolge im Dialog (nach oben/unten verschiebbar).
+  - «Anzahl»: zusätzlich Bereich von–bis (z. B. 0–4, höchstens 20); der Aufpreis gilt pro Stück.
+  - «Schalter»: nur Name und Aufpreis (z. B. «ohne Sauce», «extra Käse +1.00»).
+  - «Auswahl»: Schalter «Pflicht» und mindestens ein Wert mit Name und Aufpreis (Werte hinzufügen/entfernen).
+  - Ungültige Eingaben (leerer Name, Bereich von > bis, Auswahl ohne Wert) werden beim Speichern mit einer Meldung abgelehnt.
+- [ ] Optionen ändern wirkt nur auf neue Bestellungen; bestehende Positionen behalten ihre kopierten Optionstexte und Preise.
 - [ ] Effektiver Drucker wird in der Artikelliste angezeigt.
 - [ ] Artikel mit bestehenden Bestellungen werden deaktiviert statt gelöscht.
 - [ ] Änderungen wirken sofort auf neue Bestellungen.
@@ -40,7 +47,8 @@ Der Admin pflegt Kategorien und Artikel inkl. Preisen, legt pro Kategorie den St
 ## Nicht im Scope
 
 - CSV-Import/Export.
-- Varianten/Optionen (Grösse, Beilage).
+- Optionen, die von mehreren Artikeln gemeinsam genutzt werden (Vorlagen); Optionen gehören immer zu einem Artikel (Entscheid).
+- Alterskontrolle beim Bestellen (Bestätigung o. ä.); das Mindestalter ist nur ein Hinweis (Entscheid).
 
 ## Abhängigkeiten
 

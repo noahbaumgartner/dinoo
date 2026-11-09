@@ -11,7 +11,9 @@
 import path from 'node:path';
 import type { RequestEvent } from '@sveltejs/kit';
 import { FakePrinterDeviceRepository } from '../src/lib/server/repositories/printer/FakePrinterDeviceRepository.ts';
+import type { ArticleOption } from '../src/lib/article-options.ts';
 import { nextCategoryColor } from '../src/lib/category-colors.ts';
+import type { ArticleInput } from '../src/lib/server/repositories/db/MenuRepository.ts';
 import { Runtime } from '../src/lib/server/runtime.ts';
 
 const DATABASE = process.env.SEED_DATABASE ?? 'demo';
@@ -118,25 +120,77 @@ const menu: [string, number | null, [string, number, ('grill' | 'none')?][]][] =
 		kitchen.id,
 		[
 			['Glace Vanille', 450],
-			['Crèmeschnitte', 500]
+			['Crèmeschnitte', 500],
+			['Hausgemachter Kuchen', 500]
 		]
 	]
 ];
 
-const articles: { id: number; priceCents: number }[] = [];
+/** Description, minimum age and options of some articles, to show what they look like. */
+const extras: Record<string, Pick<ArticleInput, 'description' | 'minAge' | 'options'>> = {
+	'Pommes frites': {
+		description: 'Portion mit Sauce nach Wahl',
+		minAge: 0,
+		options: [
+			{
+				id: 'sauce',
+				kind: 'choice',
+				name: 'Sauce',
+				required: false,
+				choices: [
+					{ id: 'ketchup', name: 'Ketchup', priceCents: 0 },
+					{ id: 'mayo', name: 'Mayo', priceCents: 0 },
+					{ id: 'curry', name: 'Curry', priceCents: 50 }
+				]
+			},
+			{ id: 'xl', kind: 'toggle', name: 'Grosse Portion', priceCents: 200 }
+		]
+	},
+	'Bratwurst mit Brot': {
+		description: null,
+		minAge: 0,
+		options: [{ id: 'no-mustard', kind: 'toggle', name: 'ohne Senf', priceCents: 0 }]
+	},
+	'Bier 3 dl': {
+		description: 'Lager vom Fass',
+		minAge: 16,
+		options: [{ id: 'cups', kind: 'count', name: 'Mehrwegbecher', min: 0, max: 4, priceCents: 200 }]
+	},
+	'Hausgemachter Kuchen': {
+		description: 'Vom Kuchenbuffet des Vereins',
+		minAge: 0,
+		options: [
+			{
+				id: 'kind',
+				kind: 'choice',
+				name: 'Sorte',
+				required: true,
+				choices: [
+					{ id: 'choc', name: 'Schoggi', priceCents: 0 },
+					{ id: 'lemon', name: 'Zitrone', priceCents: 0 },
+					{ id: 'carrot', name: 'Rüebli', priceCents: 50 }
+				]
+			},
+			{ id: 'cream', kind: 'toggle', name: 'mit Rahm', priceCents: 100 }
+		]
+	}
+};
+
+const articles: { id: number; priceCents: number; options: ArticleOption[] }[] = [];
 menu.forEach(([name, printerId, items], categoryIndex) => {
 	const category = s.menu.saveCategory(null, {
 		name,
 		color: nextCategoryColor(categoryIndex),
 		defaultPrinterId: printerId
 	})!;
-	items.forEach(([articleName, priceCents, mode], index) => {
+	items.forEach(([articleName, priceCents, mode]) => {
 		articles.push(
 			s.menu.saveArticle(null, {
 				name: articleName,
 				priceCents,
 				categoryId: category.id,
-				printerId: mode === 'grill' ? grill.id : null
+				printerId: mode === 'grill' ? grill.id : null,
+				...extras[articleName]
 			})!
 		);
 	});
@@ -162,10 +216,16 @@ let orderCount = 0;
 for (const count of perHalfHour) {
 	for (let i = 0; i < count; i += 1) {
 		now = new Date(now.getTime() + (30 * 60 * 1000) / count);
-		const items = Array.from({ length: 1 + Math.floor(random() * 3) }, () => ({
-			articleId: pick(articles).id,
-			quantity: 1 + Math.floor(random() * 3)
-		}));
+		const items = Array.from({ length: 1 + Math.floor(random() * 3) }, () => {
+			const article = pick(articles);
+			// Required choices need a value; other options keep their start value.
+			const options = Object.fromEntries(
+				article.options.flatMap((option) =>
+					option.kind === 'choice' && option.required ? [[option.id, pick(option.choices).id]] : []
+				)
+			);
+			return { articleId: article.id, quantity: 1 + Math.floor(random() * 3), options };
+		});
 		const by = pick(users);
 		const order = s.orders.place(
 			{

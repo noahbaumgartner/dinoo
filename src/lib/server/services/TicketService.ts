@@ -34,6 +34,7 @@ export class TicketService {
 			items: input.items.map((item) => ({
 				quantity: item.quantity,
 				articleName: item.articleName,
+				options: item.options,
 				note: item.note
 			}))
 		};

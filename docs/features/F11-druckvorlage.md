@@ -21,12 +21,12 @@ Ein Bondrucker druckt fortlaufend Zeile für Zeile, es gibt keine freie Position
 
 Eine Vorlage ist eine geordnete Liste von **Blöcken**:
 
-| Block   | Einstellungen                                                                                                                                                                           |
-| ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `text`  | Text mit Platzhaltern + Stil                                                                                                                                                            |
-| `items` | **Positionszeile** (Text mit Platzhaltern + Stil) und **Notizzeile** (Text mit Platzhaltern + Stil); wird pro Position des Zettels wiederholt, die Notizzeile nur bei vorhandener Notiz |
-| `rule`  | Trennlinie, Zeichen `-` oder `=`                                                                                                                                                        |
-| `feed`  | Leerzeilen, 1–5                                                                                                                                                                         |
+| Block   | Einstellungen                                                                                                                                                                                                                                           |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `text`  | Text mit Platzhaltern + Stil                                                                                                                                                                                                                            |
+| `items` | **Positionszeile** (Text mit Platzhaltern + Stil) und **Notizzeile** (Text mit Platzhaltern + Stil); wird pro Position des Zettels wiederholt; die Notizzeile erscheint einmal pro gewählter Option und danach für die Notiz, entfällt also ohne beides |
+| `rule`  | Trennlinie, Zeichen `-` oder `=`                                                                                                                                                                                                                        |
+| `feed`  | Leerzeilen, 1–5                                                                                                                                                                                                                                         |
 
 **Stil** (für `text`, Positions- und Notizzeile):
 
@@ -41,19 +41,19 @@ Eine Vorlage ist eine geordnete Liste von **Blöcken**:
 
 **Platzhalter** (Schreibweise `{name}`):
 
-| Platzhalter       | Wert                                   | Verfügbar in       |
-| ----------------- | -------------------------------------- | ------------------ |
-| `{anlass}`        | `Settings.eventName`                   | überall            |
-| `{bestellnummer}` | `Order.orderNumber`                    | überall            |
-| `{tisch}`         | `Order.tableLabel`                     | überall            |
-| `{datum}`         | Bestelldatum `TT.MM.JJJJ`              | überall            |
-| `{zeit}`          | Bestellzeit `HH:MM`                    | überall            |
-| `{service}`       | `User.displayName` des Erfassers       | überall            |
-| `{drucker}`       | `Printer.name` des Zieldruckers        | überall            |
-| `{anzahl}`        | Summe der Mengen auf **diesem** Zettel | überall            |
-| `{menge}`         | `OrderItem.quantity`                   | nur Positionszeile |
-| `{artikel}`       | `OrderItem.articleName`                | nur Positionszeile |
-| `{notiz}`         | `OrderItem.note`                       | nur Notizzeile     |
+| Platzhalter       | Wert                                                         | Verfügbar in       |
+| ----------------- | ------------------------------------------------------------ | ------------------ |
+| `{anlass}`        | `Settings.eventName`                                         | überall            |
+| `{bestellnummer}` | `Order.orderNumber`                                          | überall            |
+| `{tisch}`         | `Order.tableLabel`                                           | überall            |
+| `{datum}`         | Bestelldatum `TT.MM.JJJJ`                                    | überall            |
+| `{zeit}`          | Bestellzeit `HH:MM`                                          | überall            |
+| `{service}`       | `User.displayName` des Erfassers                             | überall            |
+| `{drucker}`       | `Printer.name` des Zieldruckers                              | überall            |
+| `{anzahl}`        | Summe der Mengen auf **diesem** Zettel                       | überall            |
+| `{menge}`         | `OrderItem.quantity`                                         | nur Positionszeile |
+| `{artikel}`       | `OrderItem.articleName`                                      | nur Positionszeile |
+| `{notiz}`         | eine Option aus `OrderItem.options`, danach `OrderItem.note` | nur Notizzeile     |
 
 **Standardvorlage** (entspricht dem bisherigen, fest programmierten Zettel):
 
@@ -108,7 +108,7 @@ feed  1
 **Beispieldaten** (Vorschau und Testdruck, fest)
 
 - Anlass: `Settings.eventName` (leer → „Musterfest“), Bestellnummer 42, Tisch „B07“, aktuelles Datum und Zeit, Service: angemeldeter Admin, Drucker: gewählter Drucker (Vorschau: erster aktiver Drucker, ohne Drucker „Küche“).
-- Positionen: `2 x Pommes`, `1 x Bratwurst` mit Notiz „ohne Senf, extra Brot“, `3 x Rivella`, `1 x Cordon bleu mit Pommes und Salat` (langer Name, zeigt den Umbruch).
+- Positionen: `2 x Pommes`, `1 x Bratwurst` mit Option „ohne Senf“ und Notiz „extra Brot“, `3 x Rivella`, `1 x Cordon bleu mit Pommes und Salat` (langer Name, zeigt den Umbruch).
 
 ## Daten / API
 
@@ -131,7 +131,7 @@ feed  1
 
 - Freie Positionierung (x/y), Bilder/Logos, QR- und Barcodes.
 - Mehrere Vorlagen oder eine Vorlage pro Drucker (Erweiterung später möglich).
-- Bedingungen und Logik in der Vorlage (ausser: Notizzeile nur bei Notiz, leere Textzeilen entfallen).
+- Bedingungen und Logik in der Vorlage (ausser: Notizzeile nur bei Option oder Notiz, leere Textzeilen entfallen).
 - Preise auf dem Zettel; Quittung für den Gast.
 - Vorlage für den Drucker-Testdruck (F05).
 

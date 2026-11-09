@@ -1,3 +1,4 @@
+import type { MinAge } from '$lib/article-options';
 import { action, Form } from '$lib/server/forms';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -32,7 +33,10 @@ export const actions: Actions = {
 				name: form.string('name'),
 				priceCents: form.cents('price'),
 				categoryId: form.int('categoryId'),
-				printerId: form.optionalInt('printerId')
+				printerId: form.optionalInt('printerId'),
+				description: form.optionalString('description'),
+				minAge: form.int('minAge') as MinAge,
+				options: form.json('options')
 			});
 			return { message: id === null ? 'Artikel erfasst' : 'Artikel gespeichert' };
 		}),

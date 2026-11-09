@@ -10,6 +10,7 @@
 		paidQuantity: number;
 		articleName: string;
 		priceCents: number;
+		options: string[];
 		note: string | null;
 	};
 
@@ -51,6 +52,9 @@
 			<span class="tabular">{item.quantity} ×</span>
 			<span class="item-name">
 				{item.articleName}
+				{#each item.options as option (option)}
+					<span class="item-option small">{option}</span>
+				{/each}
 				{#if item.note}
 					<span class="item-note small">{item.note}</span>
 				{/if}
@@ -170,6 +174,10 @@
 	.total {
 		border-bottom: none;
 		font-weight: 700;
+	}
+
+	.item-option {
+		color: var(--color-text-secondary);
 	}
 
 	.item-note {
