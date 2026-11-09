@@ -216,13 +216,6 @@
 									<span class="article-name">
 										{item.name}
 									</span>
-									<span class="printer muted">
-										{#if item.effectivePrinterId}
-											<Printer size={14} aria-hidden="true" />
-											{printerName.get(item.effectivePrinterId)}
-											{#if item.printerId}<Badge variant="primary">eigener</Badge>{/if}
-										{/if}
-									</span>
 									<span class="tabular">{formatChf(item.priceCents)}</span>
 									<span class="icon-actions">
 										<form method="POST" action="?/setActive" use:enhance={notify()} class="toggle">
@@ -435,7 +428,7 @@
 	.article {
 		position: relative;
 		display: grid;
-		grid-template-columns: auto 1fr 160px 90px auto;
+		grid-template-columns: auto 1fr 90px auto;
 		align-items: center;
 		gap: 12px;
 		min-height: 52px;
@@ -474,13 +467,6 @@
 		text-align: right;
 	}
 
-	.printer {
-		display: inline-flex;
-		align-items: center;
-		gap: 4px;
-		font-size: 13px;
-	}
-
 	.toggle {
 		display: flex;
 	}
@@ -503,8 +489,7 @@
 			grid-row: 1;
 		}
 
-		.article .tabular,
-		.printer {
+		.article .tabular {
 			grid-row: 2;
 		}
 
