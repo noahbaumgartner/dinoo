@@ -428,7 +428,7 @@
 	.article {
 		position: relative;
 		display: grid;
-		grid-template-columns: auto 1fr 90px auto;
+		grid-template-columns: auto 1fr auto auto;
 		align-items: center;
 		gap: 12px;
 		min-height: 52px;
@@ -465,6 +465,7 @@
 
 	.article .tabular {
 		text-align: right;
+		white-space: nowrap;
 	}
 
 	.toggle {
@@ -473,28 +474,5 @@
 
 	.add {
 		margin-top: 12px;
-	}
-
-	@media (max-width: 720px) {
-		.article {
-			grid-template-columns: auto 1fr auto;
-			padding: 8px 12px;
-		}
-
-		.article-handle {
-			grid-row: 1 / span 2;
-		}
-
-		.article-name {
-			grid-row: 1;
-		}
-
-		.article .tabular {
-			grid-row: 2;
-		}
-
-		.article .icon-actions {
-			grid-row: 1;
-		}
 	}
 </style>
