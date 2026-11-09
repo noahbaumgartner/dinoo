@@ -448,8 +448,8 @@
 													<span class="line-options">
 														{#if line.labels.length > 0}
 															{line.labels.join(' · ')}
-														{:else if !line.note}
-															Standard
+														{:else}
+															<span class="muted">{article.name}</span>
 														{/if}
 														<Pencil class="line-pencil" size={14} aria-hidden="true" />
 													</span>
