@@ -51,48 +51,47 @@
 	title="Dashboard"
 	description="Wie läuft der Anlass? Aktualisiert sich alle 30 Sekunden."
 >
-	<Card>
-		<CardContent>
-			<form class="range" onsubmit={(event) => event.preventDefault()}>
-				<Field>
-					<Label for="range-from">Von</Label>
-					<Input
-						id="range-from"
-						type="datetime-local"
-						value={data.range.from}
-						max={data.range.to || undefined}
-						onchange={(event) => setBound('from', event.currentTarget.value)}
-					/>
-				</Field>
-				<Field>
-					<Label for="range-to">Bis</Label>
-					<Input
-						id="range-to"
-						type="datetime-local"
-						value={data.range.to}
-						min={data.range.from || undefined}
-						onchange={(event) => setBound('to', event.currentTarget.value)}
-					/>
-				</Field>
-				<Button
-					type="button"
-					variant="secondary"
-					disabled={data.range.isDefault}
-					onclick={resetRange}
-				>
-					<RotateCcw size={16} />
-					Letzte 6 Stunden
-				</Button>
-			</form>
-			<p class="muted small">
-				{#if data.range.isDefault}
-					Standardmässig die letzten 6 Stunden bis jetzt. Gilt für alle Zahlen und Diagramme.
-				{:else}
-					Gilt für alle Zahlen und Diagramme. Ein leeres Feld bedeutet keine Einschränkung.
-				{/if}
-			</p>
-		</CardContent>
-	</Card>
+	<!-- Not a Card: its overflow clipping would trap the pickers' popovers. -->
+	<div class="range-bar">
+		<form class="range" onsubmit={(event) => event.preventDefault()}>
+			<Field>
+				<Label for="range-from">Von</Label>
+				<Input
+					id="range-from"
+					type="datetime-local"
+					value={data.range.from}
+					max={data.range.to || undefined}
+					onchange={(event) => setBound('from', event.currentTarget.value)}
+				/>
+			</Field>
+			<Field>
+				<Label for="range-to">Bis</Label>
+				<Input
+					id="range-to"
+					type="datetime-local"
+					value={data.range.to}
+					min={data.range.from || undefined}
+					onchange={(event) => setBound('to', event.currentTarget.value)}
+				/>
+			</Field>
+			<Button
+				type="button"
+				variant="secondary"
+				icon={RotateCcw}
+				disabled={data.range.isDefault}
+				onclick={resetRange}
+			>
+				Letzte 6 Stunden
+			</Button>
+		</form>
+		<p class="muted small">
+			{#if data.range.isDefault}
+				Standardmässig die letzten 6 Stunden bis jetzt. Gilt für alle Zahlen und Diagramme.
+			{:else}
+				Gilt für alle Zahlen und Diagramme. Ein leeres Feld bedeutet keine Einschränkung.
+			{/if}
+		</p>
+	</div>
 
 	<div class="stats">
 		<Stat
@@ -179,6 +178,15 @@
 </AdminPage>
 
 <style>
+	.range-bar {
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
+		padding: 14px;
+		border-radius: 14px;
+		background-color: var(--color-fill);
+	}
+
 	.range {
 		display: flex;
 		flex-wrap: wrap;
