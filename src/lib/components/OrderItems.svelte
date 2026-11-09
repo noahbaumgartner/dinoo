@@ -160,12 +160,6 @@
 	}
 
 	/* Same touch target as the stepper's buttons, so «+» does not change size when picked. */
-	@media (pointer: coarse) {
-		.item-select :global(.button) {
-			min-width: 44px;
-			min-height: 44px;
-		}
-	}
 
 	.small {
 		font-size: 13px;
