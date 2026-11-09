@@ -344,8 +344,63 @@ describe('search and dashboard', () => {
 		expect(dashboard.timeline.length).toBeGreaterThanOrEqual(3);
 		expect(dashboard.timeline.filter((bucket) => bucket.orders > 0)).toHaveLength(2);
 		expect(dashboard.articles[0]).toMatchObject({ name: 'Bier', quantity: 6 });
-		const food = t.services().stats.dashboard('1h', seed.food.id);
+		const food = t.services().stats.dashboard('1h', {}, seed.food.id);
 		expect(food.articles.map((article) => article.name)).toEqual(['Pommes', 'Bratwurst']);
+	});
+
+	describe('time range', () => {
+		const HOUR = 60 * 60 * 1000;
+
+		// Orders at 18:00, 20:00 and (after 10 more hours) 06:00 the next day; now is 06:00.
+		function placeOverTime() {
+			place();
+			t.advance(2 * HOUR);
+			place();
+			t.advance(10 * HOUR);
+			place();
+		}
+
+		it('shows the last 6 hours by default', () => {
+			placeOverTime();
+			const dashboard = t.services().stats.dashboard('1h');
+			expect(dashboard.range.to).toBeNull();
+			expect(dashboard.range.from!.getTime()).toBe(Date.parse('2026-06-21T00:00:00Z'));
+			expect(dashboard.totals.orders).toBe(1);
+			expect(dashboard.timeline.map((bucket) => bucket.orders)).toEqual([0, 0, 0, 0, 0, 0, 1]);
+		});
+
+		it('applies a chosen range to totals, timeline and articles', () => {
+			placeOverTime();
+			const range = {
+				from: new Date('2026-06-20T17:00:00Z'),
+				to: new Date('2026-06-20T20:00:00Z')
+			};
+			const dashboard = t.services().stats.dashboard('1h', range);
+			expect(dashboard.totals).toEqual({ orders: 2, revenueCents: 7200, items: 12 });
+			expect(dashboard.articles[0]).toMatchObject({ name: 'Bier', quantity: 6 });
+			expect(dashboard.timeline.map((bucket) => bucket.orders)).toEqual([0, 1, 0, 1]);
+			const narrow = t
+				.services()
+				.stats.dashboard('1h', { from: new Date('2026-06-20T19:00:00Z'), to: range.to });
+			expect(narrow.totals.orders).toBe(1);
+		});
+
+		it('is unbounded when both bounds are cleared', () => {
+			placeOverTime();
+			const all = t.services().stats.dashboard('1h', { from: null, to: null });
+			expect(all.totals.orders).toBe(3);
+			expect(all.timeline.filter((bucket) => bucket.orders > 0)).toHaveLength(3);
+		});
+
+		it('returns nothing when the start is after the end', () => {
+			placeOverTime();
+			const dashboard = t.services().stats.dashboard('1h', {
+				from: new Date('2026-06-20T20:00:00Z'),
+				to: new Date('2026-06-20T18:00:00Z')
+			});
+			expect(dashboard.totals).toEqual({ orders: 0, revenueCents: 0, items: 0 });
+			expect(dashboard.articles).toEqual([]);
+		});
 	});
 });
 

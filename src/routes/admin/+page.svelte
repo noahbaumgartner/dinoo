@@ -9,12 +9,16 @@
 		CardContent,
 		CardHeader,
 		CardTitle,
+		Field,
+		Input,
+		Label,
 		LineChart,
+		Button,
 		Select,
 		Stat,
 		Tabs
 	} from '@noahbaumgartner/svelte-ui';
-	import { Banknote, ShoppingBasket } from '@lucide/svelte';
+	import { Banknote, RotateCcw, ShoppingBasket } from '@lucide/svelte';
 	import { onMount } from 'svelte';
 	import type { PageProps } from './$types';
 
@@ -32,6 +36,9 @@
 	let soldInCategory = $derived(data.dashboard.articles.reduce((sum, a) => sum + a.quantity, 0));
 
 	const setParam = (name: string, value: string) => setSearchParams({ [name]: value || null });
+	// An empty range field is kept in the URL as «unbounded», so it does not fall back to the default.
+	const setBound = (name: 'from' | 'to', value: string) => setSearchParams({ [name]: value });
+	const resetRange = () => setSearchParams({ from: null, to: null });
 
 	// The dashboard follows the event live.
 	onMount(() => {
@@ -44,6 +51,49 @@
 	title="Dashboard"
 	description="Wie läuft der Anlass? Aktualisiert sich alle 30 Sekunden."
 >
+	<Card>
+		<CardContent>
+			<form class="range" onsubmit={(event) => event.preventDefault()}>
+				<Field>
+					<Label for="range-from">Von</Label>
+					<Input
+						id="range-from"
+						type="datetime-local"
+						value={data.range.from}
+						max={data.range.to || undefined}
+						onchange={(event) => setBound('from', event.currentTarget.value)}
+					/>
+				</Field>
+				<Field>
+					<Label for="range-to">Bis</Label>
+					<Input
+						id="range-to"
+						type="datetime-local"
+						value={data.range.to}
+						min={data.range.from || undefined}
+						onchange={(event) => setBound('to', event.currentTarget.value)}
+					/>
+				</Field>
+				<Button
+					type="button"
+					variant="secondary"
+					disabled={data.range.isDefault}
+					onclick={resetRange}
+				>
+					<RotateCcw size={16} />
+					Letzte 6 Stunden
+				</Button>
+			</form>
+			<p class="muted small">
+				{#if data.range.isDefault}
+					Standardmässig die letzten 6 Stunden bis jetzt. Gilt für alle Zahlen und Diagramme.
+				{:else}
+					Gilt für alle Zahlen und Diagramme. Ein leeres Feld bedeutet keine Einschränkung.
+				{/if}
+			</p>
+		</CardContent>
+	</Card>
+
 	<div class="stats">
 		<Stat
 			label="Umsatz"
@@ -129,6 +179,17 @@
 </AdminPage>
 
 <style>
+	.range {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: flex-end;
+		gap: 12px;
+	}
+
+	.range :global(.field) {
+		flex: 1 1 200px;
+	}
+
 	.stats {
 		display: grid;
 		grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));

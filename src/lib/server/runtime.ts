@@ -216,7 +216,7 @@ function createScope(file: string, name: string, deps: ScopeDeps): Scope {
 			deps.now
 		),
 		payments: new PaymentService(repositories.orders, repositories.payments, deps.now),
-		stats: new StatsService(repositories.stats),
+		stats: new StatsService(repositories.stats, deps.now),
 		databases: new DatabaseService(
 			deps.files,
 			deps.runtime,
