@@ -5,7 +5,8 @@
  *   DATA_DIR=/tmp/x npm run seed
  *   SEED_DATABASE=last SEED_STAFF=8 SEED_HOURS=4 SEED_ORDERS=400 npm run seed
  *
- * SEED_STAFF sets the number of service users (default 2), SEED_HOURS spreads SEED_ORDERS orders
+ * SEED_PRINTER=<host> creates one printer «Küche» at that host for everything instead of the demo
+ * printers (one of them offline). SEED_STAFF sets the number of service users (default 2), SEED_HOURS spreads SEED_ORDERS orders
  * over the last hours up to now with busier and quieter phases (default: one fixed evening).
  *
  * Demo logins (development only): admin / admin1234, anna / anna1234, ben / ben1234, further
@@ -26,6 +27,7 @@ const dataDir = path.resolve(process.env.DATA_DIR ?? 'data');
 const STAFF = Number(process.env.SEED_STAFF ?? 2);
 const HOURS = process.env.SEED_HOURS ? Number(process.env.SEED_HOURS) : null;
 const ORDERS = Number(process.env.SEED_ORDERS ?? 300);
+const PRINTER = process.env.SEED_PRINTER ?? null;
 
 let now = new Date();
 if (HOURS === null) now.setHours(17, 30, 0, 0);
@@ -88,16 +90,18 @@ for (const [username, name] of staff)
 
 const kitchen = s.printers.save(null, {
 	name: 'Küche',
-	host: '192.168.50.21',
+	host: PRINTER ?? '192.168.50.21',
 	port: 443,
 	model: 'TM-T20IV'
 })!;
-const grill = s.printers.save(null, {
-	name: 'Grill',
-	host: 'offline-grill.local',
-	port: 443,
-	model: 'TM-T20III'
-})!;
+const grill = PRINTER
+	? kitchen
+	: s.printers.save(null, {
+			name: 'Grill',
+			host: 'offline-grill.local',
+			port: 443,
+			model: 'TM-T20III'
+		})!;
 
 const menu: [string, number | null, [string, number, ('grill' | 'none')?][]][] = [
 	[
@@ -203,7 +207,7 @@ menu.forEach(([name, printerId, items], categoryIndex) => {
 				name: articleName,
 				priceCents,
 				categoryId: category.id,
-				printerId: mode === 'grill' ? grill.id : null,
+				printerId: mode === 'grill' && grill !== kitchen ? grill.id : null,
 				...extras[articleName]
 			})!
 		);
