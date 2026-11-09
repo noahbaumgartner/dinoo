@@ -110,7 +110,7 @@ letter → Zeilenbuchstabe + zweistellige Spalte: A01, A02, …, B01   (max. 26 
 number → Zeile × 100 + Spalte:                  101, 102, …, 201
 ```
 
-Bezeichnungen müssen nicht über alle Bereiche eindeutig sein. Zettel und Listen zeigen nur die Tischbezeichnung, nicht den Bereich; wer Verwechslungen vermeiden will, vergibt eindeutige Bezeichnungen.
+Bezeichnungen müssen nicht eindeutig sein; derselbe Name (z. B. „A01“) darf in mehreren Bereichen vorkommen. Den Bereich druckt die Druckvorlage mit `{bereich}` (F11); im Tischfilter der Bestellsuche steht bei mehreren Bereichen der Bereich hinter dem Tisch.
 
 ### Bestellung (`Order`)
 
@@ -123,6 +123,7 @@ Eine vom Service-Personal aufgenommene Bestellung für einen Tisch.
 | clientRequestId | string   | ✓       | Vom Gerät erzeugte Kennung, macht das Abschicken idempotent (Doppeltap, Wiederholung) |
 | tableId         | → Table  | ✓       |                                                                                       |
 | tableLabel      | string   | ✓       | Snapshot des Tisch-Labels für Zettel und Historie                                     |
+| areaName        | string   | ✓       | Snapshot des Bereichsnamens des Tisches (Platzhalter `{bereich}`, F11)                |
 | createdByUserId | → User   | ✓       | Service-Mitarbeiter, der aufgenommen hat                                              |
 | createdAt       | datetime | ✓       |                                                                                       |
 | totalCents      | int      | ✓       | Summe der Positionen zum Bestellzeitpunkt                                             |
@@ -237,9 +238,10 @@ Die Bezahlung folgt direkt auf das Absenden (Schritt 4, F07), kann aber auch sp�
 
 Pro effektivem Drucker ein Zettel. Aufbau, Reihenfolge und Grössen bestimmt die **Druckvorlage** (`Settings.ticketTemplate`, F11). Die Standardvorlage enthält:
 
-1. Bestellnummer (gross), Datum/Zeit
-2. Tisch (gross)
-3. Positionen, die **auf diesen Drucker** gehören: Menge × Artikelname, darunter eingerückt je eine Zeile pro gewählter Option und die Notiz der Position (falls vorhanden)
-4. Aufgenommen von: `User.displayName`
+1. Anlass
+2. Tisch (sehr gross)
+3. Datum/Zeit und Bestellnummer
+4. Positionen, die **auf diesen Drucker** gehören: Menge × Artikelname (gross), darunter eingerückt je eine Zeile pro gewählter Option und die Notiz der Position (falls vorhanden)
+5. `User.displayName` des Erfassers (rechtsbündig)
 
 Positionen anderer Drucker erscheinen nicht und werden auch nicht erwähnt (Küche sieht nur, was sie zubereitet).

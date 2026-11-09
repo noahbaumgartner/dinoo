@@ -11,7 +11,7 @@ export const load: PageServerLoad = ({ locals, url }) => {
 			...filter,
 			createdByUserId: user.id
 		}),
-		tables: locals.services.tables.list().map(({ id, label }) => ({ id, label })),
+		tables: locals.services.tables.choices(),
 		values
 	};
 };

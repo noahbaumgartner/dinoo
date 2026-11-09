@@ -6,7 +6,7 @@ export const load: PageServerLoad = ({ locals, url }) => {
 	const { filter, values } = orderFilterFromUrl(url);
 	return {
 		orders: locals.services.orders.search(filter),
-		tables: locals.services.tables.list().map(({ id, label }) => ({ id, label })),
+		tables: locals.services.tables.choices(),
 		staff: locals.services.users.list().map(({ id, name }) => ({ id, name })),
 		values
 	};

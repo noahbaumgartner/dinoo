@@ -17,7 +17,7 @@ Der Admin findet jede Bestellung schnell wieder: nach Tisch, nach Service-Mitarb
 
 **Admin** (`/admin/orders`)
 
-- [ ] Filter: **Tisch** (Auswahl), **Personal** (Auswahl), **Bestellnummer** (exakt).
+- [ ] Filter: **Tisch** (Auswahl), **Personal** (Auswahl), **Bestellnummer** (exakt). Gibt es mehrere Bereiche, steht in der Tischauswahl der Bereich hinter dem Tisch (z. B. „A01 · Festzelt“), weil Tischnamen mehrfach vorkommen dürfen.
 - [ ] Zusatzfilter: Zahlungsstatus (offen / teilbezahlt / bezahlt), Zeitraum.
 - [ ] Ergebnisliste, neueste zuerst: Bestellnummer, Zeit, Tisch, Personal, Betrag, Zahlungsstatus, Druckstatus (alle Zettel gedruckt / wartend).
 - [ ] Detailansicht: Positionen, Zahlungen, PrintJobs mit Status; von dort: Zahlung erfassen/löschen (F07), Zettel erneut drucken (F05).

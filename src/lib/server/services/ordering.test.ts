@@ -33,6 +33,7 @@ describe('placing an order', () => {
 		expect(first.orderNumber).toBe(1);
 		expect(second.orderNumber).toBe(2);
 		expect(first.tableLabel).toBe('102');
+		expect(first.areaName).toBe('Saal');
 		expect(first.totalCents).toBe(2 * 600 + 750 + 3 * 550);
 
 		const detail = t.services().orders.detail(first.id);
@@ -110,14 +111,14 @@ describe('print queue', () => {
 		const jobs = t.services().printQueue.listByOrder(order.id);
 		expect(jobs.map((job) => job.printerName).sort()).toEqual(['Grill', 'Küche']);
 		const kitchen = jobs.find((job) => job.printerName === 'Küche')!;
-		expect(kitchen.preview).toContain('2 x Pommes');
-		expect(kitchen.preview).not.toContain('Bratwurst');
-		expect(kitchen.preview).not.toContain('Bier');
+		expect(kitchen.preview).toContain('2 X POMMES');
+		expect(kitchen.preview).not.toMatch(/bratwurst/i);
+		expect(kitchen.preview).not.toMatch(/bier/i);
 		expect(kitchen.preview).toContain('Tisch 102'.toUpperCase());
 		expect(kitchen.preview).not.toContain('Name:');
-		expect(kitchen.preview).toContain('Aufgenommen von: Anna');
+		expect(kitchen.preview).toMatch(/ Anna$/m);
 		const grill = jobs.find((job) => job.printerName === 'Grill')!;
-		expect(grill.preview).toMatch(/1 x Bratwurst\n\s*> ohne Senf/);
+		expect(grill.preview).toMatch(/1 X BRATWURST\n\s*> ohne Senf/);
 		expect(kitchen.preview).not.toContain('ohne Senf');
 
 		await t.runtime.worker.tick();
@@ -151,7 +152,7 @@ describe('print queue', () => {
 		await t.runtime.worker.tick();
 		expect(t.services().printQueue.countPending()).toBe(0);
 		const kitchenTickets = t.device.printed.filter((p) => p.target.host === seed.kitchen.host);
-		expect(kitchenTickets.map((p) => p.text.match(/BESTELLUNG (\d+)/)?.[1])).toEqual(['1', '2']);
+		expect(kitchenTickets.map((p) => p.text.match(/#(\d+)/)?.[1])).toEqual(['1', '2']);
 	});
 
 	it('cancels and reprints jobs', async () => {

@@ -36,6 +36,8 @@ export type TicketData = {
 	eventName: string | null;
 	orderNumber: number;
 	tableLabel: string;
+	/** Area of the table, e.g. «Festzelt». */
+	areaName: string;
 	createdAt: Date;
 	serviceName: string;
 	printerName: string;
@@ -54,6 +56,7 @@ export const PLACEHOLDERS = {
 	anlass: { label: 'Anlass', scope: 'all' },
 	bestellnummer: { label: 'Bestellnummer', scope: 'all' },
 	tisch: { label: 'Tisch', scope: 'all' },
+	bereich: { label: 'Bereich', scope: 'all' },
 	datum: { label: 'Datum', scope: 'all' },
 	zeit: { label: 'Zeit', scope: 'all' },
 	service: { label: 'Service', scope: 'all' },
@@ -88,31 +91,32 @@ export function lineStyle(style: Partial<LineStyle> = {}): LineStyle {
 	};
 }
 
-/** The ticket as it was before templates existed. */
+/** The standard ticket: big table, small header line, big items, staff name at the bottom. */
 export function defaultTemplate(): TicketTemplate {
 	return {
 		blocks: [
 			{ type: 'text', text: '{anlass}', style: lineStyle({ align: 'center' }) },
 			{
 				type: 'text',
-				text: 'Bestellung {bestellnummer}',
-				style: lineStyle({ align: 'center', width: 2, height: 2 })
+				text: 'Tisch {tisch}',
+				style: lineStyle({ align: 'center', width: 3, height: 3, bold: true })
 			},
 			{
 				type: 'text',
-				text: 'Tisch {tisch}',
-				style: lineStyle({ align: 'center', width: 2, height: 2, bold: true })
+				text: '{datum} {zeit} / #{bestellnummer}',
+				style: lineStyle({ align: 'center' })
 			},
-			{ type: 'text', text: '{datum} {zeit}', style: lineStyle({ align: 'center' }) },
 			{ type: 'rule', char: '-' },
 			{
 				type: 'items',
-				line: { text: '{menge} x {artikel}', style: lineStyle({ bold: true }) },
+				line: {
+					text: '{menge} x {artikel}',
+					style: lineStyle({ width: 2, height: 2, bold: true })
+				},
 				note: { text: '  > {notiz}', style: lineStyle() }
 			},
 			{ type: 'rule', char: '-' },
-			{ type: 'text', text: 'Aufgenommen von: {service}', style: lineStyle() },
-			{ type: 'feed', lines: 1 }
+			{ type: 'text', text: '{service}', style: lineStyle({ align: 'right' }) }
 		]
 	};
 }
@@ -297,6 +301,7 @@ export function renderTemplate(
 		anlass: data.eventName ?? '',
 		bestellnummer: String(data.orderNumber),
 		tisch: data.tableLabel,
+		bereich: data.areaName,
 		datum: dateFormat.format(data.createdAt),
 		zeit: timeFormat.format(data.createdAt),
 		service: data.serviceName,
@@ -363,6 +368,7 @@ export function sampleTicketData(input: {
 		eventName: input.eventName || 'Musterfest',
 		orderNumber: 42,
 		tableLabel: 'B07',
+		areaName: 'Saal',
 		createdAt: input.now,
 		serviceName: input.serviceName,
 		printerName: input.printerName,

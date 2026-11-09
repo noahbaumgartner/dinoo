@@ -46,6 +46,7 @@ Eine Vorlage ist eine geordnete Liste von **Blöcken**:
 | `{anlass}`        | `Settings.eventName`                                         | überall            |
 | `{bestellnummer}` | `Order.orderNumber`                                          | überall            |
 | `{tisch}`         | `Order.tableLabel`                                           | überall            |
+| `{bereich}`       | `Order.areaName` (Bereich des Tisches, z. B. „Festzelt“)     | überall            |
 | `{datum}`         | Bestelldatum `TT.MM.JJJJ`                                    | überall            |
 | `{zeit}`          | Bestellzeit `HH:MM`                                          | überall            |
 | `{service}`       | `User.displayName` des Erfassers                             | überall            |
@@ -55,18 +56,16 @@ Eine Vorlage ist eine geordnete Liste von **Blöcken**:
 | `{artikel}`       | `OrderItem.articleName`                                      | nur Positionszeile |
 | `{notiz}`         | eine Option aus `OrderItem.options`, danach `OrderItem.note` | nur Notizzeile     |
 
-**Standardvorlage** (entspricht dem bisherigen, fest programmierten Zettel):
+**Standardvorlage** (Stand 2026-11-09, vom Admin am Anlass «last» erstellt):
 
 ```
-text  "{anlass}"                    center
-text  "Bestellung {bestellnummer}"  center, 2×2
-text  "Tisch {tisch}"               center, 2×2, fett
-text  "{datum} {zeit}"              center
+text  "{anlass}"                              center
+text  "Tisch {tisch}"                         center, 3×3, fett
+text  "{datum} {zeit} / #{bestellnummer}"     center
 rule  "-"
-items "{menge} x {artikel}" fett  /  "  > {notiz}"
+items "{menge} x {artikel}" 2×2, fett  /  "  > {notiz}"
 rule  "-"
-text  "Aufgenommen von: {service}"
-feed  1
+text  "{service}"                             right
 ```
 
 ## Akzeptanzkriterien

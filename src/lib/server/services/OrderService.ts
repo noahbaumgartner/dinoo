@@ -135,6 +135,7 @@ export class OrderService {
 				clientRequestId: input.clientRequestId,
 				tableId: table.id,
 				tableLabel: table.label,
+				areaName: this.tables.getArea(table.areaId)?.name ?? '',
 				totalCents: lines.reduce((sum, item) => sum + item.priceCents * item.quantity, 0),
 				createdByUserId: by.id,
 				createdAt: this.now()

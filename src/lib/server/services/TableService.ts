@@ -76,6 +76,18 @@ export class TableService {
 		this.tables.deleteArea(id);
 	}
 
+	/**
+	 * Tables for a filter selection; with several areas the area follows the label, since the same
+	 * label may exist in more than one area.
+	 */
+	choices(): { id: number; label: string }[] {
+		const areas = new Map(this.tables.listAreas().map((area) => [area.id, area.name]));
+		return this.tables.list().map(({ id, label, areaId }) => ({
+			id,
+			label: areas.size > 1 ? `${label} · ${areas.get(areaId)}` : label
+		}));
+	}
+
 	/** All tables, or those of one area. */
 	list(areaId?: number): TableRecord[] {
 		return this.tables.list(areaId);

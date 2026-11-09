@@ -174,6 +174,8 @@ export const orders = sqliteTable(
 			.notNull()
 			.references(() => tables.id),
 		tableLabel: text('table_label').notNull(),
+		/** Snapshot of the table's area, printed with `{bereich}`. */
+		areaName: text('area_name').notNull().default(''),
 		totalCents: integer('total_cents').notNull(),
 		createdByUserId: text('created_by_user_id')
 			.notNull()

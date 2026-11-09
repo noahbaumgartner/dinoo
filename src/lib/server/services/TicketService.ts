@@ -28,6 +28,7 @@ export class TicketService {
 			eventName: input.eventName,
 			orderNumber: input.order.orderNumber,
 			tableLabel: input.order.tableLabel,
+			areaName: input.order.areaName,
 			createdAt: input.order.createdAt,
 			serviceName: input.createdByName,
 			printerName: input.printerName,

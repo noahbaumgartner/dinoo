@@ -71,6 +71,13 @@
       "when": 1794206312307,
       "tag": "0009_areas",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1794207820815,
+      "tag": "0010_order_area_name",
+      "breakpoints": true
     }
   ]
 }

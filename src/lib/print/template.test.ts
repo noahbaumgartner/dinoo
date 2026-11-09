@@ -15,6 +15,7 @@ const data: TicketData = {
 	eventName: 'Sommerfest',
 	orderNumber: 7,
 	tableLabel: 'A03',
+	areaName: 'Festzelt',
 	createdAt: new Date(2026, 10, 7, 18, 5),
 	serviceName: 'Anna',
 	printerName: 'Küche',
@@ -90,14 +91,24 @@ describe('template validation', () => {
 });
 
 describe('template rendering', () => {
-	it('renders the default template like the former fixed ticket', () => {
+	it('renders the default template', () => {
 		const text = ticketToText(renderTemplate(defaultTemplate(), data).ticket);
 		expect(text).toContain('Sommerfest');
-		expect(text).toContain('BESTELLUNG 7');
 		expect(text).toContain('TISCH A03');
-		expect(text).toContain('07.11.2026 18:05');
-		expect(text).toMatch(/2 x Pommes\n1 x Bratwurst\n {2}> ohne Senf\n/);
-		expect(text).toContain('Aufgenommen von: Anna');
+		expect(text).toContain('07.11.2026 18:05 / #7');
+		expect(text).toMatch(/2 X POMMES\n1 X BRATWURST\n {2}> ohne Senf\n/);
+		expect(text).toMatch(/ Anna$/m);
+	});
+
+	it('fills the area of the table', () => {
+		const template: TicketTemplate = {
+			blocks: [
+				{ type: 'text', text: '{bereich} {tisch}', style: lineStyle() },
+				defaultTemplate().blocks.find((block) => block.type === 'items')!
+			]
+		};
+		expect(validateTemplate(template).errors).toEqual([]);
+		expect(ticketToText(renderTemplate(template, data).ticket)).toContain('Festzelt A03');
 	});
 
 	it('fills placeholders and drops lines that end up empty', () => {
@@ -138,7 +149,8 @@ describe('template rendering', () => {
 			now: new Date()
 		});
 		expect(sample.eventName).toBe('Musterfest');
-		expect(renderTemplate(defaultTemplate(), sample).wrapped.size).toBe(0);
+		// Only the long name wraps in the double-size item line (block 4).
+		expect([...renderTemplate(defaultTemplate(), sample).wrapped]).toEqual([4]);
 	});
 });
 
