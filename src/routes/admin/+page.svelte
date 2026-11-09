@@ -16,7 +16,10 @@
 		Button,
 		Select,
 		Stat,
-		Tabs
+		Table,
+		Tabs,
+		type TableColumn,
+		type TableSort
 	} from '@noahbaumgartner/svelte-ui';
 	import { Banknote, RotateCcw, ShoppingBasket } from '@lucide/svelte';
 	import { onMount } from 'svelte';
@@ -30,7 +33,6 @@
 	let byRevenue = $derived(data.metric === 'revenue');
 
 	// Revenue in Rappen or a count; the other figure is shown as the detail next to each bar.
-	const orderCount = (n: number) => `${count.format(n)} ${n === 1 ? 'Bestellung' : 'Bestellungen'}`;
 	let timeline = $derived(
 		data.dashboard.timeline.map((bucket) => ({
 			label: time.format(bucket.start),
@@ -46,27 +48,42 @@
 			}))
 			.sort((a, b) => b.value - a.value)
 	);
-	let staff = $derived(
-		data.dashboard.staff
-			.map((person) => ({
-				label: person.name,
-				value: byRevenue ? person.revenueCents : person.orders,
-				detail: byRevenue ? orderCount(person.orders) : formatChf(person.revenueCents)
-			}))
-			.sort((a, b) => b.value - a.value)
-	);
-	// Table labels repeat across areas («A01»), so the area is only named when there are several.
-	let severalAreas = $derived(new Set(data.dashboard.tables.map((t) => t.areaName)).size > 1);
+	// Staff and tables are plain lists: both figures side by side, sortable by any column.
+	type Ranking = { name: string; area: string; orders: number; revenueCents: number };
+	const toRanking = (row: { orders: number; revenueCents: number }, name: string, area = '') => ({
+		name,
+		area,
+		orders: row.orders,
+		revenueCents: row.revenueCents
+	});
+	let staff = $derived(data.dashboard.staff.map((row) => toRanking(row, row.name)));
 	let tables = $derived(
-		data.dashboard.tables
-			.map((table) => ({
-				label: severalAreas && table.areaName ? `${table.label} (${table.areaName})` : table.label,
-				value: byRevenue ? table.revenueCents : table.orders,
-				detail: byRevenue ? orderCount(table.orders) : formatChf(table.revenueCents)
-			}))
-			.sort((a, b) => b.value - a.value)
+		data.dashboard.tables.map((row) => toRanking(row, row.label, row.areaName))
 	);
-	const formatMetric = (value: number) => (byRevenue ? formatChf(value) : count.format(value));
+	// Table labels repeat across areas («A01»), so the area gets its own column when there are several.
+	let severalAreas = $derived(new Set(data.dashboard.tables.map((t) => t.areaName)).size > 1);
+	// With `npm link`, svelte-ui type-checks against its own copy of svelte, so a local snippet is not
+	// assignable to the library's `Snippet` type. Same runtime value; the cast only bridges the types.
+	type Cell = Extract<TableColumn<Ranking>, { cell: unknown }>['cell'];
+	const cell = (snippet: unknown) => snippet as Cell;
+
+	// The snippet is declared in the markup below; the linter does not see it.
+	/* oxlint-disable no-undef */
+	const rankingColumns = (first: string, withArea: boolean): TableColumn<Ranking>[] => [
+		{ header: first, key: 'name', sortable: true },
+		...(withArea ? [{ header: 'Bereich', key: 'area', sortable: true } as const] : []),
+		{ header: 'Bestellungen', key: 'orders', align: 'right', sortable: true },
+		{
+			id: 'revenue',
+			header: 'Umsatz',
+			align: 'right',
+			cell: cell(money),
+			sortable: (row) => row.revenueCents
+		}
+	];
+	/* oxlint-enable no-undef */
+	let staffSort = $state<TableSort | undefined>({ column: 'revenue', direction: 'desc' });
+	let tableSort = $state<TableSort | undefined>({ column: 'revenue', direction: 'desc' });
 	let soldInCategory = $derived(data.dashboard.articles.reduce((sum, a) => sum + a.quantity, 0));
 
 	const setParam = (name: string, value: string) => setSearchParams({ [name]: value || null });
@@ -230,14 +247,17 @@
 			<CardTitle>Personal</CardTitle>
 			<p class="muted small">Wer hat wie viel eingebracht? Nach aufgenommenen Bestellungen.</p>
 		</CardHeader>
-		<CardContent>
-			<BarChart
-				items={staff}
-				label={byRevenue ? 'Umsatz pro Person' : 'Bestellungen pro Person'}
-				format={formatMetric}
-				labels={{ empty: 'Noch keine Bestellungen' }}
-			/>
-		</CardContent>
+		<div class="table-wrap">
+			<Table
+				data={staff}
+				locale="de-CH"
+				columns={rankingColumns('Name', false)}
+				bind:sort={staffSort}
+				aria-label="Umsatz pro Person"
+			>
+				{#snippet empty()}Noch keine Bestellungen{/snippet}
+			</Table>
+		</div>
 	</Card>
 
 	<Card>
@@ -245,16 +265,21 @@
 			<CardTitle>Tische</CardTitle>
 			<p class="muted small">Nur Tische mit Bestellungen im gewählten Zeitraum.</p>
 		</CardHeader>
-		<CardContent>
-			<BarChart
-				items={tables}
-				label={byRevenue ? 'Umsatz pro Tisch' : 'Bestellungen pro Tisch'}
-				format={formatMetric}
-				labels={{ empty: 'Noch keine Bestellungen' }}
-			/>
-		</CardContent>
+		<div class="table-wrap">
+			<Table
+				data={tables}
+				locale="de-CH"
+				columns={rankingColumns('Tisch', severalAreas)}
+				bind:sort={tableSort}
+				aria-label="Umsatz pro Tisch"
+			>
+				{#snippet empty()}Noch keine Bestellungen{/snippet}
+			</Table>
+		</div>
 	</Card>
 </AdminPage>
+
+{#snippet money(row: Ranking)}{formatChf(row.revenueCents)}{/snippet}
 
 <style>
 	.range-bar {

@@ -5,7 +5,7 @@
 
 ## Ziel
 
-Der Admin sieht auf einen Blick, wie der Anlass läuft: Einnahmenverlauf als Liniendiagramm, verkaufte Artikel als Balkendiagramm, die Summe der verkauften Artikel sowie Umsatz pro Personal und pro Tisch.
+Der Admin sieht auf einen Blick, wie der Anlass läuft: Einnahmenverlauf als Liniendiagramm, verkaufte Artikel als Balkendiagramm, die Summe der verkauften Artikel sowie Umsatz pro Personal und pro Tisch als Listen.
 
 ## User Stories
 
@@ -18,11 +18,10 @@ Der Admin sieht auf einen Blick, wie der Anlass läuft: Einnahmenverlauf als Lin
 - [ ] Nur Rolle `admin` (`/admin`, Startseite des Admin-Bereichs).
 - [ ] **Zeitraum (global):** Ein Von/Bis-Filter (Datum und Uhrzeit, auf die Minute) gilt für das ganze Dashboard: Kennzahlen, Einnahmenverlauf und verkaufte Artikel. Standardmässig sind die **letzten 6 Stunden bis jetzt** aktiv (rollierend, folgt dem Polling). Ein leeres Feld bedeutet keine Einschränkung auf dieser Seite; «Letzte 6 Stunden» setzt den Standard zurück. Der Zeitraum steht in der URL (`from`, `to`). Die Zeiten sind Ortszeit des Servers. Basis ist `Order.createdAt` (Grenzen inklusive); ist «Von» nach «Bis», bleibt das Dashboard leer.
 - [ ] **Einnahmenverlauf (Liniendiagramm):** Umsatz pro Intervall (15 min / 30 min / 1 h wählbar) über den gewählten Zeitraum (Lücken als 0, höchstens bis jetzt), Basis `Order.totalCents` nach `createdAt`. Ohne Startzeit beginnt das Diagramm bei der ersten Bestellung.
-- [ ] **Umsatz oder Anzahl:** Ein Umschalter («Umsatz» / «Anzahl», URL-Parameter `metric`, Standard Umsatz) gilt für alle Diagramme. «Anzahl» heisst: Bestellungen pro Intervall, Stück pro Artikel, Bestellungen pro Person und pro Tisch. Das jeweils andere Mass steht als Zusatz neben dem Balken. Sortiert wird nach dem gewählten Mass.
+- [ ] **Umsatz oder Anzahl:** Ein Umschalter («Umsatz» / «Anzahl», URL-Parameter `metric`, Standard Umsatz) gilt für die beiden Diagramme (Einnahmenverlauf, verkaufte Artikel). «Anzahl» heisst: Bestellungen pro Intervall bzw. Stück pro Artikel. Das jeweils andere Mass steht als Zusatz neben dem Balken. Sortiert wird nach dem gewählten Mass.
 - [ ] **Verkaufte Artikel (Balkendiagramm):** Stückzahl (`Σ OrderItem.quantity`) bzw. Umsatz (`Σ quantity × priceCents`) pro Artikel, absteigend sortiert, nach Kategorie filterbar. Waagrechte Balken, damit die Namen lesbar bleiben.
-- [ ] **Personal (Balkendiagramm):** Umsatz (`Σ Order.totalCents`) und Anzahl Bestellungen pro Service-Mitarbeiter (`Order.createdByUserId`), im gewählten Zeitraum. Unter den Artikeln.
-- [ ] **Tische (Balkendiagramm):** Umsatz und Anzahl Bestellungen pro Tisch (`Order.tableId`, Bezeichnung als Snapshot), nur Tische mit Bestellungen im Zeitraum. Zuunterst. Gibt es mehrere Bereiche, steht der Bereich in Klammern hinter dem Tisch.
-- [ ] **Summe der verkauften Artikel:** Gesamtstückzahl als Kennzahl über dem Balkendiagramm; dazu Gesamtumsatz als zweite Kennzahl.
+- [ ] **Personal (Liste):** Eine sortierbare Tabelle mit Name, Anzahl Bestellungen (`Order.createdByUserId`) und Umsatz (`Σ Order.totalCents`) pro Service-Mitarbeiter im gewählten Zeitraum, standardmässig nach Umsatz absteigend. Unter den Artikeln. Der Umschalter Umsatz/Anzahl wirkt hier nicht, beide Zahlen stehen nebeneinander.
+- [ ] **Tische (Liste):** Eine sortierbare Tabelle mit Tisch (Bezeichnung als Snapshot, `Order.tableId`), Anzahl Bestellungen und Umsatz, nur Tische mit Bestellungen im Zeitraum, standardmässig nach Umsatz absteigend. Zuunterst. Gibt es mehrere Bereiche, kommt eine Spalte «Bereich» dazu.
 - [ ] Aktualisiert sich automatisch (Polling, ~30 s).
 - [ ] Alle Zahlen basieren auf Snapshots (`OrderItem.priceCents`, `quantity`), nicht auf aktuellen Artikelpreisen.
 
@@ -33,7 +32,7 @@ Der Admin sieht auf einen Blick, wie der Anlass läuft: Einnahmenverlauf als Lin
 
 ## UI
 
-- Zeitraum-Filter (Von/Bis mit Datums-/Zeitwahl) oben, darunter Kennzahlen als zwei Kacheln, darunter der Umschalter Umsatz/Anzahl, Liniendiagramm in voller Breite, Balkendiagramm der Artikel, Personal und zuunterst die Tische.
+- Zeitraum-Filter (Von/Bis mit Datums-/Zeitwahl) oben, darunter Kennzahlen als zwei Kacheln, darunter der Umschalter Umsatz/Anzahl, Liniendiagramm in voller Breite, Balkendiagramm der Artikel, Liste des Personals und zuunterst die Liste der Tische.
 - Diagramme: Svelte-Chart-Bibliothek ohne Internetabhängigkeit (z. B. `layerchart`) oder eigenes SVG.
 
 ## Nicht im Scope
