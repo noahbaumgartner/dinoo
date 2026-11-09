@@ -3,8 +3,13 @@
  *
  *   PRINTER_DRIVER=fake npm run seed            # into ./data (database «demo»)
  *   DATA_DIR=/tmp/x npm run seed
+ *   SEED_DATABASE=last SEED_STAFF=8 SEED_HOURS=4 SEED_ORDERS=400 npm run seed
  *
- * Demo logins (development only): admin / admin1234, anna / anna1234, ben / ben1234.
+ * SEED_STAFF sets the number of service users (default 2), SEED_HOURS spreads SEED_ORDERS orders
+ * over the last hours up to now with busier and quieter phases (default: one fixed evening).
+ *
+ * Demo logins (development only): admin / admin1234, anna / anna1234, ben / ben1234, further
+ * service users <first name> / <first name>1234.
  * Printer hosts starting with «offline» fail on purpose with the fake printer driver, so the
  * print queue shows waiting jobs.
  */
@@ -18,9 +23,13 @@ import { Runtime } from '../src/lib/server/runtime.ts';
 
 const DATABASE = process.env.SEED_DATABASE ?? 'demo';
 const dataDir = path.resolve(process.env.DATA_DIR ?? 'data');
+const STAFF = Number(process.env.SEED_STAFF ?? 2);
+const HOURS = process.env.SEED_HOURS ? Number(process.env.SEED_HOURS) : null;
+const ORDERS = Number(process.env.SEED_ORDERS ?? 300);
 
 let now = new Date();
-now.setHours(17, 30, 0, 0);
+if (HOURS === null) now.setHours(17, 30, 0, 0);
+else now = new Date(now.getTime() - HOURS * 60 * 60 * 1000);
 const clock = () => now;
 
 const runtime = new Runtime({
@@ -59,18 +68,23 @@ const adminId = await s.users.createInitialAdmin({
 	name: 'Sandra Keller',
 	password: 'admin1234'
 });
-const annaId = await s.users.create({
-	username: 'anna',
-	name: 'Anna Meier',
-	role: 'service',
-	password: 'anna1234'
-});
-const benId = await s.users.create({
-	username: 'ben',
-	name: 'Ben Huber',
-	role: 'service',
-	password: 'ben1234'
-});
+const staff = [
+	['anna', 'Anna Meier'],
+	['ben', 'Ben Huber'],
+	['carla', 'Carla Frei'],
+	['david', 'David Brunner'],
+	['elena', 'Elena Steiner'],
+	['fabio', 'Fabio Gerber'],
+	['gina', 'Gina Moser'],
+	['luca', 'Luca Widmer'],
+	['mia', 'Mia Schmid'],
+	['nico', 'Nico Weber']
+].slice(0, STAFF);
+const staffIds: string[] = [];
+for (const [username, name] of staff)
+	staffIds.push(
+		await s.users.create({ username, name, role: 'service', password: `${username}1234` })
+	);
 
 const kitchen = s.printers.save(null, {
 	name: 'Küche',
@@ -203,46 +217,75 @@ for (const table of s.tables.list())
 s.tables.save(null, { label: 'Bar', sortOrder: 1, active: true });
 const tables = s.tables.list().filter((table) => table.active);
 
-const users = [annaId, benId, adminId].map((id) => runtime.repositories.users.get(id)!);
+const users = [...staffIds, adminId].map((id) => runtime.repositories.users.get(id)!);
 
 // Pseudo-random but stable, so screenshots look the same every time.
 let seed = 7;
 const random = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
 const pick = <T>(list: T[]) => list[Math.floor(random() * list.length)];
 
-// Busy around dinner, quieter later in the evening.
-const perHalfHour = [2, 4, 7, 9, 6, 4, 5, 3, 2];
+/** Order times: one fixed evening, or ORDERS orders over the last HOURS hours with waves. */
+function orderTimes(): Date[] {
+	if (HOURS === null) {
+		// Busy around dinner, quieter later in the evening.
+		const perHalfHour = [2, 4, 7, 9, 6, 4, 5, 3, 2];
+		const times: Date[] = [];
+		let at = now.getTime();
+		for (const count of perHalfHour)
+			for (let i = 0; i < count; i += 1) times.push(new Date((at += (30 * 60 * 1000) / count)));
+		return times;
+	}
+	// Ten-minute slots whose weight follows two rush waves plus noise, some slots almost empty.
+	const start = now.getTime();
+	const slots = HOURS * 6;
+	const weights = Array.from({ length: slots }, (_, i) => {
+		const x = i / slots;
+		const wave = Math.exp(-((x - 0.3) ** 2) / 0.01) + 0.8 * Math.exp(-((x - 0.7) ** 2) / 0.006);
+		return Math.max(0.05, 0.25 + wave + (random() - 0.5) * 0.5);
+	});
+	const total = weights.reduce((sum, w) => sum + w, 0);
+	const times: Date[] = [];
+	for (let i = 0; i < ORDERS; i += 1) {
+		let r = random() * total;
+		let slot = 0;
+		while (r > weights[slot] && slot < slots - 1) r -= weights[slot++];
+		times.push(new Date(start + (slot + random()) * 10 * 60 * 1000));
+	}
+	return times.sort((a, b) => a.getTime() - b.getTime());
+}
+
+const end = HOURS === null ? null : Date.now();
 let orderCount = 0;
-for (const count of perHalfHour) {
-	for (let i = 0; i < count; i += 1) {
-		now = new Date(now.getTime() + (30 * 60 * 1000) / count);
-		const items = Array.from({ length: 1 + Math.floor(random() * 3) }, () => {
-			const article = pick(articles);
-			// Required choices need a value; other options keep their start value.
-			const options = Object.fromEntries(
-				article.options.flatMap((option) =>
-					option.kind === 'choice' && option.required ? [[option.id, pick(option.choices).id]] : []
-				)
-			);
-			return { articleId: article.id, quantity: 1 + Math.floor(random() * 3), options };
-		});
-		const by = pick(users);
-		const order = s.orders.place(
-			{
-				clientRequestId: `seed-${orderCount++}`,
-				tableId: pick(tables).id,
-				items
-			},
-			by
+for (const at of orderTimes()) {
+	now = at;
+	const items = Array.from({ length: 1 + Math.floor(random() * 3) }, () => {
+		const article = pick(articles);
+		// Required choices need a value; other options keep their start value.
+		const options = Object.fromEntries(
+			article.options.flatMap((option) =>
+				option.kind === 'choice' && option.required ? [[option.id, pick(option.choices).id]] : []
+			)
 		);
-		// Most orders are paid right away, a few are split, some are still open.
-		const roll = random();
-		if (roll < 0.7) s.payments.add(order.id, random() < 0.6 ? 'cash' : 'twint', by);
-		else if (roll < 0.82 && items.length > 1) {
-			const first = s.orders.detail(order.id).items[0];
-			s.payments.add(order.id, 'cash', by, [{ orderItemId: first.id, quantity: first.quantity }]);
-			s.payments.add(order.id, 'twint', by);
-		}
+		return { articleId: article.id, quantity: 1 + Math.floor(random() * 3), options };
+	});
+	const by = pick(users);
+	const order = s.orders.place(
+		{
+			clientRequestId: `seed-${orderCount++}`,
+			tableId: pick(tables).id,
+			items
+		},
+		by
+	);
+	// Most orders are paid right away, a few are split, some are still open. Older orders of a
+	// history are almost all paid.
+	const old = end !== null && end - at.getTime() > 45 * 60 * 1000;
+	const roll = random();
+	if (roll < (old ? 0.93 : 0.7)) s.payments.add(order.id, random() < 0.6 ? 'cash' : 'twint', by);
+	else if (roll < (old ? 0.98 : 0.82) && s.orders.detail(order.id).items.length > 1) {
+		const first = s.orders.detail(order.id).items[0];
+		s.payments.add(order.id, 'cash', by, [{ orderItemId: first.id, quantity: first.quantity }]);
+		s.payments.add(order.id, 'twint', by);
 	}
 }
 
