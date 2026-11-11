@@ -46,9 +46,9 @@
 
 	/** Active printers that are not redirected themselves; a redirect never forms a chain. */
 	function redirectTargets(source: PrinterRow) {
-		return data.printers.filter(
-			(p) => p.id !== source.id && p.active && p.redirectToPrinterId === null
-		);
+		return data.printers
+			.filter((p) => p.id !== source.id && p.active && p.redirectToPrinterId === null)
+			.sort((a, b) => Number(a.reachable === false) - Number(b.reachable === false));
 	}
 
 	function isRedirectTarget(printer: PrinterRow) {
@@ -263,7 +263,10 @@
 				name="targetId"
 				bind:value={redirectTarget}
 				options={redirecting
-					? redirectTargets(redirecting).map((p) => ({ value: String(p.id), label: p.name }))
+					? redirectTargets(redirecting).map((p) => ({
+							value: String(p.id),
+							label: p.reachable === false ? `${p.name} (nicht erreichbar)` : p.name
+						}))
 					: []}
 			/>
 		</Field>
