@@ -6,7 +6,7 @@ import type {
 } from '../repositories/db/PrintJobRepository';
 import type { SettingsRepository } from '../repositories/db/SettingsRepository';
 import type { OrderItemRecord, OrderRecord, PrinterRecord } from '../repositories/db/types';
-import { ticketToText, type Ticket } from '../repositories/printer/ticket';
+import { ticketToText, withRedirectHint, type Ticket } from '../repositories/printer/ticket';
 import { parseStoredTemplate } from '$lib/print/template';
 import { DomainError, notFound } from './errors';
 import { checkedTemplate } from './SettingsService';
@@ -16,9 +16,20 @@ import type { TicketService } from './TicketService';
 export type PrinterStatus = PrinterRecord & {
 	pendingJobs: number;
 	reachable: boolean | null;
+	/** Name of the printer this one is redirected to, null without a redirect. */
+	redirectTargetName: string | null;
 };
 
-export type PrintJobView = PrintJobListItem & { preview: string };
+export type PrintJobView = PrintJobListItem & {
+	preview: string;
+	/** Station the ticket was meant for, if it was redirected to `printerName`. */
+	redirectedFrom: string | null;
+};
+
+/** Payload of a job moved away from `station`, with the «FÜR: …» hint on top. */
+export function redirectPayload(payload: string, station: string): string {
+	return JSON.stringify(withRedirectHint(JSON.parse(payload) as Ticket, station));
+}
 
 /** Everything that goes onto paper passes through here and into the persistent queue. */
 export class PrintQueueService {
@@ -41,21 +52,24 @@ export class PrintQueueService {
 		const eventName = this.settings.get('eventName');
 		const template = parseStoredTemplate(this.settings.get('ticketTemplate'));
 		this.printJobs.enqueue(
-			[...byPrinter].map(([printerId, printerItems]) => ({
-				kind: 'order' as const,
-				orderId: order.id,
-				printerId,
-				payload: JSON.stringify(
-					this.tickets.orderTicket({
-						template,
-						eventName,
-						order,
-						items: printerItems,
-						createdByName,
-						printerName: this.printers.get(printerId)?.name ?? ''
-					})
-				)
-			})),
+			[...byPrinter].map(([printerId, printerItems]) => {
+				const printer = this.printers.get(printerId);
+				return {
+					kind: 'order' as const,
+					orderId: order.id,
+					...this.route(
+						printerId,
+						this.tickets.orderTicket({
+							template,
+							eventName,
+							order,
+							items: printerItems,
+							createdByName,
+							printerName: printer?.name ?? ''
+						})
+					)
+				};
+			}),
 			this.now()
 		);
 	}
@@ -66,7 +80,8 @@ export class PrintQueueService {
 	}
 
 	enqueueTest(printerId: number) {
-		if (!this.printers.get(printerId)) notFound('Drucker');
+		const printer = this.printers.get(printerId) ?? notFound('Drucker');
+		this.notRedirected(printer);
 		const ticket = this.tickets.testTicket();
 		this.printJobs.enqueue(
 			[{ kind: 'test', orderId: null, printerId, payload: JSON.stringify(ticket) }],
@@ -79,6 +94,7 @@ export class PrintQueueService {
 	enqueueTemplateTest(printerId: number, template: unknown, serviceName: string) {
 		const printer = this.printers.get(printerId) ?? notFound('Drucker');
 		if (!printer.active) throw new DomainError('Dieser Drucker ist deaktiviert.');
+		this.notRedirected(printer);
 		const ticket = this.tickets.templateTestTicket({
 			template: checkedTemplate(template),
 			eventName: this.settings.get('eventName'),
@@ -95,10 +111,16 @@ export class PrintQueueService {
 
 	printerStatuses(): PrinterStatus[] {
 		const pending = this.printJobs.countPendingByPrinter();
-		return this.printers.list().map((printer) => ({
+		const printers = this.printers.list();
+		const names = new Map(printers.map((printer) => [printer.id, printer.name]));
+		return printers.map((printer) => ({
 			...printer,
 			pendingJobs: pending.get(printer.id) ?? 0,
-			reachable: reachability(printer)
+			reachable: reachability(printer),
+			redirectTargetName:
+				printer.redirectToPrinterId === null
+					? null
+					: (names.get(printer.redirectToPrinterId) ?? null)
 		}));
 	}
 
@@ -124,11 +146,66 @@ export class PrintQueueService {
 		const job = this.printJobs.get(jobId) ?? notFound('Druckauftrag');
 		const target = printerId ?? job.printerId;
 		this.activePrinter(target);
-		this.printJobs.enqueue(
-			[{ kind: job.kind, orderId: job.orderId, printerId: target, payload: job.payload }],
-			this.now()
+		const routed = this.route(target, JSON.parse(job.payload) as Ticket);
+		this.printJobs.enqueue([{ kind: job.kind, orderId: job.orderId, ...routed }], this.now());
+		this.worker.kick(routed.printerId);
+	}
+
+	/**
+	 * Redirects a printer (F05): its queued jobs move to `targetId` right away, in their order, and
+	 * new jobs go there too until the redirect is lifted. Jobs that are printing right now finish on
+	 * the source; if they fail, the print worker moves them as well, so nothing is printed twice.
+	 */
+	redirect(sourceId: number, targetId: number): number {
+		const source = this.printers.get(sourceId) ?? notFound('Drucker');
+		const target = this.printers.get(targetId) ?? notFound('Drucker');
+		if (source.id === target.id)
+			throw new DomainError('Ein Drucker kann nicht auf sich selbst umgeleitet werden.');
+		if (!target.active) throw new DomainError(`Drucker «${target.name}» ist deaktiviert.`);
+		if (target.redirectToPrinterId !== null)
+			throw new DomainError(
+				`Drucker «${target.name}» ist selbst umgeleitet und kann kein Ziel sein.`
+			);
+		const sources = this.printers.list().filter((p) => p.redirectToPrinterId === source.id);
+		if (sources.length > 0)
+			throw new DomainError(
+				`Auf «${source.name}» ist ${sources.map((p) => `«${p.name}»`).join(', ')} umgeleitet. ` +
+					'Bitte zuerst diese Umleitung aufheben.'
+			);
+		this.printers.setRedirect(source.id, target.id, this.now());
+		const moved = this.printJobs.reassignQueued(source.id, target.id, (payload) =>
+			redirectPayload(payload, source.name)
 		);
-		this.worker.kick(target);
+		this.worker.kick(target.id);
+		return moved;
+	}
+
+	/** Lifts a redirect; new jobs go to the printer itself again, moved jobs stay at the target. */
+	clearRedirect(printerId: number) {
+		const printer = this.printers.get(printerId) ?? notFound('Drucker');
+		if (printer.redirectToPrinterId === null) return;
+		this.printers.setRedirect(printer.id, null, null);
+		this.worker.kick(printer.id);
+	}
+
+	/** Printer and payload for a new job, following an active redirect. */
+	private route(printerId: number, ticket: Ticket) {
+		const printer = this.printers.get(printerId);
+		if (printer?.redirectToPrinterId != null)
+			return {
+				printerId: printer.redirectToPrinterId,
+				payload: JSON.stringify(withRedirectHint(ticket, printer.name))
+			};
+		return { printerId, payload: JSON.stringify(ticket) };
+	}
+
+	/** Test prints check the printer itself, so they make no sense while it is redirected. */
+	private notRedirected(printer: PrinterRecord) {
+		if (printer.redirectToPrinterId !== null)
+			throw new DomainError(
+				`Drucker «${printer.name}» ist umgeleitet. Bitte zuerst die Umleitung aufheben.`,
+				409
+			);
 	}
 
 	/** Cancels everything still waiting (used before switching the database). */
@@ -148,7 +225,8 @@ export class PrintQueueService {
 }
 
 function withPreview(job: PrintJobListItem): PrintJobView {
-	return { ...job, preview: ticketToText(JSON.parse(job.payload) as Ticket) };
+	const ticket = JSON.parse(job.payload) as Ticket;
+	return { ...job, preview: ticketToText(ticket), redirectedFrom: ticket.redirectedFrom ?? null };
 }
 
 function reachability(printer: PrinterRecord): boolean | null {

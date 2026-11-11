@@ -45,6 +45,28 @@ export class PrintJobRepository {
 			.get();
 	}
 
+	/**
+	 * Moves every queued job of one printer to another in one transaction, keeping `createdAt` (and
+	 * with it the order). `rewrite` turns the stored payload into the one for the new printer.
+	 * Jobs that are `printing` right now are left alone. Returns the number of moved jobs.
+	 */
+	reassignQueued(fromPrinterId: number, toPrinterId: number, rewrite: (payload: string) => string) {
+		return this.db.transaction((tx) => {
+			const jobs = tx
+				.select({ id: printJobs.id, payload: printJobs.payload })
+				.from(printJobs)
+				.where(and(eq(printJobs.printerId, fromPrinterId), eq(printJobs.status, 'queued')))
+				.all();
+			for (const job of jobs) {
+				tx.update(printJobs)
+					.set({ printerId: toPrinterId, payload: rewrite(job.payload) })
+					.where(and(eq(printJobs.id, job.id), eq(printJobs.status, 'queued')))
+					.run();
+			}
+			return jobs.length;
+		});
+	}
+
 	/** Atomically claims a queued job; false if it changed in the meantime (e.g. cancelled). */
 	claim(id: number, printerId: number, at: Date): boolean {
 		const result = this.db

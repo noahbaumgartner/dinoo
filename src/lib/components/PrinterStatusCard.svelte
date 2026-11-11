@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { Badge, Button, Card, CardContent, toast } from '@noahbaumgartner/svelte-ui';
-	import { CircleAlert, CircleCheck, CircleHelp, Printer } from '@lucide/svelte';
+	import { CircleAlert, CircleCheck, CircleHelp, Forward, Printer } from '@lucide/svelte';
 	import type { SubmitFunction } from '@sveltejs/kit';
 
 	type PrinterStatus = {
@@ -15,6 +15,8 @@
 		reachable: boolean | null;
 		lastError: string | null;
 		lastSuccessAt: Date | null;
+		redirectTargetName: string | null;
+		redirectedAt: Date | null;
 	};
 
 	let { printer, compact = false }: { printer: PrinterStatus; compact?: boolean } = $props();
@@ -58,7 +60,15 @@
 			<p class="muted small">Zuletzt gedruckt um {time.format(printer.lastSuccessAt)}</p>
 		{/if}
 
-		{#if !compact}
+		{#if printer.redirectTargetName}
+			<p class="redirect small">
+				<Forward size={14} aria-hidden="true" />
+				Umgeleitet auf {printer.redirectTargetName}
+				{#if printer.redirectedAt}seit {time.format(printer.redirectedAt)}{/if}
+			</p>
+		{/if}
+
+		{#if !compact && !printer.redirectTargetName}
 			<div class="actions">
 				<form method="POST" action="?/test" use:enhance={notify}>
 					<input type="hidden" name="printerId" value={printer.id} />
@@ -99,6 +109,14 @@
 
 	.pending strong {
 		font-size: 28px;
+	}
+
+	.redirect {
+		display: flex;
+		align-items: center;
+		gap: 4px;
+		margin-top: 4px;
+		font-weight: 600;
 	}
 
 	.error {

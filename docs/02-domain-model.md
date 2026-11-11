@@ -31,6 +31,8 @@ Ein per Ethernet erreichbarer Thermodrucker.
 | active                      | bool                           | ✓       | Inaktive Drucker erhalten keine Aufträge                                                                                    |
 | lastSuccessAt / lastErrorAt | datetime                       | –       | Letzter erfolgreicher bzw. fehlgeschlagener Druck                                                                           |
 | lastError                   | string                         | –       | Gesetzt, solange der Drucker fehlschlägt; ein erfolgreicher Druck löscht ihn. Grundlage für «erreichbar / nicht erreichbar» |
+| redirectToPrinterId         | → Printer                      | –       | Aktive Umleitung (F05): wartende und neue Jobs gehen an diesen Drucker. Leer = keine Umleitung                              |
+| redirectedAt                | datetime                       | –       | Zeitpunkt, seit dem die Umleitung aktiv ist                                                                                 |
 
 ### Kategorie (`Category`)
 

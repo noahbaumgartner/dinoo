@@ -20,6 +20,7 @@
 		CircleCheck,
 		Eye,
 		EyeOff,
+		Forward,
 		Pencil,
 		Plus,
 		Printer,
@@ -37,6 +38,28 @@
 	let editing = $state<PrinterRow | null>(null);
 	let deleting = $state<PrinterRow | null>(null);
 	let model = $state('TM-T20IV');
+	let redirectOpen = $state(false);
+	let redirecting = $state<PrinterRow | null>(null);
+	let redirectTarget = $state('');
+
+	const time = new Intl.DateTimeFormat('de-CH', { hour: '2-digit', minute: '2-digit' });
+
+	/** Active printers that are not redirected themselves; a redirect never forms a chain. */
+	function redirectTargets(source: PrinterRow) {
+		return data.printers.filter(
+			(p) => p.id !== source.id && p.active && p.redirectToPrinterId === null
+		);
+	}
+
+	function isRedirectTarget(printer: PrinterRow) {
+		return data.printers.some((p) => p.redirectToPrinterId === printer.id);
+	}
+
+	function startRedirect(printer: PrinterRow) {
+		redirecting = printer;
+		redirectTarget = String(redirectTargets(printer)[0]?.id ?? '');
+		redirectOpen = true;
+	}
 
 	function edit(printer: PrinterRow | null) {
 		editing = printer;
@@ -83,6 +106,13 @@
 							{/if}
 						</span>
 						<span class="muted small tabular">{printer.host}:{printer.port} · {printer.model}</span>
+						{#if printer.redirectTargetName}
+							<span class="redirect small">
+								<Forward size={14} aria-hidden="true" />
+								Umgeleitet auf {printer.redirectTargetName}
+								{#if printer.redirectedAt}seit {time.format(printer.redirectedAt)}{/if}
+							</span>
+						{/if}
 					</div>
 					<span class="state">
 						{#if printer.pendingJobs > 0}
@@ -90,12 +120,24 @@
 						{/if}
 					</span>
 					<span class="row">
-						<form method="POST" action="?/test" use:enhance={notify()}>
-							<input type="hidden" name="printerId" value={printer.id} />
-							<Button type="submit" variant="secondary" size="sm" disabled={!printer.active}
-								>Testdruck</Button
-							>
-						</form>
+						{#if printer.redirectToPrinterId !== null}
+							<form method="POST" action="?/clearRedirect" use:enhance={notify()}>
+								<input type="hidden" name="id" value={printer.id} />
+								<Button type="submit" variant="secondary" size="sm">Umleitung aufheben</Button>
+							</form>
+						{:else}
+							{#if !isRedirectTarget(printer) && redirectTargets(printer).length > 0}
+								<Button variant="secondary" size="sm" onclick={() => startRedirect(printer)}
+									>Umleiten …</Button
+								>
+							{/if}
+							<form method="POST" action="?/test" use:enhance={notify()}>
+								<input type="hidden" name="printerId" value={printer.id} />
+								<Button type="submit" variant="secondary" size="sm" disabled={!printer.active}
+									>Testdruck</Button
+								>
+							</form>
+						{/if}
 						<span class="icon-actions">
 							<form method="POST" action="?/toggle" use:enhance={inPlace()} class="toggle">
 								<input type="hidden" name="id" value={printer.id} />
@@ -201,6 +243,42 @@
 	{/snippet}
 </Dialog>
 
+<Dialog
+	bind:open={redirectOpen}
+	title="Drucker «{redirecting?.name}» umleiten"
+	closeLabel="Schliessen"
+>
+	<form
+		id="redirect-form"
+		method="POST"
+		action="?/redirect"
+		class="stack"
+		use:enhance={notify(() => (redirectOpen = false))}
+	>
+		<input type="hidden" name="id" value={redirecting?.id} />
+		<Field>
+			<Label for="redirect-target">Zieldrucker</Label>
+			<Select
+				id="redirect-target"
+				name="targetId"
+				bind:value={redirectTarget}
+				options={redirecting
+					? redirectTargets(redirecting).map((p) => ({ value: String(p.id), label: p.name }))
+					: []}
+			/>
+		</Field>
+		<FieldDescription>
+			Alle wartenden und neuen Zettel dieses Druckers kommen auf den Zieldrucker, mit dem Hinweis
+			«FÜR: {redirecting?.name.toUpperCase()}» oben. Hebe die Umleitung auf, sobald der Drucker
+			wieder läuft.
+		</FieldDescription>
+	</form>
+	{#snippet actions(close)}
+		<Button variant="secondary" onclick={close}>Abbrechen</Button>
+		<Button type="submit" form="redirect-form" icon={Forward}>Umleiten</Button>
+	{/snippet}
+</Dialog>
+
 <AlertDialog
 	bind:open={deleteOpen}
 	title="Drucker löschen?"
@@ -278,6 +356,13 @@
 
 	.small {
 		font-size: 13px;
+	}
+
+	.redirect {
+		display: inline-flex;
+		align-items: center;
+		gap: 4px;
+		font-weight: 600;
 	}
 
 	.grid-2 {

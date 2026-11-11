@@ -33,6 +33,7 @@ export class PrinterService {
 
 	setActive(id: number, active: boolean) {
 		const printer = this.printers.get(id) ?? notFound('Drucker');
+		if (printer.active && !active) this.notRedirectTarget(printer);
 		if (printer.active && !active && this.printJobs.countPending(id) > 0)
 			throw new DomainError(
 				'Der Drucker hat noch wartende Druckaufträge. Bitte zuerst abbrechen.',
@@ -44,6 +45,7 @@ export class PrinterService {
 	/** Printers in use are only deactivated, never deleted. */
 	delete(id: number): 'deleted' | 'deactivated' {
 		const printer = this.printers.get(id) ?? notFound('Drucker');
+		this.notRedirectTarget(printer);
 		if (this.printJobs.countPending(id) > 0)
 			throw new DomainError(
 				'Der Drucker hat noch wartende Druckaufträge. Bitte zuerst abbrechen.',
@@ -55,6 +57,17 @@ export class PrinterService {
 		}
 		this.printers.delete(id);
 		return 'deleted';
+	}
+
+	/** The target of a redirect must stay active, otherwise redirected tickets would get stuck. */
+	private notRedirectTarget(printer: PrinterRecord) {
+		const sources = this.printers.list().filter((p) => p.redirectToPrinterId === printer.id);
+		if (sources.length > 0)
+			throw new DomainError(
+				`${sources.map((p) => `«${p.name}»`).join(', ')} ist auf diesen Drucker umgeleitet. ` +
+					'Bitte zuerst die Umleitung aufheben.',
+				409
+			);
 	}
 
 	private hasHistory(id: number) {

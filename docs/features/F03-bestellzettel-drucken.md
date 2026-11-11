@@ -29,6 +29,7 @@ Jede Bestellung wird automatisch auf die zuständigen Küchendrucker verteilt; p
 - [ ] Ein Druck gilt nur als `printed`, wenn der Drucker den Druck bestätigt hat (ePOS-Print `success="true"`); Fehlercodes wie Deckel offen oder Papier leer erscheinen als `lastError`.
 - [ ] Beim Start der Anwendung werden `printing`-Jobs auf `queued` zurückgesetzt (Absturz während des Drucks), und die Warteschlange läuft weiter.
 - [ ] Die Antwort an den Service wartet nicht auf den Drucker.
+- [ ] Ein umgeleiteter Drucker (F05) druckt nichts; der Worker schiebt Jobs, die trotzdem in seiner Warteschlange landen (z. B. ein Job, der beim Umleiten gerade `printing` war und danach fehlschlug), zum Zieldrucker weiter.
 - [ ] Pro Datenverzeichnis arbeitet nur ein Prozess die Warteschlange ab; ein Prozess mit Fake-Drucker druckt nie Jobs, solange ein Prozess mit echten Druckern dasselbe Verzeichnis nutzt (→ ADR-010).
 
 **Einsehen und eingreifen** (UI in F05)
@@ -54,7 +55,7 @@ Jede Bestellung wird automatisch auf die zuständigen Küchendrucker verteilt; p
 
 - Bildschirm-Küchenansicht: **bewusst nicht** (Entscheid).
 - Hinweis auf Positionen anderer Drucker: **nicht nötig** (Entscheid).
-- Umleiten auf einen anderen Drucker: **nein**, weder automatisch noch manuell. Jobs bleiben in der Warteschlange, bis der Drucker wieder erreichbar ist, oder werden abgebrochen (Entscheid).
+- Automatisches Umleiten auf einen anderen Drucker: **nein**. Jobs bleiben in der Warteschlange, bis der Drucker wieder erreichbar ist. Der Admin kann einen ausgefallenen Drucker aber **manuell umleiten** (F05, ADR-011).
 - Quittung für den Gast.
 
 ## Abhängigkeiten

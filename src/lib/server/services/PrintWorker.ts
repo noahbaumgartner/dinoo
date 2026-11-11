@@ -4,6 +4,7 @@ import type { PrintJobRepository } from '../repositories/db/PrintJobRepository';
 import type { PrinterRecord } from '../repositories/db/types';
 import type { PrinterDeviceRepository } from '../repositories/printer/PrinterDeviceRepository';
 import type { Ticket } from '../repositories/printer/ticket';
+import { redirectPayload } from './PrintQueueService';
 
 export type PrintWorkerRepositories = {
 	printJobs: PrintJobRepository;
@@ -98,9 +99,18 @@ export class PrintWorker {
 			await Promise.all(this.running);
 			return;
 		}
+		const printers = repositories.printers.list();
+		// A redirected printer never prints; jobs that reached its queue anyway (e.g. a job that was
+		// printing when the redirect was set and then failed) move on to the target first.
+		for (const printer of printers) {
+			if (printer.redirectToPrinterId === null) continue;
+			repositories.printJobs.reassignQueued(printer.id, printer.redirectToPrinterId, (payload) =>
+				redirectPayload(payload, printer.name)
+			);
+		}
 		const now = this.now().getTime();
-		for (const printer of repositories.printers.list()) {
-			if (!printer.active) continue;
+		for (const printer of printers) {
+			if (!printer.active || printer.redirectToPrinterId !== null) continue;
 			const state = this.state(printer.id);
 			if (state.busy || now < state.nextAttemptAt) continue;
 			state.busy = true;

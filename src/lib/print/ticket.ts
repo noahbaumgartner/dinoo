@@ -28,7 +28,14 @@ export type TicketLine =
 	| { type: 'rule'; char?: '-' | '=' }
 	| { type: 'feed'; lines?: number };
 
-export type Ticket = { lines: TicketLine[] };
+export type Ticket = {
+	lines: TicketLine[];
+	/**
+	 * Name of the station (printer) the ticket was meant for, set once it is redirected to another
+	 * printer. The hint lines are already part of `lines`; this field only prevents a second hint.
+	 */
+	redirectedFrom?: string;
+};
 
 /** Characters per line in font A on 80 mm paper (Epson TM-T20III / TM-T20IV default). */
 export const TICKET_WIDTH = 48;
@@ -101,4 +108,31 @@ export function ticketToText(ticket: Ticket): string {
 			}
 		})
 		.join('\n');
+}
+
+/**
+ * Adds a prominent «FÜR: <station>» block on top, so a ticket printed on a replacement printer can
+ * be handed on to the right station. A ticket that was already redirected keeps its first hint.
+ */
+export function withRedirectHint(ticket: Ticket, station: string): Ticket {
+	if (ticket.redirectedFrom) return ticket;
+	const title = wrapText(`FÜR: ${station.toUpperCase()}`, charsPerLine(2));
+	return {
+		...ticket,
+		redirectedFrom: station,
+		lines: [
+			...title.map((text) => ({
+				type: 'text' as const,
+				text,
+				width: 2,
+				height: 2,
+				bold: true,
+				invert: true,
+				align: 'center' as const
+			})),
+			{ type: 'text', text: 'Umgeleitet, bitte weitergeben', align: 'center' },
+			{ type: 'rule', char: '=' },
+			...ticket.lines
+		]
+	};
 }
