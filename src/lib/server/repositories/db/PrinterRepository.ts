@@ -49,6 +49,15 @@ export class PrinterRepository {
 		return Boolean(category || article);
 	}
 
+	/** Sets or (with `null`) lifts the redirect of a printer. */
+	setRedirect(id: number, targetId: number | null, at: Date | null) {
+		this.db
+			.update(printers)
+			.set({ redirectToPrinterId: targetId, redirectedAt: targetId === null ? null : at })
+			.where(eq(printers.id, id))
+			.run();
+	}
+
 	markSuccess(id: number, at: Date) {
 		this.db
 			.update(printers)

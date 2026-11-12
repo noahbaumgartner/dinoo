@@ -22,6 +22,7 @@ export function createTestRuntime() {
 	return {
 		runtime,
 		device,
+		dataDir,
 		services: () => runtime.services,
 		advance(ms: number) {
 			now = new Date(now.getTime() + ms);

@@ -1,5 +1,12 @@
 import { sql } from 'drizzle-orm';
-import { index, integer, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core';
+import {
+	index,
+	integer,
+	sqliteTable,
+	text,
+	uniqueIndex,
+	type AnySQLiteColumn
+} from 'drizzle-orm/sqlite-core';
 import type { ArticleOption, MinAge } from '../../../article-options';
 
 const timestamps = {
@@ -91,6 +98,11 @@ export const printers = sqliteTable('printers', {
 	lastSuccessAt: integer('last_success_at', { mode: 'timestamp_ms' }),
 	lastErrorAt: integer('last_error_at', { mode: 'timestamp_ms' }),
 	lastError: text('last_error'),
+	/** While set, all queued and new jobs of this printer go to that printer instead (F05). */
+	redirectToPrinterId: integer('redirect_to_printer_id').references(
+		(): AnySQLiteColumn => printers.id
+	),
+	redirectedAt: integer('redirected_at', { mode: 'timestamp_ms' }),
 	...timestamps
 });
 

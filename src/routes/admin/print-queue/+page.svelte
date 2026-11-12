@@ -68,7 +68,7 @@
 	const columns: TableColumn<Job>[] = [
 		{ header: 'Erstellt', cell: cell(created), sortable: (job) => job.createdAt },
 		{ header: 'Zettel', cell: cell(ticket) },
-		{ header: 'Drucker', key: 'printerName', sortable: true },
+		{ header: 'Drucker', cell: cell(printerCell), sortable: (job) => job.printerName },
 		{ header: 'Status', cell: cell(status) },
 		{ header: 'Versuche', key: 'attempts', align: 'right' },
 		{ header: '', cell: cell(actions), align: 'right' }
@@ -86,6 +86,11 @@
 	{:else}
 		<a href="/admin/orders/{job.orderId}">#{job.orderNumber} · Tisch {job.tableLabel}</a>
 	{/if}
+{/snippet}
+
+{#snippet printerCell(job: Job)}
+	{job.printerName}
+	{#if job.redirectedFrom}<span class="muted">(für {job.redirectedFrom})</span>{/if}
 {/snippet}
 
 {#snippet status(job: Job)}
