@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import ActionBar from '$lib/components/ActionBar.svelte';
 	import OrderScreen from '$lib/components/OrderScreen.svelte';
-	import { Button } from '@noahbaumgartner/svelte-ui';
+	import { ActionBar, Button } from '@noahbaumgartner/svelte-ui';
 	import { Plus } from '@lucide/svelte';
 	import type { PageProps } from './$types';
 

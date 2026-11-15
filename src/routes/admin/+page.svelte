@@ -242,40 +242,40 @@
 		</CardContent>
 	</Card>
 
-	<Card class="table-card">
+	<Card>
 		<CardHeader>
 			<CardTitle>Personal</CardTitle>
 			<p class="muted small">Wer hat wie viel eingebracht? Nach aufgenommenen Bestellungen.</p>
 		</CardHeader>
-		<div class="table-wrap">
-			<Table
-				data={staff}
-				locale="de-CH"
-				columns={rankingColumns('Name', false)}
-				bind:sort={staffSort}
-				aria-label="Umsatz pro Person"
-			>
-				{#snippet empty()}Noch keine Bestellungen{/snippet}
-			</Table>
-		</div>
+		<Table
+			data={staff}
+			locale="de-CH"
+			columns={rankingColumns('Name', false)}
+			bind:sort={staffSort}
+			dividers
+			maxHeight="500px"
+			aria-label="Umsatz pro Person"
+		>
+			{#snippet empty()}Noch keine Bestellungen{/snippet}
+		</Table>
 	</Card>
 
-	<Card class="table-card">
+	<Card>
 		<CardHeader>
 			<CardTitle>Tische</CardTitle>
 			<p class="muted small">Nur Tische mit Bestellungen im gewählten Zeitraum.</p>
 		</CardHeader>
-		<div class="table-wrap">
-			<Table
-				data={tables}
-				locale="de-CH"
-				columns={rankingColumns('Tisch', severalAreas)}
-				bind:sort={tableSort}
-				aria-label="Umsatz pro Tisch"
-			>
-				{#snippet empty()}Noch keine Bestellungen{/snippet}
-			</Table>
-		</div>
+		<Table
+			data={tables}
+			locale="de-CH"
+			columns={rankingColumns('Tisch', severalAreas)}
+			bind:sort={tableSort}
+			dividers
+			maxHeight="500px"
+			aria-label="Umsatz pro Tisch"
+		>
+			{#snippet empty()}Noch keine Bestellungen{/snippet}
+		</Table>
 	</Card>
 </AdminPage>
 

@@ -31,7 +31,7 @@ Environment: `DATA_DIR` (default `./data`), `PRINTER_DRIVER=fake`, `PORT`/`HOST`
 ## Tech stack (details: `docs/03-tech-stack.md`)
 
 - **SvelteKit monolith** with **Vite+**, Svelte 5 (runes), TypeScript, adapter-node.
-- **UI:** `@noahbaumgartner/svelte-ui` (local at `../svelte-ui`, linked with `npm link`; `npm i @noahbaumgartner/svelte-ui` for production builds). No other UI library. Tokens are imported once in the root layout. Icons: `@lucide/svelte`.
+- **UI:** `@noahbaumgartner/svelte-ui` (local at `../svelte-ui`, linked with `npm link`; `npm i @noahbaumgartner/svelte-ui` for production builds). No other UI library. `tokens.css` and `base.css` (reset, `--content-max-width`, `--gutter`) are imported once in the root layout. Icons: `@lucide/svelte`.
 - **DB:** SQLite (`better-sqlite3`) + Drizzle ORM. Schema in `src/lib/server/repositories/db/schema.ts`, migrations in `drizzle/`. One database file per event.
 - **Auth:** Better Auth (username plugin), used server-side only through `AuthRepository`.
 - **Printing:** `node-thermal-printer` behind `PrinterDeviceRepository`; persistent queue worked off by `PrintWorker`.

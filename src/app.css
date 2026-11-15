@@ -1,5 +1,6 @@
-/* Base color tokens and light theme come from @noahbaumgartner/svelte-ui/tokens.css (imported in
-   the root layout). Components use only the semantic --color-* tokens.
+/* Base color tokens and light theme come from @noahbaumgartner/svelte-ui/tokens.css, the reset and
+   the layout tokens (--content-max-width, --gutter) from its base.css (both imported in the root
+   layout). Components use only the semantic --color-* tokens.
 
    Palette and type: a warm off-white page, white cards, ink text, a deep blue accent and a
    coral red for errors. Space Grotesk for everything, Bricolage Grotesque (with its optical-size
@@ -17,11 +18,7 @@
 		'Space Grotesk Variable', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 	--ui-font-display: 'Bricolage Grotesque Variable', var(--ui-font-sans);
 
-	--content-max-width: 1120px;
-	--section-max-width: var(--content-max-width);
-	--gutter: 16px;
 	--radius: 12px;
-	-webkit-text-size-adjust: 100%;
 }
 
 ::selection {
@@ -29,34 +26,9 @@
 	color: var(--ui-ink);
 }
 
-@media (min-width: 640px) {
-	:root {
-		--gutter: 24px;
-	}
-}
-
-*,
-*::before,
-*::after {
-	box-sizing: border-box;
-}
-
-html,
-body {
-	margin: 0;
-	min-height: 100%;
-	background-color: var(--color-bg);
-	color: var(--color-text);
-}
-
-body {
-	-webkit-tap-highlight-color: transparent;
-}
-
 h1,
 h2,
 h3 {
-	margin: 0;
 	letter-spacing: -0.01em;
 }
 
@@ -66,11 +38,6 @@ h1 {
 	font-weight: 750;
 	letter-spacing: -0.03em;
 	line-height: 1.15;
-}
-
-p {
-	margin: 0;
-	line-height: 1.5;
 }
 
 /* A page title with its lead text below: give the pair room to breathe. */
@@ -84,15 +51,6 @@ h1 + p {
 
 .muted {
 	color: var(--color-text-muted);
-}
-
-.visually-hidden {
-	position: absolute;
-	width: 1px;
-	height: 1px;
-	overflow: hidden;
-	clip-path: inset(50%);
-	white-space: nowrap;
 }
 
 .stack {
@@ -144,59 +102,5 @@ h1 + p {
 /* Toasts float above the page like cards, so white instead of the off-white page background.
    Unlayered, so it wins over svelte-ui's @layer styles. */
 .toaster .toast {
-	background-color: var(--color-fill);
-}
-
-/* White like the cards instead of the off-white page background. */
-.table-wrap {
-	border-radius: var(--radius);
-	background-color: var(--color-fill);
-	overflow-x: auto;
-}
-
-/* Inset divider like the order list, also below the header. Drawn on the cells: a pseudo-element
-   on the row would become an extra table cell and shift the columns. */
-.table-wrap tbody td {
-	background-image: linear-gradient(var(--color-border), var(--color-border));
-	background-position: left top;
-	background-size: 100% 1px;
-	background-repeat: no-repeat;
-}
-
-.table-wrap tbody td:first-child {
-	background-position: 14px top;
-	background-size: calc(100% - 14px) 1px;
-}
-
-.table-wrap tbody td:last-child {
-	background-size: calc(100% - 14px) 1px;
-}
-
-/* A card that ends in a `.table-wrap`: the table runs down to the card's edge. Taller than 500px,
-   only the table scrolls (the card title stays), and the header sticks to the top of it. A table
-   wider than the card scrolls sideways. The scrolling box is svelte-ui's `.table-container`. */
-.table-card {
-	max-height: 500px;
-	padding-bottom: 0;
-}
-
-.table-card .table-wrap {
-	display: flex;
-	flex: 1 1 auto;
-	flex-direction: column;
-	min-height: 0;
-	overflow: hidden;
-}
-
-.table-card .table-container {
-	flex: 1 1 auto;
-	min-height: 0;
-	overflow: auto;
-}
-
-.table-card .table-container th {
-	position: sticky;
-	top: 0;
-	z-index: 1;
 	background-color: var(--color-fill);
 }

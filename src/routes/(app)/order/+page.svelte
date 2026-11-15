@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { beforeNavigate, goto } from '$app/navigation';
-	import ActionBar from '$lib/components/ActionBar.svelte';
 	import SeatingPlan from '$lib/components/SeatingPlan.svelte';
 	import { categoryColor } from '$lib/category-colors';
 	import { rowLabel } from '$lib/table-grid';
@@ -19,6 +18,7 @@
 		type OptionValues
 	} from '$lib/article-options';
 	import {
+		ActionBar,
 		AlertDialog,
 		Badge,
 		Button,

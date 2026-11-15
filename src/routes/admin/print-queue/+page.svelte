@@ -172,9 +172,14 @@
 				: 'Für diesen Filter gibt es keine Einträge.'}
 		/>
 	{:else}
-		<div class="table-wrap">
-			<Table data={data.jobs} {columns} rowId={(job) => job.id} locale="de-CH" />
-		</div>
+		<Table
+			data={data.jobs}
+			{columns}
+			rowId={(job) => job.id}
+			locale="de-CH"
+			variant="filled"
+			dividers
+		/>
 	{/if}
 </AdminPage>
 

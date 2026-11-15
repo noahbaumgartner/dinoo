@@ -1,5 +1,6 @@
 <script lang="ts">
 	import '@noahbaumgartner/svelte-ui/tokens.css';
+	import '@noahbaumgartner/svelte-ui/base.css';
 	import '@fontsource-variable/space-grotesk';
 	import '@fontsource-variable/bricolage-grotesque/opsz.css';
 	import '../app.css';
