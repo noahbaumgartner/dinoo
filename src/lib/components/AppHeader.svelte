@@ -97,7 +97,6 @@
 		align-items: baseline;
 		gap: 8px;
 		color: var(--color-text);
-		font-family: var(--font-display);
 		font-size: 18px;
 		font-weight: 700;
 		letter-spacing: -0.02em;
